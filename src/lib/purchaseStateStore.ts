@@ -78,7 +78,7 @@ class FilePurchaseStateStore implements PurchaseStateStore {
 
   private async queueWrite<T>(operation: () => Promise<T>): Promise<T> {
     const previous = this.writeChain;
-    let release = () => undefined;
+    let release: () => void = () => {};
     this.writeChain = new Promise<void>((resolve) => {
       release = resolve;
     });
