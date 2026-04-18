@@ -1,11 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import { getFeaturedArtwork, getSaleForLot, platformStats } from "@/lib/site-data";
 
-export default function HeroSection() {
-  const featuredArtwork = getFeaturedArtwork();
-  const featuredSale = getSaleForLot(featuredArtwork.id);
+export default async function HeroSection() {
+  const featuredArtwork = await getFeaturedArtwork();
+  const featuredSale = await getSaleForLot(featuredArtwork.id);
 
   return (
     <section className="relative overflow-hidden px-6 pb-24 pt-28 lg:pb-32 lg:pt-28">

@@ -1,4 +1,5 @@
-import type { EvidenceKind, EvidenceItem, Provenance, VerificationStatus } from "../types/provenance";
+import { z } from "zod";
+import type { ArtCategory, EvidenceItem, Provenance, VerificationStatus } from "../types/provenance";
 
 export function getHumanMadePolicyFailureReason(provenance: Provenance): string | null {
   if (provenance.verificationStatus === "VERIFIED_HUMAN") {
@@ -39,17 +40,22 @@ export function getProvenanceBadgeState(provenance: Provenance): "verified" | "p
 export function validateProvenance(input: Record<string, unknown>): Provenance {
   const evidence = (input.evidence || []) as EvidenceItem[];
   const evidenceHashes = evidence.map((item) => item.hash);
+  const category = (input.category as ArtCategory) || "visual";
+  const attestation = input.attestation as Record<string, unknown> | undefined;
 
   return {
-    category: (input.category as string) || "visual",
+    category,
     medium: (input.medium as string) || "digital painting",
+    creationMethod: (input.creationMethod as "HUMAN_ORIGINAL" | "HUMAN_TOOL_ASSISTED" | "COLLABORATIVE_HUMAN") || "HUMAN_ORIGINAL",
+    attestation: {
+      text: (attestation?.text as string) || "I attest that this work is human-made.",
+      signerWallet: (attestation?.signerWallet as string) || "",
+      timestamp: (attestation?.timestamp as string) || new Date().toISOString(),
+      signatureRef: (attestation?.signatureRef as string) || "",
+    },
     evidence,
     evidenceHashes,
     verificationStatus: (input.verificationStatus as VerificationStatus) || "PENDING_REVIEW",
-    attestation: {
-      signerWallet: (input.attestation?.signerWallet as string) || "",
-      signedAt: (input.attestation?.signedAt as string) || new Date().toISOString(),
-    },
   };
 }
 
@@ -63,3 +69,35 @@ export function getListingGateFailureReason(provenance: Provenance): string | nu
   }
   return null;
 }
+
+export function requiresMoreEvidence(provenance: Provenance): string[] {
+  const missing: string[] = [];
+
+  if (provenance.evidenceHashes.length === 0) {
+    missing.push("At least one evidence hash is required");
+  }
+
+  if (!provenance.category) {
+    missing.push("Category is required");
+  }
+
+  if (!provenance.medium) {
+    missing.push("Medium is required");
+  }
+
+  return missing;
+}
+
+export const verifyProvenancePayloadSchema = z.object({
+  provenance: z.object({
+    category: z.enum(["visual", "audio", "video", "writing", "mixed_media"]),
+    medium: z.string(),
+    evidence: z.array(z.object({
+      kind: z.string(),
+      label: z.string(),
+      hash: z.string(),
+    })),
+    verificationStatus: z.enum(["PENDING_REVIEW", "VERIFIED_HUMAN", "REJECTED"]).optional(),
+  }),
+  forceStatus: z.enum(["PENDING_REVIEW", "VERIFIED_HUMAN", "REJECTED"]).optional(),
+});

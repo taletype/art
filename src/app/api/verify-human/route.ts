@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "../../../lib/apiGuards";
+import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
 import {
   getProvenanceBadgeState,
   requiresMoreEvidence,
+  validateProvenance,
   verifyProvenancePayloadSchema,
-} from "../../../lib/provenance";
+} from "@/lib/provenance";
 
 export async function POST(request: Request) {
   const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
@@ -20,7 +21,8 @@ export async function POST(request: Request) {
 
   try {
     const parsed = verifyProvenancePayloadSchema.parse(await request.json());
-    const evidenceCheck = requiresMoreEvidence(parsed.provenance);
+    const provenance = validateProvenance(parsed.provenance);
+    const evidenceCheck = requiresMoreEvidence(provenance);
     const mockReviewEnabled = process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true";
 
     if (parsed.forceStatus && !mockReviewEnabled) {
@@ -37,14 +39,14 @@ export async function POST(request: Request) {
     }
 
     const verificationStatus = mockReviewEnabled
-      ? parsed.forceStatus ?? parsed.provenance.verificationStatus
-      : parsed.provenance.verificationStatus;
+      ? parsed.forceStatus ?? provenance.verificationStatus
+      : provenance.verificationStatus;
 
     return applyRateLimitHeaders(
       NextResponse.json({
         ok: true,
         verificationStatus,
-        badgeState: getProvenanceBadgeState(parsed.provenance),
+        badgeState: getProvenanceBadgeState(provenance),
         evidenceCheck,
       }),
       rateLimit,

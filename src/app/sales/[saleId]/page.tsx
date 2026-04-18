@@ -19,13 +19,13 @@ function formatSaleDate(iso: string) {
 
 export default async function SalePage({ params }: SalePageProps) {
   const { saleId } = await params;
-  const sale = getAuctionSaleById(saleId);
+  const sale = await getAuctionSaleById(saleId);
 
   if (!sale) {
     notFound();
   }
 
-  const lots = getAuctionLotsBySaleId(sale.id);
+  const lots = await getAuctionLotsBySaleId(sale.id);
 
   return (
     <main className="min-h-screen bg-black px-4 pb-14 pt-24 text-white sm:px-6">

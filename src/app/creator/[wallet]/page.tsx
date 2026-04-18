@@ -8,13 +8,13 @@ interface CreatorPageProps {
 
 export default async function CreatorPage({ params }: CreatorPageProps) {
   const { wallet } = await params;
-  const creator = getCreatorByWallet(wallet);
+  const creator = await getCreatorByWallet(wallet);
 
   if (!creator) {
     notFound();
   }
 
-  const artworks = getCreatorArtworks(wallet);
+  const artworks = await getCreatorArtworks(wallet);
 
   return (
     <main className="min-h-screen bg-black px-4 pb-14 pt-24 text-white sm:px-6">
