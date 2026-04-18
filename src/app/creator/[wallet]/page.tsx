@@ -17,104 +17,29 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   const artworks = getCreatorArtworks(wallet);
 
   return (
-    <main className="min-h-screen bg-black px-6 pb-20 pt-32">
-      <div className="section-shell space-y-10">
-        <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
-          <Link href="/" className="transition hover:text-white">Home</Link>
-          <span>•</span>
-          <Link href="/#creators" className="transition hover:text-white">Artists</Link>
-          <span>•</span>
-          <span className="text-white/85">{creator.name}</span>
+    <main className="min-h-screen bg-black px-4 pb-14 pt-24 text-white sm:px-6">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <div className="text-sm text-white/60">
+          <Link href="/" className="hover:text-white">Home</Link> / <span>{creator.name}</span>
         </div>
 
-        <section className="glass overflow-hidden rounded-[2rem] border border-white/10">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
-            <div className="min-h-[240px] border-b border-white/10 bg-gradient-to-br from-[#20191f] via-[#32253e] to-[#111727] p-8 lg:border-b-0 lg:border-r">
-              <p className="eyebrow">Artist profile</p>
-              <h1 className="mt-3 text-4xl text-white sm:text-5xl">{creator.name}</h1>
-              <p className="mt-2 text-sm text-[#f3d27a]">{creator.handle}</p>
-              <div className="mt-6 space-y-2 text-sm text-white/62">
-                <p>{creator.location}</p>
-                <p>{creator.discipline}</p>
-              </div>
-            </div>
-            <div className="space-y-5 p-8">
-              <p className="text-base leading-8 text-white/72">{creator.heroStatement}</p>
-              <p className="text-sm leading-7 text-white/58">{creator.bio}</p>
-              <div className="flex flex-wrap gap-3">
-                <Link href="/#featured" className="button-secondary px-5 py-2.5">
-                  Back to Auctions
-                </Link>
-                <Link href="/submit" className="button-primary px-5 py-2.5">
-                  Request Consignment
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="eyebrow">Artist Statement</p>
-            <p className="mt-4 text-sm leading-7 text-white/65">
-              {creator.name} builds with a documentation-first mindset: each consigned lot is paired with evidence and reviewer context so collectors can evaluate human intent and authorship before bidding.
-            </p>
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/45">Trust + process</p>
-              <p className="mt-2 text-sm leading-7 text-white/68">
-                This profile links directly into verified auction lots and preserves process visibility across discovery, catalog, and post-sale support surfaces.
-              </p>
-            </div>
-          </article>
-
-          <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="eyebrow">Collector Guidance</p>
-            <ul className="mt-4 space-y-3 text-sm text-white/62">
-              <li>Review provenance notes on each artwork before collecting.</li>
-              <li>Compare edition and availability to understand scarcity.</li>
-              <li>Register, bid, and settle through the formal auction flow.</li>
-            </ul>
-          </article>
+        <section className="rounded-xl border border-white/10 bg-[#141414] p-6">
+          <h1 className="text-3xl font-semibold">{creator.name}</h1>
+          <p className="mt-1 text-sm text-white/60">{creator.handle} • {creator.location}</p>
+          <p className="mt-4 text-sm text-white/75">{creator.bio}</p>
         </section>
 
         <section>
-          <div className="mb-6 flex items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow">Consigned works</p>
-              <h2 className="mt-2 text-3xl text-white">Artworks by {creator.name}</h2>
-            </div>
-            <Link href="/#featured" className="text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">View All Featured Works →</Link>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
+          <h2 className="mb-3 text-xl font-semibold">Lots by this artist</h2>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {artworks.map((artwork) => (
-              <article key={artwork.id} className="overflow-hidden rounded-[1.7rem] border border-white/10 bg-white/[0.03]">
-                <div className="relative h-56" style={{ backgroundImage: artwork.background }}>
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/20 to-black/80" />
-                  <div className="absolute left-5 top-5 rounded-full border border-white/12 bg-black/35 px-3 py-1 text-xs uppercase tracking-[0.16em] text-white/70">
-                    {artwork.category}
-                  </div>
-                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-white/55">{artwork.edition}</p>
-                      <h3 className="mt-1 text-2xl text-white">{artwork.title}</h3>
-                    </div>
-                    <span className="rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-black">{artwork.priceSol} SOL</span>
-                  </div>
-                </div>
-                <div className="space-y-4 p-5">
-                  <p className="text-sm leading-7 text-white/60">{artwork.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {artwork.evidenceLabels.map((label) => (
-                      <span key={label} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/65">
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                  <Link href={`/art/${artwork.id}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-                    Open Lot Detail →
-                  </Link>
-                </div>
+              <article key={artwork.id} className="rounded-xl border border-white/10 bg-[#151515] p-4">
+                <h3 className="text-lg font-semibold">{artwork.title}</h3>
+                <p className="text-sm text-white/65">{artwork.year} • {artwork.edition}</p>
+                <p className="mt-2 text-sm text-white/70">{artwork.description}</p>
+                <Link href={`/art/${artwork.id}`} className="mt-4 inline-flex text-sm font-medium underline">
+                  View lot
+                </Link>
               </article>
             ))}
           </div>

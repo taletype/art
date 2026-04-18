@@ -5,9 +5,8 @@ import Footer from "@/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HUMAN_ Arts - Human-Made Digital Art Auctions",
-  description:
-    "A premium digital auction house for culturally significant overlooked artists, human-made lots, provenance-rich catalog entries, and Solana-native bidding.",
+  title: "RealArt Auctions",
+  description: "Simple digital art auction site with live sales, lot pages, and artist listings.",
 };
 
 export const viewport: Viewport = {

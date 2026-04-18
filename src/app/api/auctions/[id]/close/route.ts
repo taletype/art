@@ -1,26 +1,45 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { closeAuctionForUser, getAuthenticatedAuctionUserFromRequest } from "@/lib/auction-v1";
-import { auctionCloseSchema } from "@/lib/validators";
+import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
+import { closeOffchainAuction } from "@/lib/offchainAuctions";
+import { closeAuctionRequestSchema } from "@/types/offchainAuction";
 
-type AuctionCloseRouteProps = {
-  params: Promise<{ id: string }>;
-};
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
+  if (authFailure) {
+    return authFailure;
+  }
 
-export async function POST(request: Request, { params }: AuctionCloseRouteProps) {
+  const rateLimit = enforceRouteRateLimit(request, "auctions-close-post", {
+    max: Number(process.env.API_AUCTIONS_RATE_LIMIT_MAX || 30),
+  });
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
+
   try {
     const { id } = await params;
-    const user = await getAuthenticatedAuctionUserFromRequest(request);
-    const payload = auctionCloseSchema.parse(await request.json().catch(() => ({})));
-    const auction = await closeAuctionForUser(id, user, payload);
-    return NextResponse.json({ ok: true, auction });
+    const payload = closeAuctionRequestSchema.parse(await request.json());
+    const result = await closeOffchainAuction(id, payload.closedBy);
+
+    return applyRateLimitHeaders(NextResponse.json({ ok: true, ...result }), rateLimit);
   } catch (error) {
     if (error instanceof ZodError) {
-      return NextResponse.json({ ok: false, message: "Invalid close payload.", issues: error.issues }, { status: 400 });
+      return applyRateLimitHeaders(
+        NextResponse.json(
+          { ok: false, message: "Invalid close payload", issues: error.issues },
+          { status: 400 },
+        ),
+        rateLimit,
+      );
     }
-    return NextResponse.json(
-      { ok: false, message: error instanceof Error ? error.message : "Unable to close auction." },
-      { status: 400 },
+
+    return applyRateLimitHeaders(
+      NextResponse.json(
+        { ok: false, message: error instanceof Error ? error.message : "Failed to close auction" },
+        { status: 500 },
+      ),
+      rateLimit,
     );
   }
 }

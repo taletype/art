@@ -4,82 +4,58 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/auctions", label: "Auctions" },
-  { href: "/sales/contemporary-digital-asia", label: "Catalog" },
-  { href: "/#creators", label: "Artists" },
-  { href: "/submit", label: "Consign" },
+  { href: "/", label: "Home" },
+  { href: "/sales/contemporary-digital-asia", label: "Live Sale" },
+  { href: "/#lots", label: "Lots" },
+  { href: "/submit", label: "Sell" },
 ];
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/55 backdrop-blur-xl">
-      <div className="section-shell flex h-20 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3 rounded-full focus-visible:ring-4 focus-visible:ring-white/10">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold tracking-[0.24em] text-[#f8deb0]">
-            H_
-          </span>
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">HUMAN_ Arts</p>
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Human-made auction house</p>
-          </div>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#111]">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="text-sm font-semibold tracking-wide text-white">
+          RealArt Auctions
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm text-white/70 transition duration-200 hover:text-white focus-visible:text-white"
-            >
+            <Link key={item.href} href={item.href} className="text-sm text-white/70 hover:text-white">
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <Link href="/login" className="button-secondary px-4 py-2">
-            Log in
-          </Link>
-          <Link href="/creator/creative-soul" className="button-secondary px-4 py-2">
-            Featured Artist
-          </Link>
-          <Link href="/submit" className="button-primary px-5 py-2.5">
-            Consign Art
-          </Link>
-        </div>
+        <Link href="/submit" className="hidden rounded-md bg-white px-3 py-2 text-sm font-medium text-black md:inline-flex">
+          List artwork
+        </Link>
 
         <button
           type="button"
           aria-label="Toggle navigation menu"
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10 md:hidden"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/20 text-white md:hidden"
         >
-          <span className="text-lg">{open ? "×" : "☰"}</span>
+          {open ? "×" : "☰"}
         </button>
       </div>
 
       {open ? (
-        <div className="border-t border-white/10 bg-black/95 md:hidden">
-          <div className="section-shell flex flex-col gap-2 py-4">
+        <div className="border-t border-white/10 bg-[#111] md:hidden">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/80 transition hover:bg-white/[0.06] hover:text-white"
+                className="rounded-md px-3 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
               >
                 {item.label}
               </Link>
             ))}
-            <Link href="/login" onClick={() => setOpen(false)} className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/80 transition hover:bg-white/[0.06] hover:text-white">
-              Log in
-            </Link>
-            <Link href="/submit" onClick={() => setOpen(false)} className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black">
-              Consign Art
-            </Link>
           </div>
         </div>
       ) : null}
