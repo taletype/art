@@ -123,7 +123,7 @@ export async function prepareAuctionBid(input: AuctionBidPrepareRequest): Promis
   }
 
   if (process.env.SOLANA_CLUSTER && process.env.SOLANA_CLUSTER !== "devnet") {
-    warnings.push("This marketplace is configured for a non-devnet cluster. Mainnet bidding should wait for audit approval.");
+    warnings.push("This auction house is configured for a non-devnet cluster. Mainnet bidding should wait for audit approval.");
   }
 
   const programId = process.env.SOLANA_ENGLISH_AUCTION_PROGRAM_ID ?? "MISSING_SOLANA_ENGLISH_AUCTION_PROGRAM_ID";

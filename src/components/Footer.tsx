@@ -18,11 +18,11 @@ export default function Footer() {
               </span>
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">HUMAN_ Arts</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Solana auction house</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Human-made auction house</p>
               </div>
             </Link>
             <p className="max-w-sm text-sm leading-7 text-white/55">
-              A premium digital auction house where curated artworks carry evidence-backed provenance and a Solana-native bid path.
+              A premium digital auction house for overlooked human artists, evidence-backed provenance, and collector-grade sale support.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/submit" className="button-primary px-5 py-2.5">
@@ -66,9 +66,10 @@ export default function Footer() {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Platform</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Trust</h4>
             <ul className="space-y-2 text-sm text-white/58">
               <li><Link href="/submit" className="transition hover:text-white">Consignment Pipeline</Link></li>
+              <li><Link href="/submit" className="transition hover:text-white">Human-Made Only</Link></li>
               <li><Link href="/submit" className="transition hover:text-white">Evidence Requirements</Link></li>
               <li><Link href="/submit" className="transition hover:text-white">Curatorial Queue</Link></li>
             </ul>
@@ -76,7 +77,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-white/45 md:flex-row md:items-center md:justify-between">
-          <p>© 2026 HUMAN_ Arts / RealArtWorks. Human-made. Evidence-backed.</p>
+          <p>© 2026 HUMAN_ Arts / RealArtWorks. Human-made only. Evidence-backed.</p>
           <div className="flex gap-5">
             <Link href="/submit" className="transition hover:text-white">Privacy</Link>
             <Link href="/submit" className="transition hover:text-white">Terms</Link>

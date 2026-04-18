@@ -15,7 +15,7 @@ function buildMockProvenance(artistWallet: string, medium: string, evidenceLabel
     medium,
     creationMethod: "HUMAN_ORIGINAL",
     attestation: {
-      text: "I certify this artwork is human-created and follows HUMAN_ policy.",
+      text: "I certify this artwork is human-created, not AI-generated or AI-assisted, and follows HUMAN_ policy.",
       signerWallet: `${artistWallet}-attestation-signer-111111111111111111`,
       timestamp: createdAt,
       signatureRef: `sig-${artistWallet}-proof`,
@@ -30,7 +30,7 @@ function buildMockProvenance(artistWallet: string, medium: string, evidenceLabel
     reviewerDecision: {
       reviewerWallet: "reviewer-wallet-human-arts-11111111111111111111111",
       decidedAt: createdAt,
-      notes: "Evidence packet aligns with creator workflow and listing policy.",
+      notes: "Evidence packet aligns with the artist workflow, no-AI policy, and listing policy.",
     },
   };
 }
@@ -39,7 +39,7 @@ function evidenceSummary(label: string) {
   if (label.toLowerCase().includes("hash")) return "Cryptographic fingerprint logged with listing packet.";
   if (label.toLowerCase().includes("review")) return "Reviewer notes and decision trail linked in provenance bundle.";
   if (label.toLowerCase().includes("wip") || label.toLowerCase().includes("capture")) return "Intermediate process capture included for collector review.";
-  return "Creator-supplied process artifact included in the verification packet.";
+  return "Artist-supplied human-authorship artifact included in the verification packet.";
 }
 
 export default async function ArtPage({ params }: ArtPageProps) {
@@ -119,10 +119,16 @@ export default async function ArtPage({ params }: ArtPageProps) {
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
             <div className="flex items-center justify-between gap-4">
-              <p className="eyebrow">Provenance + Condition</p>
+              <p className="eyebrow">Human Authorship + Condition</p>
               <ProvenanceBadge provenance={provenance} />
             </div>
             <div className="mt-5 grid gap-3">
+              <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
+                <p className="text-sm font-medium text-emerald-50">Human-made verified</p>
+                <p className="mt-2 text-xs leading-6 text-emerald-50/70">
+                  This lot has cleared HUMAN_ Arts review for human authorship. AI-generated imagery, AI-assisted final artwork, and synthetic artist claims are not accepted for auction.
+                </p>
+              </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <p className="text-sm font-medium text-white">Provenance statement</p>
                 <p className="mt-2 text-xs leading-6 text-white/55">{artwork.provenanceStatement}</p>
@@ -145,7 +151,7 @@ export default async function ArtPage({ params }: ArtPageProps) {
               ))}
             </div>
             <p className="mt-5 text-xs uppercase tracking-[0.16em] text-white/45">
-              Verification status: {provenance.verificationStatus.replace("_", " ")}
+              Verification status: {provenance.verificationStatus.replace("_", " ")} / no-AI policy cleared
             </p>
           </article>
 
@@ -172,7 +178,7 @@ export default async function ArtPage({ params }: ArtPageProps) {
               </div>
             </div>
             <Link href={`/creator/${artwork.artistWallet}`} className="mt-5 inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-              View Creator Profile →
+              View Artist Profile →
             </Link>
           </article>
         </section>

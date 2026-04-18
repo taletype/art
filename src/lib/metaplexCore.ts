@@ -7,6 +7,7 @@ import { PublicKey, Transaction } from "@solana/web3.js";
 import type { MintRequest } from "../types/art";
 import type { BlockingIssue } from "./devnetErrors";
 import { issuesToMessages, missingEnvIssue, rpcIssue } from "./devnetErrors";
+import { getHumanMadePolicyFailureReason } from "./provenance";
 import { getRpcUrl, getSolanaConnection } from "./solana";
 
 export interface StorageAdapterResult {
@@ -125,6 +126,8 @@ export async function prepareMintIntent(input: MintRequest): Promise<MintPrepara
       category: input.provenance.category,
       medium: input.provenance.medium,
       humanPolicy: "HUMAN_ Arts",
+      humanMadeOnly: true,
+      noAiArtworkAccepted: true,
       verificationStatus: input.provenance.verificationStatus,
       evidenceHashes: input.provenance.evidenceHashes,
     },
@@ -140,6 +143,15 @@ export async function prepareMintIntent(input: MintRequest): Promise<MintPrepara
 
   if (uploaded.warning) {
     warnings.push(uploaded.warning);
+  }
+
+  const humanMadePolicyFailure = getHumanMadePolicyFailureReason(input.provenance);
+  if (humanMadePolicyFailure) {
+    blockingIssueDetails.push({
+      code: "BID_RULE_FAILED",
+      message: humanMadePolicyFailure,
+      action: "Complete HUMAN_ Arts human-authorship review and no-AI evidence checks before mint/list/auction preparation.",
+    });
   }
 
   const mplCoreProgramId = process.env.SOLANA_METAPLEX_CORE_PROGRAM_ID;
@@ -191,12 +203,12 @@ export async function prepareMintIntent(input: MintRequest): Promise<MintPrepara
       }
 
       programIds.push(new PublicKey(mplCoreProgramId!).toBase58());
-      notes.push("Real mpl-core createV1 instruction prepared; creator wallet must co-sign and broadcast.");
+      notes.push("Real mpl-core createV1 instruction prepared; artist wallet must co-sign and broadcast.");
     } catch (error) {
       blockingIssueDetails.push({
         code: "SDK_BUILD_FAILED",
         message: `Failed to build mpl-core createV1 instruction: ${error instanceof Error ? error.message : "unknown"}`,
-        action: "Verify Metaplex package versions, program id, and payer/creator keys.",
+        action: "Verify Metaplex package versions, program id, and payer/artist keys.",
       });
     }
   }
@@ -223,7 +235,7 @@ export async function prepareMintIntent(input: MintRequest): Promise<MintPrepara
       payer: input.sellerWallet,
       programIds,
       accounts: {
-        creator: input.sellerWallet,
+        artist: input.sellerWallet,
         asset: assetPublicKey,
         coreProgram: mplCoreProgramId ?? "missing",
         metadataUri: uploaded.uri,
@@ -231,9 +243,9 @@ export async function prepareMintIntent(input: MintRequest): Promise<MintPrepara
       notes,
     },
     nextActions: [
-      "Creator signs and broadcasts unsigned mint transaction.",
+      "Artist signs and broadcasts unsigned mint transaction.",
       "Wait for chain confirmation before treating asset as minted.",
-      "Proceed to /api/list only once verification is VERIFIED_HUMAN.",
+      "Proceed to /api/list only once human-made verification is VERIFIED_HUMAN.",
     ],
   };
 }

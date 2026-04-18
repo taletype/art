@@ -49,6 +49,20 @@ export function canListAsset(provenance: Provenance): boolean {
   return provenance.verificationStatus === "VERIFIED_HUMAN" && !evidenceStatus.required;
 }
 
+export function getHumanMadePolicyFailureReason(provenance: Provenance): string | null {
+  if (provenance.verificationStatus !== "VERIFIED_HUMAN") {
+    return "Only HUMAN_ Arts verified human-made artworks can be prepared for public minting, listing, or auction.";
+  }
+
+  const evidenceState = requiresMoreEvidence(provenance);
+  if (evidenceState.required) {
+    const missingKinds = evidenceState.missingKinds.join(", ") || "additional human-authorship evidence";
+    return `Human-made verification needs more evidence before auction preparation. Missing: ${missingKinds}.`;
+  }
+
+  return null;
+}
+
 export function getProvenanceBadgeState(provenance: Provenance): ProvenanceBadgeState {
   if (provenance.verificationStatus === "REJECTED") {
     return "rejected";
@@ -66,15 +80,5 @@ export function getProvenanceBadgeState(provenance: Provenance): ProvenanceBadge
 }
 
 export function getListingGateFailureReason(provenance: Provenance): string | null {
-  if (provenance.verificationStatus !== "VERIFIED_HUMAN") {
-    return "Only VERIFIED_HUMAN assets can be listed publicly.";
-  }
-
-  const evidenceState = requiresMoreEvidence(provenance);
-  if (evidenceState.required) {
-    const missingKinds = evidenceState.missingKinds.join(", ") || "additional evidence";
-    return `More evidence is required before listing. Missing: ${missingKinds}.`;
-  }
-
-  return null;
+  return getHumanMadePolicyFailureReason(provenance);
 }

@@ -13,7 +13,7 @@ function defaultProvenance(): Provenance {
     medium: "digital painting",
     creationMethod: "HUMAN_ORIGINAL",
     attestation: {
-      text: "I certify this artwork is human-created and follows HUMAN_ policy.",
+      text: "I certify this artwork is human-created, not AI-generated or AI-assisted, and follows HUMAN_ policy.",
       signerWallet: "ArtistWallet1111111111111111111111111111111",
       timestamp: new Date().toISOString(),
       signatureRef: "sig-ref-dev",
@@ -29,7 +29,7 @@ function defaultProvenance(): Provenance {
 
 export default function SubmitPage() {
   const [title, setTitle] = useState("Untitled HUMAN_ work");
-  const [description, setDescription] = useState("A human-created piece submitted for review.");
+  const [description, setDescription] = useState("A human-made piece submitted for auction-house review.");
   const [imageUrl, setImageUrl] = useState("https://example.com/art.png");
   const [sellerWallet, setSellerWallet] = useState(
     "SellerWallet1111111111111111111111111111111",
@@ -97,33 +97,34 @@ export default function SubmitPage() {
       <div className="section-shell space-y-10">
         <section className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
           <div className="space-y-6">
-            <p className="eyebrow">Creator Submission</p>
+            <p className="eyebrow">Artist Consignment</p>
             <h1 className="max-w-4xl text-4xl text-white text-balance sm:text-6xl">
-              Prepare a review-ready artwork packet with provenance built into the workflow.
+              Consign human-made work for curatorial review and auction placement.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-white/65">
-              Fill out the release details, attach process evidence, and test the moderation states before minting or listing.
+              Submit the work, provide human-authorship evidence, receive curatorial review, set estimate and reserve guidance, then enter a named sale.
             </p>
             <div className="flex flex-wrap gap-3">
               <span className="status-pill">Submission Draft</span>
+              <span className="status-pill">No AI Artwork</span>
               <ProvenanceBadge provenance={sanitizedProvenance} />
             </div>
           </div>
 
           <aside className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="eyebrow">Checklist</p>
+            <p className="eyebrow">Consignment Checklist</p>
             <div className="mt-5 space-y-5">
               <div className="border-l border-white/10 pl-4">
-                <p className="text-sm font-semibold text-white">1. Describe the release</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">Title, preview URL, creator wallet, and pricing should be complete before review.</p>
+                <p className="text-sm font-semibold text-white">1. Confirm human authorship</p>
+                <p className="mt-2 text-sm leading-7 text-white/58">HUMAN_ accepts human-made work only. AI-generated, AI-assisted, or synthetic artist claims are not eligible.</p>
               </div>
               <div className="border-l border-white/10 pl-4">
-                <p className="text-sm font-semibold text-white">2. Attach evidence</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">Include source artifacts or captures that help a reviewer verify human authorship.</p>
+                <p className="text-sm font-semibold text-white">2. Attach process evidence</p>
+                <p className="mt-2 text-sm leading-7 text-white/58">Include sketches, drafts, source files, studio photos, WIP captures, timestamps, signatures, or reviewer notes.</p>
               </div>
               <div className="border-l border-white/10 pl-4">
-                <p className="text-sm font-semibold text-white">3. Test the pipeline</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">Use the mock review panel, then prepare minting or listing once the packet feels complete.</p>
+                <p className="text-sm font-semibold text-white">3. Enter curatorial review</p>
+                <p className="mt-2 text-sm leading-7 text-white/58">Once verified, the auction team can shape catalog copy, estimate, reserve, and sale placement.</p>
               </div>
             </div>
           </aside>
@@ -136,7 +137,7 @@ export default function SubmitPage() {
                 <p className="eyebrow">Artwork Details</p>
                 <h2 className="text-3xl text-white sm:text-4xl">Define what reviewers and collectors will see first.</h2>
                 <p className="section-kicker">
-                  Keep this concise and specific. The metadata here feeds the downstream minting and listing steps.
+                  Keep this concise and specific. Only VERIFIED_HUMAN work can proceed to mint, listing, or auction preparation.
                 </p>
               </div>
 
@@ -184,7 +185,7 @@ export default function SubmitPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="seller-wallet" className="field-label">Seller Wallet</label>
+                  <label htmlFor="seller-wallet" className="field-label">Artist Wallet</label>
                   <input
                     id="seller-wallet"
                     name="sellerWallet"
@@ -230,7 +231,7 @@ export default function SubmitPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="price-lamports" className="field-label">Price (Lamports)</label>
+                  <label htmlFor="price-lamports" className="field-label">Reserve Target (Lamports)</label>
                   <input
                     id="price-lamports"
                     name="priceLamports"
@@ -258,7 +259,7 @@ export default function SubmitPage() {
 
           <div className="space-y-6">
             <article className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-              <p className="eyebrow">Release Preview</p>
+              <p className="eyebrow">Consignment Preview</p>
               <div className="mt-4 space-y-4">
                 <h2 className="text-3xl text-white">{title}</h2>
                 <p className="text-sm leading-7 text-white/62">{description}</p>
@@ -276,9 +277,15 @@ export default function SubmitPage() {
                     <p className="mt-2 text-sm text-white">{sanitizedProvenance.evidence.length}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Price</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Reserve Target</p>
                     <p className="mt-2 text-sm text-white">{priceLamports.toLocaleString()} lamports</p>
                   </div>
+                </div>
+                <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-emerald-50/75">Human-made only</p>
+                  <p className="mt-2 text-sm leading-7 text-emerald-50/72">
+                    Auction preparation is blocked until the evidence packet is VERIFIED_HUMAN. AI-generated or AI-assisted final artworks are rejected.
+                  </p>
                 </div>
               </div>
             </article>
@@ -286,7 +293,7 @@ export default function SubmitPage() {
             <article className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
               <p className="eyebrow">Pipeline Actions</p>
               <p className="mt-3 text-sm leading-7 text-white/60">
-                Prepare the mint payload first, then generate the listing payload once the packet is review-ready.
+                Prepare the mint payload first, then generate the listing payload only after human-made verification clears.
               </p>
               <div className="mt-5 grid gap-3">
                 <button type="button" onClick={submitMint} className="button-primary w-full">

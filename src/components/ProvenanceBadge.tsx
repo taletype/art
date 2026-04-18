@@ -13,7 +13,7 @@ const stateStyles = {
 } as const;
 
 const stateLabel = {
-  verified: "Verified human",
+  verified: "Human-made verified",
   pending: "Under review",
   rejected: "Rejected",
   needs_evidence: "Needs evidence",

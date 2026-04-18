@@ -15,19 +15,19 @@ export default function HeroSection() {
         <div className="grid min-h-[calc(100svh-9rem)] items-end gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(340px,1.1fr)]">
           <div className="space-y-8 pb-4 lg:pb-10">
             <div className="space-y-5">
-              <span className="status-pill">Curated Timed Auctions • Solana-Native Settlement</span>
-              <p className="eyebrow">Digital auction house for culturally significant emerging artists</p>
+              <span className="status-pill">Human-Made Only • Curated Timed Auctions</span>
+              <p className="eyebrow">Digital auction house for culturally significant overlooked artists</p>
               <h1 className="max-w-4xl text-5xl leading-[0.94] text-white text-balance sm:text-6xl lg:text-7xl">
-                HUMAN_ Arts brings auction-house confidence to Solana-native collecting.
+                HUMAN_ Arts auctions human-made work with collector-grade trust.
               </h1>
               <p className="max-w-xl text-lg leading-8 text-white/68 sm:text-xl">
-                Browse curated sales, inspect provenance and condition notes, register to bid, and keep settlement anchored to wallet-signed transactions.
+                Browse selective sales, inspect provenance and condition notes, register to bid, and support overlooked human artists entering serious collector markets.
               </p>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link href="/#featured" className="button-primary px-7 py-3.5">
-                Explore Auction Lots
+                View Current Sale
               </Link>
               <Link href="/submit" className="button-secondary px-7 py-3.5">
                 Consign Artwork
@@ -63,7 +63,7 @@ export default function HeroSection() {
                   <p className="text-sm uppercase tracking-[0.22em] text-white/62">{featuredSale?.title ?? featuredArtwork.category}</p>
                   <h2 className="mt-3 text-4xl text-white sm:text-5xl">{featuredArtwork.title}</h2>
                   <p className="mt-3 text-base text-white/72">
-                    By {featuredArtwork.artistName} · {featuredArtwork.edition} · {featuredArtwork.status}
+                    By {featuredArtwork.artistName} · {featuredArtwork.edition} · Human-made verified
                   </p>
                 </div>
 

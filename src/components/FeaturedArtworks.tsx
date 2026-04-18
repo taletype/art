@@ -13,9 +13,9 @@ export default function FeaturedArtworks() {
         <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="section-heading">
             <p className="eyebrow">Featured auction lots</p>
-            <h2 className="text-3xl text-white text-balance sm:text-5xl">Curated sales with estimates, reserves, and provenance before bidding.</h2>
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">Selective human-made sales with estimates, reserves, and provenance before bidding.</h2>
             <p className="section-kicker">
-              Each lot leads into a formal detail page with condition notes, artist statements, buyer-premium disclosure, and bid preparation.
+              Each lot leads into a formal catalog entry with condition notes, artist statements, no-AI authorship review, buyer-premium disclosure, and bid preparation.
             </p>
           </div>
           <Link href="/submit" className="button-secondary">
@@ -63,7 +63,7 @@ export default function FeaturedArtworks() {
               <div className="space-y-5 p-6">
                 <div>
                   <Link href={`/creator/${artwork.artistWallet}`} className="text-sm font-medium text-white/70 transition hover:text-white">
-                    {artwork.artistHandle}
+                    {artwork.artistName}
                   </Link>
                   <p className="mt-3 text-sm leading-7 text-white/58">{artwork.description}</p>
                 </div>

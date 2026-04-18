@@ -12,9 +12,9 @@ export default function CreatorSpotlight() {
         <div className="space-y-6">
           <div className="section-heading">
             <p className="eyebrow">Artist spotlight</p>
-            <h2 className="text-3xl text-white text-balance sm:text-5xl">Meet the artists entering curated digital sales.</h2>
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">Meet overlooked human artists entering curated digital sales.</h2>
             <p className="section-kicker">
-              Profiles tie biography, practice, consigned lots, and provenance into the catalog experience before collectors place bids.
+              Profiles tie biography, studio practice, consigned lots, and human-authorship provenance into the catalog experience before collectors place bids.
             </p>
           </div>
 
@@ -22,15 +22,15 @@ export default function CreatorSpotlight() {
             {[
               {
                 title: "Consignment support",
-                detail: "Artists get help shaping lot copy, evidence packets, and reserve expectations before publication.",
+                detail: "Artists get help shaping lot copy, human-authorship evidence packets, and reserve expectations before publication.",
               },
               {
-                title: "Process visibility",
-                detail: "Evidence and review state travel with each lot rather than hiding behind a separate admin flow.",
+                title: "No-AI review",
+                detail: "Sketches, drafts, source files, studio captures, signatures, and reviewer notes travel with each accepted lot.",
               },
               {
                 title: "Collector continuity",
-                detail: "Profiles group sale history and available lots so returning collectors can follow an artist’s market.",
+                detail: "Profiles group sale history and available lots so returning collectors can follow an overlooked artist’s market.",
               },
             ].map((item) => (
               <div key={item.title} className="border-l border-white/10 pl-5">

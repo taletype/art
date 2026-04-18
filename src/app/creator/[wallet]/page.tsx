@@ -22,7 +22,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
         <div className="flex flex-wrap items-center gap-3 text-sm text-white/55">
           <Link href="/" className="transition hover:text-white">Home</Link>
           <span>•</span>
-          <Link href="/#creators" className="transition hover:text-white">Creators</Link>
+          <Link href="/#creators" className="transition hover:text-white">Artists</Link>
           <span>•</span>
           <span className="text-white/85">{creator.name}</span>
         </div>
@@ -30,7 +30,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
         <section className="glass overflow-hidden rounded-[2rem] border border-white/10">
           <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
             <div className="min-h-[240px] border-b border-white/10 bg-gradient-to-br from-[#20191f] via-[#32253e] to-[#111727] p-8 lg:border-b-0 lg:border-r">
-              <p className="eyebrow">Creator profile</p>
+              <p className="eyebrow">Artist profile</p>
               <h1 className="mt-3 text-4xl text-white sm:text-5xl">{creator.name}</h1>
               <p className="mt-2 text-sm text-[#f3d27a]">{creator.handle}</p>
               <div className="mt-6 space-y-2 text-sm text-white/62">
@@ -43,10 +43,10 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
               <p className="text-sm leading-7 text-white/58">{creator.bio}</p>
               <div className="flex flex-wrap gap-3">
                 <Link href="/#featured" className="button-secondary px-5 py-2.5">
-                  Back to Marketplace
+                  Back to Auctions
                 </Link>
                 <Link href="/submit" className="button-primary px-5 py-2.5">
-                  Submit New Artwork
+                  Request Consignment
                 </Link>
               </div>
             </div>
@@ -55,14 +55,14 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
           <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="eyebrow">Creator Statement</p>
+            <p className="eyebrow">Artist Statement</p>
             <p className="mt-4 text-sm leading-7 text-white/65">
-              {creator.name} builds with a documentation-first mindset: each release is paired with evidence and reviewer context so collectors can evaluate intent and authorship before collecting.
+              {creator.name} builds with a documentation-first mindset: each consigned lot is paired with evidence and reviewer context so collectors can evaluate human intent and authorship before bidding.
             </p>
             <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-white/45">Trust + process</p>
               <p className="mt-2 text-sm leading-7 text-white/68">
-                This profile links directly into verified listings and preserves process visibility across discovery, detail, and checkout surfaces.
+                This profile links directly into verified auction lots and preserves process visibility across discovery, catalog, and post-sale support surfaces.
               </p>
             </div>
           </article>
@@ -72,7 +72,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
             <ul className="mt-4 space-y-3 text-sm text-white/62">
               <li>Review provenance notes on each artwork before collecting.</li>
               <li>Compare edition and availability to understand scarcity.</li>
-              <li>Use the Solana buy flow from artwork pages for final checkout.</li>
+              <li>Register, bid, and settle through the formal auction flow.</li>
             </ul>
           </article>
         </section>
@@ -80,7 +80,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
         <section>
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
-              <p className="eyebrow">Published works</p>
+              <p className="eyebrow">Consigned works</p>
               <h2 className="mt-2 text-3xl text-white">Artworks by {creator.name}</h2>
             </div>
             <Link href="/#featured" className="text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">View All Featured Works →</Link>
@@ -112,7 +112,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
                     ))}
                   </div>
                   <Link href={`/art/${artwork.id}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-                    Open Artwork Detail →
+                    Open Lot Detail →
                   </Link>
                 </div>
               </article>

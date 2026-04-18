@@ -16,8 +16,8 @@ export function BuyFundingWidget({ amount, purchaseData, onSuccess }: BuyFunding
         client={getThirdwebClient()}
         amount={amount}
         purchaseData={purchaseData}
-        title="Fund wallet for Solana purchase"
-        description="Buy or bridge crypto with Thirdweb Pay, then settle on Solana."
+        title="Fund wallet for auction settlement"
+        description="Add funds with Thirdweb Pay, then complete settlement on Solana."
         onSuccess={onSuccess}
       />
     );

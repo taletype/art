@@ -43,7 +43,7 @@ export default async function SalePage({ params }: SalePageProps) {
           <div className="grid min-h-[560px] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="space-y-8 p-8 sm:p-10 lg:p-12">
               <div>
-                <p className="eyebrow">{sale.status} timed auction</p>
+                <p className="eyebrow">{sale.status} human-made timed auction</p>
                 <h1 className="mt-4 text-5xl leading-[0.95] text-white sm:text-6xl">{sale.title}</h1>
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-white/68">{sale.subtitle}</p>
               </div>
@@ -58,7 +58,7 @@ export default async function SalePage({ params }: SalePageProps) {
                   <p className="mt-2 text-sm text-white">{formatSaleDate(sale.closesAt)}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/45">Location</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-white/45">Format</p>
                   <p className="mt-2 text-sm text-white">{sale.location}</p>
                 </div>
               </div>
@@ -77,6 +77,7 @@ export default async function SalePage({ params }: SalePageProps) {
                   <p className="text-xs uppercase tracking-[0.2em] text-white/55">Featured lot {heroLot.lotNumber}</p>
                   <h2 className="mt-2 text-4xl text-white">{heroLot.title}</h2>
                   <p className="mt-3 text-white/68">Estimate {heroLot.estimateLowSol}-{heroLot.estimateHighSol} SOL</p>
+                  <p className="mt-2 text-sm text-white/62">Human-made verified / no-AI review cleared</p>
                   <Link href={`/art/${heroLot.id}`} className="button-primary mt-5">
                     View Featured Lot
                   </Link>
@@ -90,7 +91,7 @@ export default async function SalePage({ params }: SalePageProps) {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Sale catalog</p>
-              <h2 className="mt-2 text-3xl text-white">{lots.length} curated lots</h2>
+              <h2 className="mt-2 text-3xl text-white">{lots.length} curated human-made lots</h2>
             </div>
             <Link href="/submit" className="button-secondary">Request Consignment</Link>
           </div>
@@ -119,6 +120,7 @@ export default async function SalePage({ params }: SalePageProps) {
                       <p className="mt-1 font-semibold text-white">{lot.minimumNextBidSol} SOL</p>
                     </div>
                   </div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-emerald-100/70">Human-made verified</p>
                   <p className="text-sm leading-7 text-white/58">{lot.description}</p>
                   <Link href={`/art/${lot.id}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
                     View lot and bid →

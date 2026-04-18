@@ -7,22 +7,22 @@ const steps = [
     number: "01",
     title: "Consign a lot",
     description:
-      "Artists submit portfolio context, artwork details, reserve expectations, and authorship evidence for a high-touch review.",
-    bullets: ["Portfolio context", "Reserve guidance", "Evidence packet assembly"],
+      "Artists submit portfolio context, artwork details, reserve expectations, and human-authorship evidence for a high-touch review.",
+    bullets: ["Portfolio context", "No-AI policy check", "Evidence packet assembly"],
   },
   {
     number: "02",
     title: "Curate the sale",
     description:
-      "The curatorial desk approves lots, writes catalog context, sets estimates, and schedules works into named timed auctions.",
-    bullets: ["Admin approval", "Catalog essay", "Estimate and reserve"],
+      "The curatorial desk approves human-made lots, writes catalog context, sets estimates, and schedules works into named timed auctions.",
+    bullets: ["Curatorial approval", "Catalog essay", "Estimate and reserve"],
   },
   {
     number: "03",
     title: "Register, bid, settle",
     description:
       "Collectors register before bidding, inspect total cost, sign through their wallet, and rely on Solana as settlement truth.",
-    bullets: ["Collector registration", "Buyer premium disclosure", "Solana escrow path"],
+    bullets: ["Collector registration", "Buyer premium disclosure", "Post-sale support"],
   },
 ];
 
@@ -35,7 +35,7 @@ export default function HowItWorks() {
             <p className="eyebrow">How auctions work</p>
             <h2 className="text-3xl text-white text-balance sm:text-5xl">A working path from consignment to collector ownership.</h2>
             <p className="section-kicker">
-              The flow below mirrors the premium auction-house model: curate fewer lots, disclose more context, and keep bidding wallet-safe.
+              The flow below mirrors the premium auction-house model: curate fewer human-made lots, disclose more context, support artists with reserves, and keep bidding wallet-safe.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

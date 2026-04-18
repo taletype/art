@@ -1,13 +1,15 @@
 # HUMAN_ Arts on Solana
 
-This repo is a Next.js + Solana devnet MVP for HUMAN_ Arts. It combines a polished premium auction-house UI with provenance-aware artist consignment, curated sale catalogs, bid preparation, SDK-backed mint/listing preparation, and a recovery-friendly purchase flow.
+This repo is a Next.js + Solana devnet MVP for HUMAN_ Arts: a premium digital auction house for culturally significant overlooked artists creating human-made work. It combines provenance-aware artist consignment, curated sale catalogs, bid preparation, SDK-backed mint/listing preparation, and a recovery-friendly purchase flow.
+
+HUMAN_ Arts is human-made only. AI-generated artwork, AI-assisted final artwork, and synthetic artist claims are not eligible for auction placement.
 
 ## Current product surface
 
-- `/` is the auction-house landing page with featured timed sales, auction lots, artist spotlighting, and trust messaging.
+- `/` is the auction-house landing page with featured timed sales, human-made auction lots, artist spotlighting, and trust messaging.
 - `/sales/[saleId]` is a formal sale catalog with curator note, sale calendar, hero lot, and lot grid.
 - `/art/[assetId]` is the lot detail page with estimates, reserve, condition report, provenance context, buyer premium disclosure, and Solana bid preparation.
-- `/submit` is the artist consignment workflow for drafting metadata, attaching evidence, simulating review, and testing mint/list preparation.
+- `/submit` is the artist consignment workflow for drafting metadata, attaching human-authorship evidence, simulating review, and testing mint/list preparation.
 - `/creator/[wallet]` is the artist profile and consigned works view.
 - `/api/auction/bid` validates collector registration, sale window, bid increment, and English auction env before any wallet-signed bid transaction is emitted.
 
@@ -29,13 +31,13 @@ Supabase is now wired into local project configuration through `.env.local` and 
 - Postgres connection strings are exposed through `DATABASE_URL`, `POSTGRES_PRISMA_URL`, and `POSTGRES_URL`.
 
 What is still not migrated:
-- Provenance verification is still mock-driven.
+- Human-made provenance verification is still mock-driven.
 
 Purchase-state persistence now prefers Supabase through `purchase_states` and falls back to the local file store if Supabase is not configured or unavailable.
 
 ## What works end-to-end on Devnet (with env + RPC)
 
-- **Metaplex Core mint prepare** (`/api/mint`) using `mpl-core` `createV1` instruction building.
+- **Metaplex Core mint prepare** (`/api/mint`) using `mpl-core` `createV1` instruction building after `VERIFIED_HUMAN` review.
 - **Auction House list prepare** (`/api/list`) using AH `sell` instruction building.
 - **Auction House purchase prepare** (`/api/purchase`) using AH `buy + executeSale` instruction building.
 - **Purchase confirm** remains RPC-verified before `TX_CONFIRMED`.
@@ -117,7 +119,7 @@ Notes:
 
 ## Primary user flow
 
-1. Submit evidence/provenance at `/submit`.
+1. Submit human-authorship evidence/provenance at `/submit`.
 2. Use the mock review UI to move the asset to `VERIFIED_HUMAN`.
 3. Curate the artwork into a named timed sale and lot record.
 4. Call mint prepare and inspect the response:
@@ -134,6 +136,7 @@ Notes:
 - `UNSUPPORTED_BRANCH`: treasury mint branch not implemented in this MVP.
 - `RPC_UNAVAILABLE`: check `SOLANA_RPC_URL`, connectivity, and provider health.
 - `SDK_BUILD_FAILED`: inspect account/program config and payload values in `txInspection.accounts`.
+- Human-made policy blockers: complete evidence review and move the work to `VERIFIED_HUMAN`; AI-generated or AI-assisted artwork should be rejected rather than prepared.
 
 ## Non-production notes
 

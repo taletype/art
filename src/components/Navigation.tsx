@@ -22,7 +22,7 @@ export default function Navigation() {
           </span>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">HUMAN_ Arts</p>
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Solana auction house</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Human-made auction house</p>
           </div>
         </Link>
 

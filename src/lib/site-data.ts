@@ -66,23 +66,23 @@ export type CreatorRecord = {
 };
 
 export const platformStats = [
-  { label: "Curated auction lots", value: "42" },
-  { label: "Verified artist packets", value: "1.9k" },
+  { label: "Human-made lots", value: "42" },
+  { label: "Reviewed artist packets", value: "1.9k" },
   { label: "Devnet settlement target", value: "< 30s" },
 ];
 
 export const trustSignals = [
   {
-    label: "Curated provenance",
-    description: "Every lot separates artist statements, platform catalog notes, and reviewer attestations for collector clarity.",
+    label: "Human-made only",
+    description: "Every lot is reviewed for human authorship before auction placement. AI-generated and AI-assisted artworks are not accepted.",
   },
   {
-    label: "Solana settlement",
-    description: "Auction bid preparation is designed around wallet-signed transactions, escrow inspection, and RPC confirmation.",
+    label: "Curator-led sales",
+    description: "Overlooked artists are placed into selective auction events with catalog notes, estimates, reserves, and collector context.",
   },
   {
-    label: "Auction-house curation",
-    description: "Named sales, estimates, reserves, condition notes, and buyer-premium disclosure create a more formal collector path.",
+    label: "Provenance packets",
+    description: "Artist evidence, condition notes, reviewer attestations, buyer premium, and Solana settlement details stay visible in the catalog path.",
   },
 ];
 
@@ -118,7 +118,7 @@ const artworks: ArtworkRecord[] = [
     edition: "Open edition • capped at 25",
     year: 2026,
     description: "Retro-futurist terrain forms rendered with fluorescent shadows and cinematic depth.",
-    story: "The scene was assembled from custom topology sketches and hand-tuned lighting passes rather than AI-generated geometry.",
+    story: "The scene was assembled from custom topology sketches and hand-tuned lighting passes, with no AI-generated or AI-assisted imagery.",
     collectorNote: "Collector package includes timelapse renders and project-file evidence references.",
     availability: "6 editions remaining",
     background: "linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(6, 182, 212, 0.7), rgba(255, 255, 255, 0.1))",
@@ -193,8 +193,8 @@ const artworks: ArtworkRecord[] = [
     medium: "Interactive geometry system",
     edition: "Series of 20",
     year: 2026,
-    description: "A faceted field of mirrored structures shaped by a creator-authored geometry engine.",
-    story: "Every release candidate is reviewed against the saved process packet to preserve authorship and consistency.",
+    description: "A faceted field of mirrored structures shaped by a human-authored geometry engine.",
+    story: "Every release candidate is reviewed against the saved process packet to preserve human authorship and consistency.",
     collectorNote: "Collector access includes the provenance summary and signed review outcome.",
     availability: "Mint window open",
     background: "linear-gradient(135deg, rgba(14, 116, 144, 0.95), rgba(59, 130, 246, 0.68), rgba(191, 219, 254, 0.2))",
@@ -207,10 +207,10 @@ const auctionSales: AuctionSaleRecord[] = [
   {
     id: "contemporary-digital-asia",
     title: "Contemporary Digital Asia",
-    subtitle: "A timed evening sale of verified 1/1 and limited digital works from emerging Asian and diaspora artists.",
+    subtitle: "A timed evening sale of verified human-made 1/1 and limited digital works from overlooked Asian and diaspora artists.",
     curatorName: "HUMAN_ Curatorial Desk",
     curatorNote:
-      "This sale favors process-rich works where collector confidence comes from authorship evidence, editorial context, and transparent on-chain settlement.",
+      "This sale favors process-rich, human-made works where collector confidence comes from authorship evidence, editorial context, and transparent on-chain settlement.",
     opensAt: "2026-04-10T12:00:00.000Z",
     closesAt: "2026-05-15T14:00:00.000Z",
     heroLotId: "ethereal-waves",
@@ -222,10 +222,10 @@ const auctionSales: AuctionSaleRecord[] = [
   {
     id: "new-collectors-evening",
     title: "New Collectors Evening Sale",
-    subtitle: "Accessible artist-led works with verified provenance, transparent estimates, and collector-friendly bidding.",
+    subtitle: "Accessible human-made works with verified provenance, transparent estimates, reserve guidance, and collector-friendly bidding.",
     curatorName: "Mina Lau",
     curatorNote:
-      "A concise sale for new collectors who want formal lot details without the opacity of traditional gallery buying.",
+      "A concise sale for new collectors who want formal lot details and overlooked human artists who need a serious first auction context.",
     opensAt: "2026-05-22T11:00:00.000Z",
     closesAt: "2026-05-29T13:00:00.000Z",
     heroLotId: "neon-landscapes",
@@ -257,11 +257,11 @@ const auctionLots: AuctionLotRecord[] = artworks.map((artwork, index) => {
     status: sale.status === "closed" ? "sold" : sale.status === "live" ? "live" : "upcoming",
     closesAt: sale.closesAt,
     conditionReport:
-      "Digital file reviewed for collector display quality. Evidence packet includes process artifacts and reviewer notes; physical condition is not applicable unless a print addendum is issued.",
+      "Digital file reviewed for collector display quality and human authorship. Evidence packet includes process artifacts and reviewer notes; physical condition is not applicable unless a print addendum is issued.",
     provenanceStatement:
-      "Consigned directly by the artist to HUMAN_ Arts. Off-chain editorial data is cached in Supabase; ownership and settlement are intended to resolve on Solana.",
+      "Consigned directly by the human artist to HUMAN_ Arts. Off-chain editorial data is cached in Supabase; ownership and settlement are intended to resolve on Solana.",
     authenticityStatement:
-      "Artist attestation, human-authorship evidence, and curatorial review are separated from platform-written catalog notes for collector clarity.",
+      "Artist attestation, human-authorship evidence, no-AI review, and curatorial notes are separated from platform-written catalog text for collector clarity.",
     buyerPremiumBps: 800,
     platformSellerCommissionBps: 700,
   };
@@ -275,7 +275,7 @@ const creators: CreatorRecord[] = [
     location: "Lisbon, Portugal",
     discipline: "Painterly digital environments",
     bio: "Mina builds luminous, hand-crafted digital paintings rooted in physical texture studies and archival color references.",
-    heroStatement: "Every published work ships with enough process evidence for collectors to understand how it was made, not just how it looks.",
+    heroStatement: "Every published work ships with enough human-authorship evidence for collectors to understand how it was made, not just how it looks.",
     artworkIds: ["ethereal-waves", "chromatic-fusion"],
   },
   {
@@ -285,7 +285,7 @@ const creators: CreatorRecord[] = [
     location: "Mexico City, Mexico",
     discipline: "3D atmosphere and cinematic light",
     bio: "Ari designs worlds that feel both architectural and emotional, using custom lighting passes instead of one-click generators.",
-    heroStatement: "Collectors should be able to trace intent, revisions, and authorship without digging through developer tooling.",
+    heroStatement: "Collectors should be able to trace human intent, revisions, and authorship without digging through developer tooling.",
     artworkIds: ["neon-landscapes", "quantum-dreams"],
   },
   {
@@ -295,7 +295,7 @@ const creators: CreatorRecord[] = [
     location: "Seoul, South Korea",
     discipline: "Curated generative systems",
     bio: "Studio Parcel treats code as a studio material, combining authored rule sets with human review and curation.",
-    heroStatement: "Generative art can be transparent, collector-friendly, and deeply human when process is designed with evidence in mind.",
+    heroStatement: "Code-based art can be transparent, collector-friendly, and deeply human when process is designed with evidence in mind.",
     artworkIds: ["abstract-dimensions", "crystalline-forms"],
   },
 ];
@@ -312,21 +312,21 @@ function fallbackArtwork(id: string): AuctionLotRecord {
   return {
     id,
     title: titleFromId(id),
-    artistName: "HUMAN_ Featured Creator",
+    artistName: "HUMAN_ Featured Artist",
     artistHandle: "@human.verified",
     artistWallet: "creative-soul",
     priceSol: 4.2,
     category: "Digital Art",
-    medium: "Creator-authored mixed workflow",
+    medium: "Human-authored mixed workflow",
     edition: "Collector drop",
     year: 2026,
-    description: "A curated artwork record prepared for the HUMAN_ marketplace experience.",
-    story: "This placeholder route is still backed by the finished UI shell so collectors can explore without a dead-end page.",
+    description: "A curated artwork record prepared for the HUMAN_ auction-house experience.",
+    story: "This placeholder route is still backed by the finished catalog shell so collectors can explore without a dead-end page.",
     collectorNote: "Evidence references and review notes are shown in the product surface for continuity.",
     availability: "Available on request",
     background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(124, 58, 237, 0.68), rgba(212, 175, 55, 0.18))",
     accent: "#d4af37",
-    evidenceLabels: ["Creator attestation", "Evidence packet", "Review log"],
+    evidenceLabels: ["Artist attestation", "Evidence packet", "No-AI review log"],
     lotNumber: 99,
     saleId: "contemporary-digital-asia",
     estimateLowSol: 3.2,
@@ -338,9 +338,9 @@ function fallbackArtwork(id: string): AuctionLotRecord {
     watchCount: 12,
     status: "upcoming",
     closesAt: "2026-05-15T14:00:00.000Z",
-    conditionReport: "Fallback catalog entry prepared for route continuity.",
-    provenanceStatement: "Consigned directly by the artist with platform-reviewed provenance pending.",
-    authenticityStatement: "Artist attestation and reviewer evidence are displayed separately when available.",
+    conditionReport: "Fallback catalog entry prepared for route continuity and human-authorship review.",
+    provenanceStatement: "Consigned directly by the artist with platform-reviewed human provenance pending.",
+    authenticityStatement: "Artist attestation and reviewer evidence are displayed separately when available; AI-generated or AI-assisted work is not accepted.",
     buyerPremiumBps: 800,
     platformSellerCommissionBps: 700,
   };
