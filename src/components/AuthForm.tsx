@@ -53,7 +53,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
+    <form onSubmit={handleSubmit} className="space-y-5 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.04] p-8 backdrop-blur-xl shadow-2xl shadow-black/40">
       <div>
         <label htmlFor={`${mode}-email`} className="field-label">
           Email
@@ -99,12 +99,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
         </div>
       ) : null}
 
-      <button type="submit" className="button-primary w-full disabled:cursor-wait disabled:opacity-70" disabled={pending}>
-        {pending ? "Working..." : mode === "signup" ? "Create account" : "Log in"}
+      <button type="submit" className="button-primary w-full disabled:cursor-wait disabled:opacity-60" disabled={pending}>
+        {pending ? "Processing..." : mode === "signup" ? "Create account" : "Log in"}
       </button>
 
       {message ? (
-        <p className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{message}</p>
+        <p className="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/5 px-4 py-3 text-sm text-white/90 backdrop-blur-sm">{message}</p>
       ) : null}
     </form>
   );

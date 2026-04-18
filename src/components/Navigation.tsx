@@ -18,18 +18,18 @@ export default function Navigation() {
   const activeAccount = useActiveAccount();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#c9a227]/20 bg-[#0a0a0c]/95 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#c9a227] to-[#e8c547]" />
-          <span className="font-serif text-lg font-semibold tracking-wide text-white">
-            RealArt Auctions
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#d4af37] via-[#e8c547] to-[#d4af37] shadow-lg shadow-[#d4af37]/20 group-hover:shadow-[#d4af37]/40 transition-all duration-300" />
+          <span className="font-serif text-lg font-semibold tracking-wide text-white group-hover:text-[#f0d46e] transition-colors">
+            HUMAN_ Arts
           </span>
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="text-sm font-medium text-white/60 hover:text-[#e8c547] transition-colors">
+            <Link key={item.href} href={item.href} className="text-sm font-medium text-white/70 hover:text-[#f0d46e] transition-colors duration-200 relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-[#d4af37] after:to-[#e8c547] hover:after:w-full after:transition-all after:duration-300">
               {item.label}
             </Link>
           ))}
@@ -39,9 +39,9 @@ export default function Navigation() {
           <ConnectButton
             client={getThirdwebClient()}
             wallets={[inAppWallet(), createWallet("io.metamask"), createWallet("com.coinbase.wallet")]}
-            connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-full !bg-[#c9a227] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!bg-[#e8c547]" }}
+            connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
           />
-          <Link href="/seller" className="button-primary px-5 py-2.5 text-sm">
+          <Link href="/seller" className="button-secondary px-5 py-2.5 text-sm">
             Seller Hub
           </Link>
         </div>
@@ -51,30 +51,30 @@ export default function Navigation() {
           aria-label="Toggle navigation menu"
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#c9a227]/30 text-[#e8c547] transition-colors hover:bg-[#c9a227]/10 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d4af37]/30 text-[#f0d46e] transition-all duration-200 hover:bg-[#d4af37]/10 hover:shadow-md hover:shadow-[#d4af37]/10 md:hidden"
         >
           {open ? "×" : "☰"}
         </button>
       </div>
 
       {open ? (
-        <div className="border-t border-[#c9a227]/20 bg-[#0a0a0c]/95 backdrop-blur-xl md:hidden">
+        <div className="border-t border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl md:hidden">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl px-4 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-[#c9a227]/10 hover:text-[#e8c547]"
+                className="rounded-2xl px-4 py-3 text-sm font-medium text-white/70 transition-all duration-200 hover:bg-[#d4af37]/10 hover:text-[#f0d46e]"
               >
                 {item.label}
               </Link>
             ))}
-            <div className="mt-2 pt-2 border-t border-[#c9a227]/20">
+            <div className="mt-2 pt-2 border-t border-[#d4af37]/20">
               <ConnectButton
                 client={getThirdwebClient()}
                 wallets={[inAppWallet(), createWallet("io.metamask"), createWallet("com.coinbase.wallet")]}
-                connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-2xl !bg-[#c9a227] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!bg-[#e8c547]" }}
+                connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
               />
             </div>
             <Link

@@ -45,7 +45,7 @@ export async function createSellerArtwork(input: SellerArtworkInput) {
     .insert({
       title: input.title,
       description: input.description,
-      artist_name: input.title,
+      artist_name: input.sellerWallet,
       artist_wallet: input.sellerWallet,
       owner_user_id: input.ownerUserId,
       seller_wallet: input.sellerWallet,

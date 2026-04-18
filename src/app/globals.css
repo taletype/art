@@ -4,19 +4,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --background: #0a0a0c;
-  --foreground: #f2ede4;
-  --primary: #c9a227;
-  --primary-strong: #e8c547;
-  --primary-light: #f5d76a;
-  --secondary: #121218;
-  --accent: rgba(255, 255, 255, 0.06);
-  --accent-light: rgba(201, 162, 39, 0.12);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(201, 162, 39, 0.25);
-  --text-muted: #a8a092;
-  --text-subtle: #6b6558;
-  --radius: 1rem;
+  --background: #050507;
+  --foreground: #f8f5f0;
+  --primary: #d4af37;
+  --primary-strong: #f0d46e;
+  --primary-light: #ffe08a;
+  --secondary: #0a0a0f;
+  --accent: rgba(255, 255, 255, 0.08);
+  --accent-light: rgba(212, 175, 55, 0.15);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(212, 175, 55, 0.35);
+  --text-muted: #b8b0a0;
+  --text-subtle: #7a7568;
+  --radius: 1.25rem;
 }
 
 * {
@@ -35,8 +35,9 @@ body {
   font-family: "Inter", sans-serif;
   color: var(--foreground);
   background:
-    radial-gradient(ellipse at top, rgba(201, 162, 39, 0.08), transparent 40%),
-    linear-gradient(180deg, #0a0a0c 0%, #0e0e12 50%, #0a0a0c 100%);
+    radial-gradient(ellipse at top right, rgba(212, 175, 55, 0.12), transparent 45%),
+    radial-gradient(ellipse at bottom left, rgba(212, 175, 55, 0.06), transparent 40%),
+    linear-gradient(180deg, #050507 0%, #0a0a0f 50%, #050507 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -101,23 +102,30 @@ button {
 }
 
 .glass {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border-strong);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 .auction-card {
-  background: linear-gradient(180deg, rgba(201, 162, 39, 0.04), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.06), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--border-strong);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
-  transition: all 0.3s ease;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(212, 175, 55, 0.1) inset;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .auction-card:hover {
-  border-color: rgba(201, 162, 39, 0.35);
-  box-shadow: 0 12px 48px rgba(201, 162, 39, 0.12);
-  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 
+    0 20px 60px rgba(212, 175, 55, 0.15),
+    0 0 0 1px rgba(212, 175, 55, 0.2) inset;
+  transform: translateY(-4px) scale(1.01);
 }
 
 .mesh-panel {
@@ -162,7 +170,7 @@ button {
 }
 
 .field-input {
-  @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white transition placeholder:text-white/30 focus:border-[#c9a227]/40 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#c9a227]/15;
+  @apply w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white transition-all duration-200 placeholder:text-white/35 focus:border-[#d4af37]/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-[#d4af37]/20 focus:shadow-[0_0_20px_rgba(212,175,55,0.1)];
 }
 
 .field-textarea {
@@ -174,11 +182,11 @@ button {
 }
 
 .button-primary {
-  @apply inline-flex items-center justify-center rounded-full bg-[#c9a227] px-6 py-3 text-sm font-semibold text-black transition duration-300 hover:bg-[#e8c547] focus-visible:ring-4 focus-visible:ring-[#c9a227]/25;
+  @apply inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#d4af37] via-[#e8c547] to-[#d4af37] px-6 py-3 text-sm font-semibold text-black transition-all duration-300 hover:from-[#e8c547] hover:via-[#f0d46e] hover:to-[#e8c547] hover:shadow-lg hover:shadow-[#d4af37]/25 focus-visible:ring-4 focus-visible:ring-[#d4af37]/30 active:scale-[0.98];
 }
 
 .button-secondary {
-  @apply inline-flex items-center justify-center rounded-full border border-[#c9a227]/30 bg-[#c9a227]/10 px-6 py-3 text-sm font-semibold text-[#e8c547] transition duration-300 hover:border-[#c9a227]/50 hover:bg-[#c9a227]/15 focus-visible:ring-4 focus-visible:ring-[#c9a227]/20;
+  @apply inline-flex items-center justify-center rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 px-6 py-3 text-sm font-semibold text-[#f0d46e] transition-all duration-300 hover:border-[#d4af37]/60 hover:bg-[#d4af37]/20 hover:shadow-md hover:shadow-[#d4af37]/10 focus-visible:ring-4 focus-visible:ring-[#d4af37]/20 active:scale-[0.98];
 }
 
 .skip-link {

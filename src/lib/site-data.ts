@@ -96,220 +96,7 @@ export const trustSignals = [
   },
 ];
 
-const artworks: ArtworkRecord[] = [
-  {
-    id: "ethereal-waves",
-    title: "Ethereal Waves",
-    artistName: "Mina Sol",
-    artistHandle: "@creative.soul",
-    artistWallet: "creative-soul",
-    priceSol: 5.2,
-    category: "Digital Painting",
-    medium: "Procreate + custom texture scans",
-    edition: "1 of 1",
-    year: 2026,
-    description: "A luminous seascape blending painterly brushwork with layered scanned pigments.",
-    story: "Built from over thirty iterative studies, this work captures the moment where analog texture and digital light collapse into one frame.",
-    collectorNote: "Includes layered source file hashes, two work-in-progress captures, and reviewer approval notes.",
-    availability: "Available now",
-    background: "linear-gradient(135deg, rgba(91, 33, 182, 0.95), rgba(236, 72, 153, 0.65), rgba(250, 204, 21, 0.28))",
-    accent: "#f7d774",
-    evidenceLabels: ["Source file hash", "WIP capture", "Reviewer attestation"],
-  },
-  {
-    id: "neon-landscapes",
-    title: "Neon Landscapes",
-    artistName: "Ari Vega",
-    artistHandle: "@visual.artist",
-    artistWallet: "visual-artist",
-    priceSol: 3.8,
-    category: "3D Art",
-    medium: "Cinema4D + shader studies",
-    edition: "Open edition • capped at 25",
-    year: 2026,
-    description: "Retro-futurist terrain forms rendered with fluorescent shadows and cinematic depth.",
-    story: "The scene was assembled from custom topology sketches and hand-tuned lighting passes, with no AI-generated or AI-assisted imagery.",
-    collectorNote: "Collector package includes timelapse renders and project-file evidence references.",
-    availability: "6 editions remaining",
-    background: "linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(6, 182, 212, 0.7), rgba(255, 255, 255, 0.1))",
-    accent: "#7dd3fc",
-    evidenceLabels: ["Project file", "Timelapse export", "Creation attestation"],
-  },
-  {
-    id: "abstract-dimensions",
-    title: "Abstract Dimensions",
-    artistName: "Studio Parcel",
-    artistHandle: "@studio.collective",
-    artistWallet: "studio-collective",
-    priceSol: 7.1,
-    category: "Generative",
-    medium: "Custom code + hand-directed parameter sketches",
-    edition: "Series of 12",
-    year: 2026,
-    description: "Geometric tension and controlled randomness layered into a gallery-scale generative composition.",
-    story: "Each variation comes from a hand-authored ruleset, then curated through a review board before publication.",
-    collectorNote: "The provenance packet captures the approved seed, code snapshot hash, and process notes.",
-    availability: "Waitlist",
-    background: "linear-gradient(135deg, rgba(22, 101, 52, 0.95), rgba(16, 185, 129, 0.65), rgba(134, 239, 172, 0.2))",
-    accent: "#86efac",
-    evidenceLabels: ["Code snapshot", "Seed record", "Review decision"],
-  },
-  {
-    id: "chromatic-fusion",
-    title: "Chromatic Fusion",
-    artistName: "Noor Vale",
-    artistHandle: "@color.explorer",
-    artistWallet: "color-explorer",
-    priceSol: 4.5,
-    category: "Digital Painting",
-    medium: "Layered gouache scans + digital finishing",
-    edition: "1 of 1",
-    year: 2025,
-    description: "A color-led study in motion where scanned marks are rebuilt into a luminous final canvas.",
-    story: "Noor begins on paper, captures every stage, then composes the final frame digitally to preserve the evidence chain.",
-    collectorNote: "Includes source scans, revision frames, and artist attestation metadata.",
-    availability: "Reserve open",
-    background: "linear-gradient(135deg, rgba(217, 119, 6, 0.95), rgba(239, 68, 68, 0.7), rgba(251, 191, 36, 0.2))",
-    accent: "#fbbf24",
-    evidenceLabels: ["Scan archive", "WIP board", "Artist signature ref"],
-  },
-  {
-    id: "quantum-dreams",
-    title: "Quantum Dreams",
-    artistName: "Lio Mercer",
-    artistHandle: "@mind.canvas",
-    artistWallet: "mind-canvas",
-    priceSol: 6.2,
-    category: "3D Art",
-    medium: "Blender sculpt + compositing",
-    edition: "Collector edition of 10",
-    year: 2026,
-    description: "A dreamlike sculptural environment balancing soft lighting, reflective surfaces, and cinematic framing.",
-    story: "The piece evolved across multiple blocked scenes before one final composition earned curator approval.",
-    collectorNote: "Evidence includes raw captures, project files, and the final review log.",
-    availability: "3 editions remaining",
-    background: "linear-gradient(135deg, rgba(88, 28, 135, 0.95), rgba(99, 102, 241, 0.7), rgba(129, 140, 248, 0.2))",
-    accent: "#c4b5fd",
-    evidenceLabels: ["Raw capture", "Project file", "Review log"],
-  },
-  {
-    id: "crystalline-forms",
-    title: "Crystalline Forms",
-    artistName: "Tao Ren",
-    artistHandle: "@geometry.master",
-    artistWallet: "geometry-master",
-    priceSol: 5.9,
-    category: "Generative",
-    medium: "Interactive geometry system",
-    edition: "Series of 20",
-    year: 2026,
-    description: "A faceted field of mirrored structures shaped by a human-authored geometry engine.",
-    story: "Every release candidate is reviewed against the saved process packet to preserve human authorship and consistency.",
-    collectorNote: "Collector access includes the provenance summary and signed review outcome.",
-    availability: "Mint window open",
-    background: "linear-gradient(135deg, rgba(14, 116, 144, 0.95), rgba(59, 130, 246, 0.68), rgba(191, 219, 254, 0.2))",
-    accent: "#93c5fd",
-    evidenceLabels: ["Parameter pack", "Session notes", "Signed review"],
-  },
-];
-
-const auctionSales: AuctionSaleRecord[] = [
-  {
-    id: "contemporary-digital-asia",
-    title: "Contemporary Digital Asia",
-    subtitle: "A timed evening sale of verified human-made 1/1 and limited digital works from overlooked Asian and diaspora artists.",
-    curatorName: "HUMAN_ Curatorial Desk",
-    curatorNote:
-      "This sale favors process-rich, human-made works where collector confidence comes from authorship evidence, editorial context, and transparent on-chain settlement.",
-    opensAt: "2026-04-10T12:00:00.000Z",
-    closesAt: "2026-05-15T14:00:00.000Z",
-    heroLotId: "ethereal-waves",
-    lotIds: ["ethereal-waves", "abstract-dimensions", "crystalline-forms"],
-    status: "live",
-    category: "Digital art",
-    location: "Hong Kong / Online",
-  },
-  {
-    id: "new-collectors-evening",
-    title: "New Collectors Evening Sale",
-    subtitle: "Accessible human-made works with verified provenance, transparent estimates, reserve guidance, and collector-friendly bidding.",
-    curatorName: "Mina Lau",
-    curatorNote:
-      "A concise sale for new collectors who want formal lot details and overlooked human artists who need a serious first auction context.",
-    opensAt: "2026-05-22T11:00:00.000Z",
-    closesAt: "2026-05-29T13:00:00.000Z",
-    heroLotId: "neon-landscapes",
-    lotIds: ["neon-landscapes", "chromatic-fusion", "quantum-dreams"],
-    status: "preview",
-    category: "Emerging artists",
-    location: "Online",
-  },
-];
-
-const auctionLots: AuctionLotRecord[] = artworks.map((artwork, index) => {
-  const sale = auctionSales.find((candidate) => candidate.lotIds.includes(artwork.id)) ?? auctionSales[0];
-  const estimateLowSol = Math.max(1, Number((artwork.priceSol * 0.8).toFixed(1)));
-  const estimateHighSol = Number((artwork.priceSol * 1.35).toFixed(1));
-  const currentBidSol = index % 3 === 0 ? Number((estimateLowSol * 0.92).toFixed(1)) : 0;
-  const minimumNextBidSol = Number((Math.max(currentBidSol, estimateLowSol) + 0.2).toFixed(1));
-
-  return {
-    ...artwork,
-    lotNumber: index + 1,
-    saleId: sale.id,
-    estimateLowSol,
-    estimateHighSol,
-    reserveSol: estimateLowSol,
-    currentBidSol,
-    minimumNextBidSol,
-    bidCount: index % 3 === 0 ? 7 + index : index + 1,
-    watchCount: 34 + index * 11,
-    status: sale.status === "closed" ? "sold" : sale.status === "live" ? "live" : "upcoming",
-    closesAt: sale.closesAt,
-    conditionReport:
-      "Digital file reviewed for collector display quality and human authorship. Evidence packet includes process artifacts and reviewer notes; physical condition is not applicable unless a print addendum is issued.",
-    provenanceStatement:
-      "Consigned directly by the human artist to HUMAN_ Arts. Off-chain editorial data is cached in Supabase; ownership and settlement are intended to resolve on Solana.",
-    authenticityStatement:
-      "Artist attestation, human-authorship evidence, no-AI review, and curatorial notes are separated from platform-written catalog text for collector clarity.",
-    buyerPremiumBps: 800,
-    platformSellerCommissionBps: 700,
-  };
-});
-
-const creators: CreatorRecord[] = [
-  {
-    wallet: "creative-soul",
-    name: "Mina Sol",
-    handle: "@creative.soul",
-    location: "Lisbon, Portugal",
-    discipline: "Painterly digital environments",
-    bio: "Mina builds luminous, hand-crafted digital paintings rooted in physical texture studies and archival color references.",
-    heroStatement: "Every published work ships with enough human-authorship evidence for collectors to understand how it was made, not just how it looks.",
-    artworkIds: ["c42262a7-f850-44bc-ad07-6df576d05979"],
-  },
-  {
-    wallet: "visual-artist",
-    name: "Ari Vega",
-    handle: "@visual.artist",
-    location: "Mexico City, Mexico",
-    discipline: "3D atmosphere and cinematic light",
-    bio: "Ari designs worlds that feel both architectural and emotional, using custom lighting passes instead of one-click generators.",
-    heroStatement: "Collectors should be able to trace human intent, revisions, and authorship without digging through developer tooling.",
-    artworkIds: ["c42262a7-f850-44bc-ad07-6df576d05979"],
-  },
-  {
-    wallet: "studio-collective",
-    name: "Studio Parcel",
-    handle: "@studio.collective",
-    location: "Seoul, South Korea",
-    discipline: "Curated generative systems",
-    bio: "Studio Parcel treats code as a studio material, combining authored rule sets with human review and curation.",
-    heroStatement: "Code-based art can be transparent, collector-friendly, and deeply human when process is designed with evidence in mind.",
-    artworkIds: ["c42262a7-f850-44bc-ad07-6df576d05979"],
-  },
-];
-
+// Helper function for generating titles from IDs (used for dynamic routes)
 function titleFromId(id: string) {
   return id
     .split("-")
@@ -318,87 +105,83 @@ function titleFromId(id: string) {
     .join(" ");
 }
 
-function fallbackArtwork(id: string): AuctionLotRecord {
-  return {
-    id,
-    title: titleFromId(id),
-    artistName: "HUMAN_ Featured Artist",
-    artistHandle: "@human.verified",
-    artistWallet: "creative-soul",
-    priceSol: 4.2,
-    category: "Digital Art",
-    medium: "Human-authored mixed workflow",
-    edition: "Collector drop",
-    year: 2026,
-    description: "A curated artwork record prepared for the HUMAN_ auction-house experience.",
-    story: "This placeholder route is still backed by the finished catalog shell so collectors can explore without a dead-end page.",
-    collectorNote: "Evidence references and review notes are shown in the product surface for continuity.",
-    availability: "Available on request",
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(124, 58, 237, 0.68), rgba(212, 175, 55, 0.18))",
-    accent: "#d4af37",
-    evidenceLabels: ["Artist attestation", "Evidence packet", "No-AI review log"],
-    lotNumber: 99,
-    saleId: "contemporary-digital-asia",
-    estimateLowSol: 3.2,
-    estimateHighSol: 5.6,
-    reserveSol: 3.2,
-    currentBidSol: 0,
-    minimumNextBidSol: 3.2,
-    bidCount: 0,
-    watchCount: 12,
-    status: "upcoming",
-    closesAt: "2026-05-15T14:00:00.000Z",
-    conditionReport: "Fallback catalog entry prepared for route continuity and human-authorship review.",
-    provenanceStatement: "Consigned directly by the artist with platform-reviewed human provenance pending.",
-    authenticityStatement: "Artist attestation and reviewer evidence are displayed separately when available; AI-generated or AI-assisted work is not accepted.",
-    buyerPremiumBps: 800,
-    platformSellerCommissionBps: 700,
-  };
-}
-
 export async function getFeaturedArtworks() {
   const data = await listArtworks(6);
-  return data.length > 0 ? data : artworks;
+  return data;
 }
 
 export async function getFeaturedArtwork() {
   const data = await listArtworks(1);
-  return data.length > 0 ? data[0] : artworks[0];
+  return data[0] ?? null;
 }
 
 export async function getArtworkById(id: string) {
   const data = await getSupabaseArtworkById(id);
-  if (data) return data as AuctionLotRecord;
-  return artworks.find((artwork) => artwork.id === id) ?? fallbackArtwork(id);
+  return data as AuctionLotRecord | null;
 }
 
 export async function getCreators() {
   const data = await listCreators();
-  return data.length > 0 ? data : creators;
+  return data;
 }
 
 export async function getCreatorByWallet(wallet: string) {
   const data = await getSupabaseCreatorByWallet(wallet);
-  if (data) return data as CreatorRecord;
-  return creators.find((creator) => creator.wallet === wallet) ?? null;
+  if (data) {
+    return data as CreatorRecord;
+  }
+
+  const artworks = await listArtworks();
+  const creatorArtworks = artworks.filter(
+    (artwork) => artwork.artist_wallet === wallet || artwork.seller_wallet === wallet,
+  );
+
+  if (!creatorArtworks.length) {
+    return null;
+  }
+
+  const firstArtwork = creatorArtworks[0] as Record<string, unknown>;
+  const artistName =
+    typeof firstArtwork.artist_name === "string" && firstArtwork.artist_name.trim()
+      ? firstArtwork.artist_name
+      : typeof firstArtwork.artistName === "string" && firstArtwork.artistName.trim()
+        ? firstArtwork.artistName
+        : `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
+
+  return {
+    wallet,
+    name: artistName,
+    handle:
+      typeof firstArtwork.artist_handle === "string" && firstArtwork.artist_handle.trim()
+        ? firstArtwork.artist_handle
+        : "@seller",
+    location: "Online",
+    discipline:
+      typeof firstArtwork.medium === "string" && firstArtwork.medium.trim()
+        ? firstArtwork.medium
+        : "Digital art",
+    bio:
+      typeof firstArtwork.description === "string" && firstArtwork.description.trim()
+        ? firstArtwork.description
+        : "Seller profile generated from published artwork records.",
+    heroStatement: "Built from seller-linked artwork records.",
+    artworkIds: creatorArtworks.map((artwork) => artwork.id),
+  } satisfies CreatorRecord;
 }
 
 export async function getCreatorArtworks(wallet: string) {
-  const creator = await getCreatorByWallet(wallet);
-  if (!creator) return [];
   const artworks = await listArtworks();
-  return artworks.filter(a => a.artist_wallet === wallet);
+  return artworks.filter(a => a.artist_wallet === wallet || a.seller_wallet === wallet);
 }
 
 export async function getAuctionSales() {
   const data = await listSales();
-  return data.length > 0 ? data : auctionSales;
+  return data;
 }
 
 export async function getAuctionSaleById(id: string) {
   const data = await getSupabaseSaleById(id);
-  if (data) return data as AuctionSaleRecord;
-  return auctionSales.find((sale) => sale.id === id) ?? null;
+  return data as AuctionSaleRecord | null;
 }
 
 export async function getAuctionLotsBySaleId(saleId: string) {
@@ -408,8 +191,7 @@ export async function getAuctionLotsBySaleId(saleId: string) {
 
 export async function getAuctionLotById(lotId: string) {
   const data = await getSupabaseArtworkById(lotId);
-  if (data) return data as AuctionLotRecord;
-  return artworks.find((lot) => lot.id === lotId) ?? null;
+  return data as AuctionLotRecord | null;
 }
 
 export async function getSaleForLot(lotId: string) {
