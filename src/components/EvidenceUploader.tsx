@@ -64,8 +64,10 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
 
       <div className="mt-6 grid gap-4 xl:grid-cols-[180px_minmax(0,1fr)_minmax(0,1.2fr)_auto]">
         <div>
-          <label className="field-label">Evidence type</label>
+          <label htmlFor="evidence-kind" className="field-label">Evidence Type</label>
           <select
+            id="evidence-kind"
+            name="evidenceKind"
             className="field-select"
             value={kind}
             onChange={(event) => setKind(event.target.value as EvidenceKind)}
@@ -79,10 +81,12 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
         </div>
 
         <div>
-          <label className="field-label">Label</label>
+          <label htmlFor="evidence-label" className="field-label">Label</label>
           <input
+            id="evidence-label"
+            name="evidenceLabel"
             className="field-input"
-            placeholder="WIP screenshot, source file, signed doc..."
+            placeholder="WIP screenshot, source file, signed doc…"
             value={label}
             onChange={(event) => setLabel(event.target.value)}
           />
@@ -91,8 +95,12 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
         <div>
           <label className="field-label">SHA-256 hash</label>
           <input
+            id="evidence-hash"
+            name="evidenceHash"
             className="field-input"
-            placeholder="Paste a 64-character hash"
+            spellCheck={false}
+            autoComplete="off"
+            placeholder="Paste a 64-character hash…"
             value={hash}
             onChange={(event) => setHash(event.target.value)}
           />
@@ -103,9 +111,9 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
             type="button"
             onClick={addEvidence}
             disabled={!canAdd}
-            className="inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-[#f3ead8] disabled:cursor-not-allowed disabled:opacity-45"
+            className="button-primary w-full disabled:cursor-not-allowed disabled:opacity-45"
           >
-            Add evidence
+            Add Evidence
           </button>
         </div>
       </div>

@@ -59,7 +59,7 @@ export default async function ArtPage({ params }: ArtPageProps) {
         </div>
 
         <section className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <div className="glass overflow-hidden rounded-[2rem] border border-white/10">
+          <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03]">
             <div className="relative h-[460px]" style={{ backgroundImage: artwork.background }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80" />
               <div className="absolute left-6 top-6 inline-flex items-center rounded-full border border-white/15 bg-black/35 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/70">
@@ -76,7 +76,7 @@ export default async function ArtPage({ params }: ArtPageProps) {
           </div>
 
           <div className="space-y-6">
-            <article className="glass rounded-[1.8rem] border border-white/10 p-6">
+            <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
               <p className="eyebrow">Artwork details</p>
               <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -99,8 +99,8 @@ export default async function ArtPage({ params }: ArtPageProps) {
               <p className="mt-5 text-sm leading-7 text-white/65">{artwork.description}</p>
             </article>
 
-            <article className="glass rounded-[1.8rem] border border-white/10 p-6">
-              <p className="eyebrow">Collector story</p>
+            <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
+              <p className="eyebrow">Collector Story</p>
               <p className="mt-4 text-sm leading-7 text-white/65">{artwork.story}</p>
               <p className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-white/70">{artwork.collectorNote}</p>
             </article>
@@ -108,9 +108,9 @@ export default async function ArtPage({ params }: ArtPageProps) {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <article className="glass rounded-[1.8rem] border border-white/10 p-6">
+          <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
             <div className="flex items-center justify-between gap-4">
-              <p className="eyebrow">Provenance + trust</p>
+              <p className="eyebrow">Provenance + Trust</p>
               <ProvenanceBadge provenance={provenance} />
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -126,7 +126,7 @@ export default async function ArtPage({ params }: ArtPageProps) {
             </p>
           </article>
 
-          <article className="glass rounded-[1.8rem] border border-white/10 p-6">
+          <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
             <p className="eyebrow">Collect on Solana</p>
             <p className="mt-3 text-sm leading-7 text-white/60">
               Purchase flow preserves prepare/sign/confirm behavior with wallet balance checks and recovery-friendly status polling.
@@ -143,7 +143,7 @@ export default async function ArtPage({ params }: ArtPageProps) {
               />
             </div>
             <Link href={`/creator/${artwork.artistWallet}`} className="mt-5 inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-              View creator profile →
+              View Creator Profile →
             </Link>
           </article>
         </section>

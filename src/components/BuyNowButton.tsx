@@ -206,14 +206,15 @@ export function BuyNowButton({
   return (
     <div className="space-y-4">
       <button
+        type="button"
         onClick={buyNow}
         disabled={busy}
-        className="inline-flex w-full items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-[#f3ead8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="button-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {busy ? "Processing purchase..." : `Buy now • ${priceInSol} SOL`}
+        {busy ? "Processing Purchase…" : `Buy Now • ${priceInSol} SOL`}
       </button>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">
+      <div aria-live="polite" className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">
         <p className="text-white/60">
           State: <span className="font-medium capitalize text-white">{readableState(purchaseState)}</span>
         </p>

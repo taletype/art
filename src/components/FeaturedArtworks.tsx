@@ -12,19 +12,19 @@ export default function FeaturedArtworks() {
         <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="section-heading">
             <p className="eyebrow">Featured artworks</p>
-            <h2 className="text-3xl text-white sm:text-5xl">Curated drops that feel complete from landing page to detail view.</h2>
-            <p className="text-base leading-7 text-white/62">
-              Each card now leads to an artwork page with provenance, pricing, and creator context instead of a placeholder destination.
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">Verified releases ready to inspect, compare, and collect.</h2>
+            <p className="section-kicker">
+              Each artwork leads into a full detail page with provenance signals, creator context, and the live purchase surface instead of a dead-end promo block.
             </p>
           </div>
-          <Link href="/submit" className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-            Bring your work to review
+          <Link href="/submit" className="button-secondary">
+            Bring Your Work to Review
           </Link>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {artworks.map((artwork) => (
-            <article key={artwork.id} className="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] transition hover:-translate-y-1 hover:border-white/20">
+            <article key={artwork.id} className="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03] transition duration-300 hover:-translate-y-1 hover:border-white/20">
               <div className="relative h-72 overflow-hidden" style={{ backgroundImage: artwork.background }}>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/70" />
                 <div className="absolute left-5 top-5 rounded-full border border-white/12 bg-black/25 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/72">
@@ -56,7 +56,7 @@ export default function FeaturedArtworks() {
                 </div>
 
                 <Link href={`/art/${artwork.id}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-                  View artwork detail →
+                  View Artwork Detail →
                 </Link>
               </div>
             </article>

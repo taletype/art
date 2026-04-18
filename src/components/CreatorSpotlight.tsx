@@ -12,9 +12,9 @@ export default function CreatorSpotlight() {
         <div className="space-y-6">
           <div className="section-heading">
             <p className="eyebrow">Creator spotlight</p>
-            <h2 className="text-3xl text-white sm:text-5xl">Meet the artists behind the proof-first marketplace.</h2>
-            <p className="text-base leading-7 text-white/62">
-              The creator pages now carry real profile structure and link back to the works they publish, so the marketplace feels connected instead of decorative.
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">Meet the artists building evidence-backed releases.</h2>
+            <p className="section-kicker">
+              Profiles tie biography, practice, and published works together so discovery feels connected from the first visit through the final collector decision.
             </p>
           </div>
 
@@ -33,15 +33,15 @@ export default function CreatorSpotlight() {
                 detail: "Profiles now group artworks together so returning collectors can browse a creator’s body of work.",
               },
             ].map((item) => (
-              <div key={item.title} className="glass rounded-3xl p-6">
+              <div key={item.title} className="border-l border-white/10 pl-5">
                 <p className="text-lg font-semibold text-white">{item.title}</p>
                 <p className="mt-3 text-sm leading-7 text-white/58">{item.detail}</p>
               </div>
             ))}
           </div>
 
-          <Link href="/submit" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-[#f3ead8]">
-            Become a featured creator
+          <Link href="/submit" className="button-primary">
+            Become a Featured Creator
           </Link>
         </div>
 
@@ -49,7 +49,7 @@ export default function CreatorSpotlight() {
           {creators.map((creator) => {
             const leadArtwork = getArtworkById(creator.artworkIds[0]);
             return (
-              <article key={creator.wallet} className="glass overflow-hidden rounded-[2rem] border border-white/10">
+              <article key={creator.wallet} className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.03]">
                 <div className="h-48" style={{ backgroundImage: leadArtwork.background }} />
                 <div className="space-y-5 p-6">
                   <div>
@@ -64,7 +64,7 @@ export default function CreatorSpotlight() {
                     <p className="mt-1 text-sm text-white/55">{creator.discipline}</p>
                   </div>
                   <Link href={`/creator/${creator.wallet}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-                    Open creator profile →
+                    Open Creator Profile →
                   </Link>
                 </div>
               </article>

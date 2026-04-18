@@ -42,11 +42,11 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
               <p className="text-base leading-8 text-white/72">{creator.heroStatement}</p>
               <p className="text-sm leading-7 text-white/58">{creator.bio}</p>
               <div className="flex flex-wrap gap-3">
-                <Link href="/#featured" className="rounded-full border border-white/12 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
-                  Back to marketplace
+                <Link href="/#featured" className="button-secondary px-5 py-2.5">
+                  Back to Marketplace
                 </Link>
-                <Link href="/submit" className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-[#f3ead8]">
-                  Submit new artwork
+                <Link href="/submit" className="button-primary px-5 py-2.5">
+                  Submit New Artwork
                 </Link>
               </div>
             </div>
@@ -54,8 +54,8 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <article className="glass rounded-[1.8rem] border border-white/10 p-6">
-            <p className="eyebrow">Creator statement</p>
+          <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
+            <p className="eyebrow">Creator Statement</p>
             <p className="mt-4 text-sm leading-7 text-white/65">
               {creator.name} builds with a documentation-first mindset: each release is paired with evidence and reviewer context so collectors can evaluate intent and authorship before collecting.
             </p>
@@ -67,12 +67,12 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
             </div>
           </article>
 
-          <article className="glass rounded-[1.8rem] border border-white/10 p-6">
-            <p className="eyebrow">Collector guidance</p>
+          <article className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
+            <p className="eyebrow">Collector Guidance</p>
             <ul className="mt-4 space-y-3 text-sm text-white/62">
-              <li>• Review provenance notes on each artwork before collecting.</li>
-              <li>• Compare edition/availability to understand scarcity.</li>
-              <li>• Use the Solana buy flow from artwork pages for final checkout.</li>
+              <li>Review provenance notes on each artwork before collecting.</li>
+              <li>Compare edition and availability to understand scarcity.</li>
+              <li>Use the Solana buy flow from artwork pages for final checkout.</li>
             </ul>
           </article>
         </section>
@@ -83,12 +83,12 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
               <p className="eyebrow">Published works</p>
               <h2 className="mt-2 text-3xl text-white">Artworks by {creator.name}</h2>
             </div>
-            <Link href="/#featured" className="text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">View all featured works →</Link>
+            <Link href="/#featured" className="text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">View All Featured Works →</Link>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             {artworks.map((artwork) => (
-              <article key={artwork.id} className="glass overflow-hidden rounded-[1.7rem] border border-white/10">
+              <article key={artwork.id} className="overflow-hidden rounded-[1.7rem] border border-white/10 bg-white/[0.03]">
                 <div className="relative h-56" style={{ backgroundImage: artwork.background }}>
                   <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/20 to-black/80" />
                   <div className="absolute left-5 top-5 rounded-full border border-white/12 bg-black/35 px-3 py-1 text-xs uppercase tracking-[0.16em] text-white/70">
@@ -112,7 +112,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
                     ))}
                   </div>
                   <Link href={`/art/${artwork.id}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-                    Open artwork detail →
+                    Open Artwork Detail →
                   </Link>
                 </div>
               </article>

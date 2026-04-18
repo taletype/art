@@ -12,7 +12,7 @@ export default function Footer() {
       <div className="section-shell py-16">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
           <div className="space-y-5">
-            <Link href="/" className="inline-flex items-center gap-3">
+            <Link href="/" className="inline-flex items-center gap-3 rounded-full focus-visible:ring-4 focus-visible:ring-white/10">
               <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold tracking-[0.24em] text-[#f8deb0]">
                 H_
               </span>
@@ -25,11 +25,11 @@ export default function Footer() {
               A premium collector marketplace where human-made digital artworks carry evidence-backed provenance and a Solana-native purchase path.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/submit" className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-[#f3ead8]">
-                Submit artwork
+              <Link href="/submit" className="button-primary px-5 py-2.5">
+                Submit Artwork
               </Link>
-              <Link href="/#featured" className="rounded-full border border-white/12 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
-                Explore market
+              <Link href="/#featured" className="button-secondary px-5 py-2.5">
+                Explore Market
               </Link>
             </div>
           </div>
@@ -37,9 +37,9 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Marketplace</h4>
             <ul className="space-y-2 text-sm text-white/58">
-              <li><Link href="/#featured" className="transition hover:text-white">Featured artworks</Link></li>
-              <li><Link href="/#creators" className="transition hover:text-white">Creator spotlight</Link></li>
-              <li><Link href="/#how-it-works" className="transition hover:text-white">How it works</Link></li>
+              <li><Link href="/#featured" className="transition hover:text-white">Featured Artworks</Link></li>
+              <li><Link href="/#creators" className="transition hover:text-white">Creator Spotlight</Link></li>
+              <li><Link href="/#how-it-works" className="transition hover:text-white">How It Works</Link></li>
               {artworks.map((artwork) => (
                 <li key={artwork.id}>
                   <Link href={`/art/${artwork.id}`} className="transition hover:text-white">{artwork.title}</Link>
@@ -59,7 +59,7 @@ export default function Footer() {
                 </li>
               ))}
               <li>
-                <Link href="/submit" className="transition hover:text-white">Apply for verification</Link>
+                <Link href="/submit" className="transition hover:text-white">Apply for Verification</Link>
               </li>
             </ul>
           </div>
@@ -67,9 +67,9 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Platform</h4>
             <ul className="space-y-2 text-sm text-white/58">
-              <li><Link href="/submit" className="transition hover:text-white">Mint & list pipeline</Link></li>
-              <li><Link href="/submit" className="transition hover:text-white">Evidence requirements</Link></li>
-              <li><Link href="/submit" className="transition hover:text-white">Verification queue</Link></li>
+              <li><Link href="/submit" className="transition hover:text-white">Mint & List Pipeline</Link></li>
+              <li><Link href="/submit" className="transition hover:text-white">Evidence Requirements</Link></li>
+              <li><Link href="/submit" className="transition hover:text-white">Verification Queue</Link></li>
             </ul>
           </div>
         </div>

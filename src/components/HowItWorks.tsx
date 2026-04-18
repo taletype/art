@@ -33,23 +33,17 @@ export default function HowItWorks() {
         <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="section-heading">
             <p className="eyebrow">How HUMAN_ works</p>
-            <h2 className="text-3xl text-white sm:text-5xl">A trust-first workflow from creator process to collector ownership.</h2>
-            <p className="text-base leading-7 text-white/62">
-              This flow is not decorative copy. It mirrors the real submit → verify → mint/list/collect path used in the app.
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">A working path from creator evidence to collector ownership.</h2>
+            <p className="section-kicker">
+              The flow below mirrors the actual product sequence: submit, review, prepare, list, and collect.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              href="/submit"
-              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-[#f3ead8]"
-            >
-              Start submission
+            <Link href="/submit" className="button-primary">
+              Start Submission
             </Link>
-            <Link
-              href="/#featured"
-              className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Explore verified works
+            <Link href="/#featured" className="button-secondary">
+              Explore Verified Works
             </Link>
           </div>
         </div>
@@ -58,7 +52,7 @@ export default function HowItWorks() {
           {steps.map((step, index) => (
             <article
               key={step.title}
-              className="glass relative overflow-hidden rounded-[1.75rem] border border-white/10 p-7"
+              className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-7"
             >
               <div className="absolute right-5 top-4 text-6xl font-semibold text-white/10">{step.number}</div>
               <p className="eyebrow">Step {index + 1}</p>

@@ -79,12 +79,14 @@ export function ReviewPanel({ provenance, onUpdate, reviewerWallet, enabled }: R
       </p>
 
       <div className="mt-5">
-        <label className="field-label">Reviewer notes</label>
+        <label htmlFor="reviewer-notes" className="field-label">Reviewer Notes</label>
         <textarea
+          id="reviewer-notes"
+          name="reviewerNotes"
           className="field-textarea min-h-[120px]"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
-          placeholder="Document why the packet is ready, still pending, or rejected."
+          placeholder="Document why the packet is ready, still pending, or rejected…"
         />
       </div>
 

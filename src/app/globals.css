@@ -7,6 +7,7 @@
   --background: #0b0b0d;
   --foreground: #f5f1e8;
   --primary: #d4af37;
+  --primary-strong: #f3d27a;
   --secondary: #141418;
   --accent: rgba(255, 255, 255, 0.08);
   --accent-light: rgba(212, 175, 55, 0.14);
@@ -22,6 +23,7 @@
 html {
   scroll-behavior: smooth;
   background: var(--background);
+  color-scheme: dark;
 }
 
 body {
@@ -59,6 +61,15 @@ a {
   text-decoration: none;
 }
 
+a,
+button,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: rgba(243, 210, 122, 0.18);
+  touch-action: manipulation;
+}
+
 button,
 input,
 textarea,
@@ -68,6 +79,11 @@ select {
 
 button {
   cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(243, 210, 122, 0.9);
+  outline-offset: 3px;
 }
 
 ::selection {
@@ -103,6 +119,10 @@ button {
   @apply max-w-3xl space-y-4;
 }
 
+.section-kicker {
+  @apply max-w-xl text-sm leading-7 text-white/60 sm:text-base;
+}
+
 .eyebrow {
   @apply text-xs font-semibold uppercase tracking-[0.28em] text-white/55;
 }
@@ -120,15 +140,42 @@ button {
 }
 
 .field-input {
-  @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+  @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white transition placeholder:text-white/30 focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
 }
 
 .field-textarea {
-  @apply min-h-[140px] w-full resize-y rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+  @apply min-h-[140px] w-full resize-y rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white transition placeholder:text-white/30 focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
 }
 
 .field-select {
-  @apply w-full appearance-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm capitalize text-white outline-none transition focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+  @apply w-full appearance-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm capitalize text-white transition focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition duration-200 hover:bg-[#f3ead8] focus-visible:ring-4 focus-visible:ring-[#f3d27a]/20;
+}
+
+.button-secondary {
+  @apply inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition duration-200 hover:border-white/20 hover:bg-white/10 focus-visible:ring-4 focus-visible:ring-white/10;
+}
+
+.skip-link {
+  @apply absolute left-4 top-4 z-[60] -translate-y-16 rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition-transform focus:translate-y-0 focus-visible:translate-y-0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (max-width: 768px) {
