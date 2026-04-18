@@ -9,7 +9,7 @@ export default function LoginPage() {
           <p className="eyebrow">Collector access</p>
           <h1 className="text-5xl leading-tight">Log in and start bidding.</h1>
           <p className="text-lg leading-8 text-white/68">
-            Use Supabase Auth for your account, then connect or save your preferred bidding wallet through the auction profile.
+            Use Supabase Auth for your account, then connect your thirdweb wallet to manage listings, auctions, and bids from one profile.
           </p>
           <p className="text-sm text-white/55">
             Need an account? <Link href="/signup" className="text-white underline underline-offset-4">Create one here</Link>.

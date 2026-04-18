@@ -56,10 +56,14 @@ export default function WalletConnect() {
   async function saveWalletAddress() {
     setMessage(null);
     try {
+      if (!activeAccount?.address) {
+        throw new Error("Connect a thirdweb wallet first so we can save the active address.");
+      }
+
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase.auth.updateUser({
         data: {
-          wallet_address: walletAddress.trim() || null,
+          wallet_address: activeAccount.address,
         },
       });
 
@@ -112,10 +116,11 @@ export default function WalletConnect() {
           value={walletAddress}
           onChange={(event) => setWalletAddress(event.target.value)}
           className="field-input"
-          placeholder="0x... or other connected wallet address"
+          placeholder="Connect a thirdweb wallet to populate this field"
+          readOnly
         />
         <button type="button" onClick={saveWalletAddress} className="button-secondary w-full">
-          {activeAccount?.address ? "Save connected wallet" : "Save wallet"}
+          {activeAccount?.address ? "Save connected wallet" : "Connect wallet first"}
         </button>
       </div>
 

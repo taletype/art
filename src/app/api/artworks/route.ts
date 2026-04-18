@@ -1,35 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { listArtworks, getArtworkById } from "@/lib/supabase-db";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getAuthenticatedAppUser, requireAuthenticatedAppUserResponse } from "@/lib/auth";
+import { createSellerArtworkSchema } from "@/types/seller";
 
-const adminClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const adminClient = createSupabaseAdminClient();
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
 
   if (id) {
-    const artwork = await getArtworkById(id);
-    if (!artwork) {
+    const { data: artwork, error } = await adminClient
+      .from("artworks")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error || !artwork) {
       return NextResponse.json({ error: "Artwork not found" }, { status: 404 });
     }
     return NextResponse.json(artwork);
   }
 
-  const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : 20;
-  const artworks = await listArtworks(limit);
+  const owner = searchParams.get("owner");
+  let query = adminClient.from("artworks").select("*").order("created_at", { ascending: false });
+  if (owner) {
+    query = query.eq("owner_user_id", owner);
+  }
+  const { data: artworks, error } = await query.limit(searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 20);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   return NextResponse.json(artworks);
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const user = await getAuthenticatedAppUser();
+    if (!user) {
+      return requireAuthenticatedAppUserResponse();
+    }
+    const body = createSellerArtworkSchema.parse(await request.json());
     const { data, error } = await adminClient
       .from("artworks")
-      .insert(body)
+      .insert({
+        title: body.title,
+        description: body.description,
+        image_url: body.imageUrl,
+        medium: body.medium ?? null,
+        category: body.category ?? null,
+        provenance_text: body.provenanceText ?? null,
+        reserve_price_lamports: body.reservePriceLamports ?? null,
+        owner_user_id: user.id,
+        seller_wallet: user.walletAddress,
+        artist_wallet: user.walletAddress,
+        artist_name: user.email ?? "Seller",
+        price_sol: body.reservePriceLamports ? body.reservePriceLamports / 1_000_000_000 : 0,
+        status: "draft",
+        seller_flow_status: "draft",
+      })
       .select("*")
       .single();
 
@@ -49,6 +77,10 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const user = await getAuthenticatedAppUser();
+    if (!user) {
+      return requireAuthenticatedAppUserResponse();
+    }
     const body = await request.json();
     const { id, ...updates } = body;
     if (!id) {
@@ -59,6 +91,7 @@ export async function PATCH(request: NextRequest) {
       .from("artworks")
       .update(updates)
       .eq("id", id)
+      .eq("owner_user_id", user.id)
       .select("*")
       .single();
 

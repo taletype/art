@@ -18,6 +18,8 @@ import type {
 
 type AuctionRow = {
   id: string;
+  artwork_id?: string | null;
+  owner_user_id?: string | null;
   seller_wallet: string;
   title: string;
   description: string;
@@ -28,6 +30,13 @@ type AuctionRow = {
   min_increment_lamports: number;
   status: OffchainAuctionStatus;
   winner_bid_id: string | null;
+  auction_source?: string | null;
+  thirdweb_provider?: string | null;
+  thirdweb_chain?: string | null;
+  thirdweb_contract_address?: string | null;
+  thirdweb_listing_id?: string | null;
+  thirdweb_listing_url?: string | null;
+  sync_status?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -128,6 +137,8 @@ export async function listOffchainAuctions(status?: AuctionRow["status"], limit 
   const auctions = await listAuctions(status, limit);
   return auctions.map(a => ({
     id: a.id,
+    artwork_id: a.artwork_id,
+    owner_user_id: a.owner_user_id,
     seller_wallet: a.seller_wallet,
     title: a.title,
     description: a.description,
@@ -138,6 +149,13 @@ export async function listOffchainAuctions(status?: AuctionRow["status"], limit 
     min_increment_lamports: a.min_increment_lamports,
     status: a.status,
     winner_bid_id: a.winner_bid_id,
+    auction_source: a.auction_source,
+    thirdweb_provider: a.thirdweb_provider,
+    thirdweb_chain: a.thirdweb_chain,
+    thirdweb_contract_address: a.thirdweb_contract_address,
+    thirdweb_listing_id: a.thirdweb_listing_id,
+    thirdweb_listing_url: a.thirdweb_listing_url,
+    sync_status: a.sync_status,
     created_at: a.created_at,
     updated_at: a.updated_at,
   })) as AuctionRow[];

@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
-import { createOffchainAuction, listOffchainAuctions } from "@/lib/offchainAuctions";
-import { createAuctionRequestSchema, listAuctionsQuerySchema } from "@/types/offchainAuction";
+import { getAuthenticatedAppUser, requireAuthenticatedAppUserResponse, requireLinkedWalletResponse } from "@/lib/auth";
+import { createSellerAuction } from "@/lib/seller";
+import { listOffchainAuctions } from "@/lib/offchainAuctions";
+import { createSellerAuctionSchema } from "@/types/seller";
+import { listAuctionsQuerySchema } from "@/types/offchainAuction";
 
 export async function GET(request: Request) {
   const rateLimit = enforceRouteRateLimit(request, "auctions-get", {
@@ -43,9 +46,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const sessionUser = await getAuthenticatedAppUser();
   const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
-  if (authFailure) {
+  if (!sessionUser && authFailure) {
     return authFailure;
+  }
+  if (!sessionUser) {
+    return requireAuthenticatedAppUserResponse();
+  }
+  if (!sessionUser.walletAddress) {
+    return requireLinkedWalletResponse();
   }
 
   const rateLimit = enforceRouteRateLimit(request, "auctions-post", {
@@ -56,15 +66,23 @@ export async function POST(request: Request) {
   }
 
   try {
-    const payload = createAuctionRequestSchema.parse(await request.json());
-    const auction = await createOffchainAuction(payload);
+    const payload = createSellerAuctionSchema.parse(await request.json());
+    const auction = await createSellerAuction({
+      artworkId: payload.artworkId,
+      ownerUserId: sessionUser.id,
+      sellerWallet: sessionUser.walletAddress,
+      startsAt: payload.startsAt,
+      endsAt: payload.endsAt,
+      startPriceLamports: payload.startPriceLamports,
+      minIncrementLamports: payload.minIncrementLamports,
+    });
 
     return applyRateLimitHeaders(NextResponse.json({ ok: true, auction }, { status: 201 }), rateLimit);
   } catch (error) {
     if (error instanceof ZodError) {
       return applyRateLimitHeaders(
         NextResponse.json(
-          { ok: false, message: "Invalid auction payload", issues: error.issues },
+          { ok: false, message: "Invalid seller auction payload", issues: error.issues },
           { status: 400 },
         ),
         rateLimit,

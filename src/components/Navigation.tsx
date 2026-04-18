@@ -9,7 +9,8 @@ import { getThirdwebClient } from "@/lib/thirdweb";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/auctions", label: "Auctions" },
-  { href: "/submit", label: "Consign" },
+  { href: "/seller", label: "Seller Hub" },
+  { href: "/submit", label: "List Art" },
 ];
 
 export default function Navigation() {
@@ -40,8 +41,8 @@ export default function Navigation() {
             wallets={[inAppWallet(), createWallet("io.metamask"), createWallet("com.coinbase.wallet")]}
             connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-full !bg-[#c9a227] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!bg-[#e8c547]" }}
           />
-          <Link href="/submit" className="button-primary px-5 py-2.5 text-sm">
-            Consign
+          <Link href="/seller" className="button-primary px-5 py-2.5 text-sm">
+            Seller Hub
           </Link>
         </div>
 
@@ -77,11 +78,11 @@ export default function Navigation() {
               />
             </div>
             <Link
-              href="/submit"
+              href="/seller"
               onClick={() => setOpen(false)}
               className="button-primary px-4 py-3 text-sm"
             >
-              Consign
+              Seller Hub
             </Link>
           </div>
         </div>

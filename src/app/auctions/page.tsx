@@ -37,10 +37,10 @@ async function AuctionsContent() {
     <>
       <div className="space-y-6">
         <div className="space-y-3">
-          <p className="eyebrow">Off-chain auctions</p>
-          <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Off-chain auctions. Solana settlement. Fast launch.</h1>
+          <p className="eyebrow">Marketplace</p>
+          <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Thirdweb-linked auctions with Supabase as the catalog layer.</h1>
           <p className="max-w-2xl text-lg leading-8 text-white/68">
-            This lane keeps bidding and closing in Supabase-backed off-chain tables so the team can move quickly while keeping the marketplace flow consistent.
+            Seller-owned artworks are prepared from the dashboard, projected into auction records, and rendered here for collectors and bidders.
           </p>
         </div>
 

@@ -36,13 +36,13 @@ export default function AuthForm({ mode }: AuthFormProps) {
         if (error) {
           throw error;
         }
-        setMessage("Account created. Check your inbox if email confirmation is enabled.");
+        setMessage("Account created. Check your inbox if email confirmation is enabled, then connect your thirdweb wallet from Seller Hub.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           throw error;
         }
-        router.push("/auctions");
+        router.push("/seller");
         router.refresh();
       }
     } catch (error) {

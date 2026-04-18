@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useActiveAccount } from "thirdweb/react";
 import { EvidenceUploader } from "@/components/EvidenceUploader";
 import { ReviewPanel } from "@/components/ReviewPanel";
@@ -28,6 +29,7 @@ function defaultProvenance(): Provenance {
 }
 
 export default function SubmitPage() {
+  const router = useRouter();
   const activeAccount = useActiveAccount();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -67,7 +69,7 @@ export default function SubmitPage() {
     }));
   }
 
-  async function submitMint() {
+  async function createArtworkDraft() {
     if (!title || !description || !imageUrl || !sellerWallet) {
       setMessage("Please fill in all required fields");
       return;
@@ -83,55 +85,22 @@ export default function SubmitPage() {
           title,
           description,
           imageUrl,
-          sellerWallet,
-          attributes: [],
-          provenance: { ...sanitizedProvenance, medium },
+          medium,
+          category: sanitizedProvenance.category,
+          provenanceText: JSON.stringify({ ...sanitizedProvenance, medium }),
+          reservePriceLamports: priceLamports,
         }),
       });
 
       if (!result.ok) {
-        throw new Error("Failed to mint draft");
+        const payload = await result.json();
+        throw new Error(payload.message || "Failed to create artwork draft");
       }
 
-      setMessage("Draft minted successfully!");
+      setMessage("Artwork draft created. Opening Seller Hub so you can prepare it with thirdweb.");
+      setTimeout(() => router.push("/seller"), 900);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to mint draft");
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function prepareListing() {
-    if (!sellerWallet || !priceLamports) {
-      setMessage("Please provide wallet address and reserve price");
-      return;
-    }
-
-    setPending(true);
-    setMessage(null);
-    try {
-      const result = await fetch("/api/list", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          listing: {
-            sellerWallet,
-            assetId: "draft-asset-local",
-            treasuryMint: "So11111111111111111111111111111111111111112",
-            priceLamports,
-            provenanceStatus: sanitizedProvenance.verificationStatus,
-          },
-          provenance: { ...sanitizedProvenance, medium },
-        }),
-      });
-
-      if (!result.ok) {
-        throw new Error("Failed to prepare listing");
-      }
-
-      setMessage("Listing prepared successfully!");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to prepare listing");
+      setMessage(error instanceof Error ? error.message : "Unable to create artwork draft");
     } finally {
       setPending(false);
     }
@@ -144,7 +113,7 @@ export default function SubmitPage() {
           <p className="eyebrow">Consign artwork</p>
           <h1 className="text-4xl text-white sm:text-5xl">List artwork for auction</h1>
           <p className="max-w-2xl text-lg leading-8 text-white/68">
-            Submit your artwork with proof of human authorship. Our curatorial team reviews each submission before it goes to auction.
+            Create the artwork record first. Then move into Seller Hub to prepare it with thirdweb and launch the auction.
           </p>
         </div>
 
@@ -243,11 +212,8 @@ export default function SubmitPage() {
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <button onClick={submitMint} disabled={pending} className="button-primary disabled:cursor-wait disabled:opacity-70">
-                {pending ? "Minting..." : "Mint draft"}
-              </button>
-              <button onClick={prepareListing} disabled={pending} className="button-secondary disabled:cursor-wait disabled:opacity-70">
-                {pending ? "Preparing..." : "Prepare listing"}
+              <button onClick={createArtworkDraft} disabled={pending} className="button-primary disabled:cursor-wait disabled:opacity-70">
+                {pending ? "Saving..." : "Create artwork draft"}
               </button>
             </div>
 
