@@ -1,11 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EvidenceUploader } from "../../components/EvidenceUploader";
-import { ProvenanceBadge } from "../../components/ProvenanceBadge";
-import { ReviewPanel } from "../../components/ReviewPanel";
-import { validateProvenance } from "../../lib/provenance";
-import type { Provenance, ArtCategory, EvidenceItem } from "../../types/provenance";
+import { EvidenceUploader } from "@/components/EvidenceUploader";
+import { ReviewPanel } from "@/components/ReviewPanel";
+import { validateProvenance } from "@/lib/provenance";
+import type { ArtCategory, EvidenceItem, Provenance } from "@/types/provenance";
 
 function defaultProvenance(): Provenance {
   return {
@@ -13,13 +12,13 @@ function defaultProvenance(): Provenance {
     medium: "digital painting",
     creationMethod: "HUMAN_ORIGINAL",
     attestation: {
-      text: "I certify this artwork is human-created, not AI-generated or AI-assisted, and follows HUMAN_ policy.",
+      text: "I certify this artwork is human-created, not AI-generated or AI-assisted.",
       signerWallet: "ArtistWallet1111111111111111111111111111111",
       timestamp: new Date().toISOString(),
       signatureRef: "sig-ref-dev",
     },
     evidence: [
-      { kind: "source_file", hash: "a".repeat(64), label: "Source file draft" },
+      { kind: "source_file", hash: "a".repeat(64), label: "Source file" },
       { kind: "wip_image", hash: "b".repeat(64), label: "WIP screenshot" },
     ],
     evidenceHashes: ["a".repeat(64), "b".repeat(64)],
@@ -28,15 +27,13 @@ function defaultProvenance(): Provenance {
 }
 
 export default function SubmitPage() {
-  const [title, setTitle] = useState("Untitled HUMAN_ work");
-  const [description, setDescription] = useState("A human-made piece submitted for auction-house review.");
+  const [title, setTitle] = useState("Untitled work");
+  const [description, setDescription] = useState("A human-made piece submitted for auction listing.");
   const [imageUrl, setImageUrl] = useState("https://example.com/art.png");
-  const [sellerWallet, setSellerWallet] = useState(
-    "SellerWallet1111111111111111111111111111111",
-  );
+  const [sellerWallet, setSellerWallet] = useState("SellerWallet1111111111111111111111111111111");
   const [priceLamports, setPriceLamports] = useState(1_000_000_000);
   const [provenance, setProvenance] = useState<Provenance>(defaultProvenance);
-  const [responseText, setResponseText] = useState("idle");
+  const [responseText, setResponseText] = useState("No action yet.");
 
   const categoryOptions: ArtCategory[] = ["visual", "audio", "video", "writing", "mixed_media"];
 
@@ -44,9 +41,6 @@ export default function SubmitPage() {
     const evidenceHashes = provenance.evidence.map((item) => item.hash);
     return validateProvenance({ ...provenance, evidenceHashes });
   }, [provenance]);
-
-  const responseSummary =
-    responseText === "idle" ? "No action sent yet." : responseText;
 
   function handleEvidenceChange(items: EvidenceItem[]) {
     setProvenance((prev) => ({
@@ -93,228 +87,73 @@ export default function SubmitPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-6 pb-20 pt-32">
-      <div className="section-shell space-y-10">
-        <section className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.65fr)]">
-          <div className="space-y-6">
-            <p className="eyebrow">Artist Consignment</p>
-            <h1 className="max-w-4xl text-4xl text-white text-balance sm:text-6xl">
-              Consign human-made work for curatorial review and auction placement.
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-white/65">
-              Submit the work, provide human-authorship evidence, receive curatorial review, set estimate and reserve guidance, then enter a named sale.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <span className="status-pill">Submission Draft</span>
-              <span className="status-pill">No AI Artwork</span>
-              <ProvenanceBadge provenance={sanitizedProvenance} />
-            </div>
+    <main className="min-h-screen bg-black px-4 pb-14 pt-24 text-white sm:px-6">
+      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-xl border border-white/10 bg-[#141414] p-5 sm:p-6">
+          <h1 className="text-2xl font-semibold">List artwork for auction</h1>
+          <p className="mt-2 text-sm text-white/70">Simple consignment form with proof of human authorship.</p>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="text-sm sm:col-span-2">
+              <span className="mb-1 block text-white/75">Title</span>
+              <input className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </label>
+
+            <label className="text-sm sm:col-span-2">
+              <span className="mb-1 block text-white/75">Description</span>
+              <textarea className="min-h-28 w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={description} onChange={(e) => setDescription(e.target.value)} />
+            </label>
+
+            <label className="text-sm">
+              <span className="mb-1 block text-white/75">Image URL</span>
+              <input className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+            </label>
+
+            <label className="text-sm">
+              <span className="mb-1 block text-white/75">Wallet</span>
+              <input className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={sellerWallet} onChange={(e) => setSellerWallet(e.target.value)} />
+            </label>
+
+            <label className="text-sm">
+              <span className="mb-1 block text-white/75">Category</span>
+              <select
+                className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2"
+                value={provenance.category}
+                onChange={(e) => setProvenance((prev) => ({ ...prev, category: e.target.value as ArtCategory }))}
+              >
+                {categoryOptions.map((category) => (
+                  <option key={category} value={category}>{category.replace(/_/g, " ")}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-sm">
+              <span className="mb-1 block text-white/75">Reserve (lamports)</span>
+              <input
+                type="number"
+                className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2"
+                value={priceLamports}
+                onChange={(e) => setPriceLamports(Number(e.target.value))}
+              />
+            </label>
           </div>
 
-          <aside className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="eyebrow">Consignment Checklist</p>
-            <div className="mt-5 space-y-5">
-              <div className="border-l border-white/10 pl-4">
-                <p className="text-sm font-semibold text-white">1. Confirm human authorship</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">HUMAN_ accepts human-made work only. AI-generated, AI-assisted, or synthetic artist claims are not eligible.</p>
-              </div>
-              <div className="border-l border-white/10 pl-4">
-                <p className="text-sm font-semibold text-white">2. Attach process evidence</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">Include sketches, drafts, source files, studio photos, WIP captures, timestamps, signatures, or reviewer notes.</p>
-              </div>
-              <div className="border-l border-white/10 pl-4">
-                <p className="text-sm font-semibold text-white">3. Enter curatorial review</p>
-                <p className="mt-2 text-sm leading-7 text-white/58">Once verified, the auction team can shape catalog copy, estimate, reserve, and sale placement.</p>
-              </div>
-            </div>
-          </aside>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <button onClick={submitMint} className="rounded-md bg-white px-4 py-2 text-sm font-medium text-black">Mint draft</button>
+            <button onClick={prepareListing} className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium">Prepare listing</button>
+          </div>
+
+          <pre className="mt-4 overflow-x-auto rounded-md border border-white/10 bg-[#101010] p-3 text-xs text-white/80">{responseText}</pre>
         </section>
 
-        <section className="grid gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-          <div className="space-y-8">
-            <article className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
-              <div className="section-heading">
-                <p className="eyebrow">Artwork Details</p>
-                <h2 className="text-3xl text-white sm:text-4xl">Define what reviewers and collectors will see first.</h2>
-                <p className="section-kicker">
-                  Keep this concise and specific. Only VERIFIED_HUMAN work can proceed to mint, listing, or auction preparation.
-                </p>
-              </div>
-
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <label htmlFor="art-title" className="field-label">Artwork Title</label>
-                  <input
-                    id="art-title"
-                    name="title"
-                    className="field-input"
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                    placeholder="Name the artwork…"
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="art-description" className="field-label">Description</label>
-                  <textarea
-                    id="art-description"
-                    name="description"
-                    className="field-textarea"
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Describe the piece, medium, and what makes the release distinctive…"
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="preview-url" className="field-label">Preview URL</label>
-                  <input
-                    id="preview-url"
-                    name="imageUrl"
-                    type="url"
-                    inputMode="url"
-                    className="field-input"
-                    value={imageUrl}
-                    onChange={(event) => setImageUrl(event.target.value)}
-                    placeholder="https://example.com/artwork-preview.png…"
-                    spellCheck={false}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="seller-wallet" className="field-label">Artist Wallet</label>
-                  <input
-                    id="seller-wallet"
-                    name="sellerWallet"
-                    className="field-input"
-                    value={sellerWallet}
-                    onChange={(event) => setSellerWallet(event.target.value)}
-                    placeholder="Wallet address…"
-                    spellCheck={false}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="art-category" className="field-label">Category</label>
-                  <select
-                    id="art-category"
-                    name="category"
-                    className="field-select"
-                    value={provenance.category}
-                    onChange={(event) =>
-                      setProvenance((prev) => ({ ...prev, category: event.target.value as ArtCategory }))
-                    }
-                  >
-                    {categoryOptions.map((category) => (
-                      <option key={category} value={category}>
-                        {category.replace(/_/g, " ")}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="art-medium" className="field-label">Medium</label>
-                  <input
-                    id="art-medium"
-                    name="medium"
-                    className="field-input"
-                    value={provenance.medium}
-                    onChange={(event) => setProvenance((prev) => ({ ...prev, medium: event.target.value }))}
-                    placeholder="Procreate, Blender, code-based system…"
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="price-lamports" className="field-label">Reserve Target (Lamports)</label>
-                  <input
-                    id="price-lamports"
-                    name="priceLamports"
-                    type="number"
-                    inputMode="numeric"
-                    className="field-input"
-                    value={priceLamports}
-                    onChange={(event) => setPriceLamports(Number(event.target.value))}
-                    placeholder="1000000000…"
-                    autoComplete="off"
-                  />
-                </div>
-              </div>
-            </article>
-
-            <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
-
-            <ReviewPanel
-              provenance={sanitizedProvenance}
-              reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "mock-admin-wallet"}
-              enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
-              onUpdate={setProvenance}
-            />
-          </div>
-
-          <div className="space-y-6">
-            <article className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-              <p className="eyebrow">Consignment Preview</p>
-              <div className="mt-4 space-y-4">
-                <h2 className="text-3xl text-white">{title}</h2>
-                <p className="text-sm leading-7 text-white/62">{description}</p>
-                <div className="grid gap-4 border-t border-white/10 pt-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Category</p>
-                    <p className="mt-2 text-sm text-white">{sanitizedProvenance.category.replace(/_/g, " ")}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Medium</p>
-                    <p className="mt-2 text-sm text-white">{sanitizedProvenance.medium}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Evidence Count</p>
-                    <p className="mt-2 text-sm text-white">{sanitizedProvenance.evidence.length}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Reserve Target</p>
-                    <p className="mt-2 text-sm text-white">{priceLamports.toLocaleString()} lamports</p>
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-emerald-50/75">Human-made only</p>
-                  <p className="mt-2 text-sm leading-7 text-emerald-50/72">
-                    Auction preparation is blocked until the evidence packet is VERIFIED_HUMAN. AI-generated or AI-assisted final artworks are rejected.
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <article className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6">
-              <p className="eyebrow">Pipeline Actions</p>
-              <p className="mt-3 text-sm leading-7 text-white/60">
-                Prepare the mint payload first, then generate the listing payload only after human-made verification clears.
-              </p>
-              <div className="mt-5 grid gap-3">
-                <button type="button" onClick={submitMint} className="button-primary w-full">
-                  Prepare Mint
-                </button>
-                <button type="button" onClick={prepareListing} className="button-secondary w-full">
-                  Prepare Listing
-                </button>
-              </div>
-            </article>
-
-            <article className="rounded-[2rem] border border-white/10 bg-black/30 p-6">
-              <div className="flex items-center justify-between gap-4">
-                <p className="eyebrow">Response</p>
-                <span className="text-xs uppercase tracking-[0.16em] text-white/45">API Output</span>
-              </div>
-              <pre className="mt-4 overflow-x-auto whitespace-pre-wrap break-words rounded-2xl border border-white/10 bg-black/40 p-4 text-sm leading-7 text-white/68">
-                {responseSummary}
-              </pre>
-            </article>
-          </div>
+        <section className="space-y-6">
+          <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
+          <ReviewPanel
+            provenance={sanitizedProvenance}
+            reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "mock-admin-wallet"}
+            enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
+            onUpdate={setProvenance}
+          />
         </section>
       </div>
     </main>
