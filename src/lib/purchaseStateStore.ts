@@ -1,6 +1,8 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { PurchaseState } from "../types/art";
+import { createSupabaseAdminClient } from "./supabase/admin";
+import { isSupabaseConfigured } from "./supabase/config";
 
 export interface PurchaseStateRecord {
   idempotencyKey: string;
@@ -145,6 +147,150 @@ class FilePurchaseStateStore implements PurchaseStateStore {
   }
 }
 
+type PurchaseStateRow = {
+  idempotency_key: string;
+  status: PurchaseState;
+  created_at: string;
+  updated_at: string;
+  tx_signature: string | null;
+  error: string | null;
+  tx_context: PurchaseStateRecord["txContext"] | null;
+};
+
+function tableName() {
+  return process.env.PURCHASE_STATE_TABLE?.trim() || "purchase_states";
+}
+
+function hasSupabaseAdminConfig() {
+  return isSupabaseConfigured() && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
+
+function toRow(record: PurchaseStateRecord): PurchaseStateRow {
+  return {
+    idempotency_key: record.idempotencyKey,
+    status: record.status,
+    created_at: record.createdAt,
+    updated_at: record.updatedAt,
+    tx_signature: record.txSignature ?? null,
+    error: record.error ?? null,
+    tx_context: record.txContext ?? null,
+  };
+}
+
+function fromRow(row: PurchaseStateRow): PurchaseStateRecord {
+  return {
+    idempotencyKey: row.idempotency_key,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    txSignature: row.tx_signature ?? undefined,
+    error: row.error ?? undefined,
+    txContext: row.tx_context ?? undefined,
+  };
+}
+
+class SupabasePurchaseStateStore implements PurchaseStateStore {
+  constructor(private readonly fallback: PurchaseStateStore) {}
+
+  private client() {
+    return createSupabaseAdminClient();
+  }
+
+  private async runWithFallback<T>(operation: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
+    if (!hasSupabaseAdminConfig()) {
+      return fallback();
+    }
+
+    try {
+      return await operation();
+    } catch (error) {
+      console.warn("Supabase purchase state unavailable; falling back to file store.", error);
+      return fallback();
+    }
+  }
+
+  async get(idempotencyKey: string): Promise<PurchaseStateRecord | null> {
+    return this.runWithFallback(
+      async () => {
+        const { data, error } = await this.client()
+          .from(tableName())
+          .select("idempotency_key,status,created_at,updated_at,tx_signature,error,tx_context")
+          .eq("idempotency_key", idempotencyKey)
+          .maybeSingle<PurchaseStateRow>();
+
+        if (error) {
+          throw error;
+        }
+
+        return data ? fromRow(data) : null;
+      },
+      () => this.fallback.get(idempotencyKey),
+    );
+  }
+
+  async create(record: PurchaseStateRecord): Promise<void> {
+    return this.runWithFallback(
+      async () => {
+        const { error } = await this.client().from(tableName()).insert(toRow(record));
+        if (error) {
+          throw error;
+        }
+      },
+      () => this.fallback.create(record),
+    );
+  }
+
+  async update(
+    idempotencyKey: string,
+    patch: Partial<PurchaseStateRecord>,
+  ): Promise<PurchaseStateRecord | null> {
+    return this.runWithFallback(
+      async () => {
+        const existing = await this.get(idempotencyKey);
+        if (!existing) {
+          return null;
+        }
+
+        const updated: PurchaseStateRecord = {
+          ...existing,
+          ...patch,
+          idempotencyKey,
+          updatedAt: new Date().toISOString(),
+        };
+
+        const { data, error } = await this.client()
+          .from(tableName())
+          .update(toRow(updated))
+          .eq("idempotency_key", idempotencyKey)
+          .select("idempotency_key,status,created_at,updated_at,tx_signature,error,tx_context")
+          .maybeSingle<PurchaseStateRow>();
+
+        if (error) {
+          throw error;
+        }
+
+        return data ? fromRow(data) : null;
+      },
+      () => this.fallback.update(idempotencyKey, patch),
+    );
+  }
+
+  async upsert(record: PurchaseStateRecord): Promise<void> {
+    return this.runWithFallback(
+      async () => {
+        const { error } = await this.client()
+          .from(tableName())
+          .upsert(toRow(record), { onConflict: "idempotency_key" });
+
+        if (error) {
+          throw error;
+        }
+      },
+      () => this.fallback.upsert(record),
+    );
+  }
+}
+
 const configuredPath = process.env.PURCHASE_STATE_FILE;
 const dataFile = configuredPath
   ? resolve(process.cwd(), configuredPath)
@@ -154,7 +300,11 @@ let singleton: PurchaseStateStore | null = null;
 
 export function getPurchaseStateStore(): PurchaseStateStore {
   if (!singleton) {
-    singleton = new FilePurchaseStateStore(dataFile);
+    const fileStore = new FilePurchaseStateStore(dataFile);
+    singleton =
+      process.env.PURCHASE_STATE_BACKEND === "file"
+        ? fileStore
+        : new SupabasePurchaseStateStore(fileStore);
   }
   return singleton;
 }

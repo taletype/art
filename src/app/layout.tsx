@@ -5,9 +5,9 @@ import Footer from "@/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HUMAN_ Arts - Human-Created Digital Art on Solana",
+  title: "HUMAN_ Arts - Curated Solana Art Auctions",
   description:
-    "A curated Solana marketplace for original digital art by verified human artists. Discover, collect, and support creators.",
+    "A premium digital auction house for curated emerging artists, provenance-rich lots, and Solana-native bidding.",
 };
 
 export const viewport: Viewport = {

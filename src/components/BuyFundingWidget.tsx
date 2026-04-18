@@ -5,15 +5,17 @@ import { getThirdwebClient } from "../lib/thirdweb";
 
 interface BuyFundingWidgetProps {
   amount: string;
+  purchaseData: Record<string, unknown>;
   onSuccess: () => void;
 }
 
-export function BuyFundingWidget({ amount, onSuccess }: BuyFundingWidgetProps) {
+export function BuyFundingWidget({ amount, purchaseData, onSuccess }: BuyFundingWidgetProps) {
   try {
     return (
       <BuyWidget
         client={getThirdwebClient()}
         amount={amount}
+        purchaseData={purchaseData}
         title="Fund wallet for Solana purchase"
         description="Buy or bridge crypto with Thirdweb Pay, then settle on Solana."
         onSuccess={onSuccess}

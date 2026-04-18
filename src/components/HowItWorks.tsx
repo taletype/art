@@ -5,24 +5,24 @@ import Link from "next/link";
 const steps = [
   {
     number: "01",
-    title: "Submit evidence",
+    title: "Consign a lot",
     description:
-      "Creators upload source files, process captures, and signed attestations so every listing starts with a transparent proof packet.",
-    bullets: ["Evidence packet assembly", "Creator attestation", "Category-specific requirements"],
+      "Artists submit portfolio context, artwork details, reserve expectations, and authorship evidence for a high-touch review.",
+    bullets: ["Portfolio context", "Reserve guidance", "Evidence packet assembly"],
   },
   {
     number: "02",
-    title: "Review + verification",
+    title: "Curate the sale",
     description:
-      "HUMAN_ reviewers evaluate the packet for human authorship consistency and either approve, request more evidence, or reject.",
-    bullets: ["Reviewer decision trail", "Clear status updates", "Collector-facing trust metadata"],
+      "The curatorial desk approves lots, writes catalog context, sets estimates, and schedules works into named timed auctions.",
+    bullets: ["Admin approval", "Catalog essay", "Estimate and reserve"],
   },
   {
     number: "03",
-    title: "Mint, list, collect",
+    title: "Register, bid, settle",
     description:
-      "Verified works are prepared for minting and listing, then collected through a Solana-native flow with durable purchase state.",
-    bullets: ["On-chain listing prep", "Fast Solana checkout", "Creator-first settlement"],
+      "Collectors register before bidding, inspect total cost, sign through their wallet, and rely on Solana as settlement truth.",
+    bullets: ["Collector registration", "Buyer premium disclosure", "Solana escrow path"],
   },
 ];
 
@@ -32,18 +32,18 @@ export default function HowItWorks() {
       <div className="section-shell">
         <div className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="section-heading">
-            <p className="eyebrow">How HUMAN_ works</p>
-            <h2 className="text-3xl text-white text-balance sm:text-5xl">A working path from creator evidence to collector ownership.</h2>
+            <p className="eyebrow">How auctions work</p>
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">A working path from consignment to collector ownership.</h2>
             <p className="section-kicker">
-              The flow below mirrors the actual product sequence: submit, review, prepare, list, and collect.
+              The flow below mirrors the premium auction-house model: curate fewer lots, disclose more context, and keep bidding wallet-safe.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/submit" className="button-primary">
-              Start Submission
+              Request Consignment
             </Link>
             <Link href="/#featured" className="button-secondary">
-              Explore Verified Works
+              Explore Auction Lots
             </Link>
           </div>
         </div>

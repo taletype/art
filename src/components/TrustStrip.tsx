@@ -7,10 +7,10 @@ export default function TrustStrip() {
     <section className="border-y border-white/10 px-6 py-20">
       <div className="section-shell grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-center">
         <div className="section-heading">
-          <p className="eyebrow">Why collectors trust the surface</p>
-          <h2 className="text-3xl text-white text-balance sm:text-4xl">Confidence comes from visible process, not decorative reassurance.</h2>
+          <p className="eyebrow">Why collectors trust the sale</p>
+          <h2 className="text-3xl text-white text-balance sm:text-4xl">Auction confidence comes from curation, disclosure, and settlement clarity.</h2>
           <p className="section-kicker">
-            HUMAN_ keeps authorship evidence, review context, and purchase readiness in the same product path so collectors do not have to guess what they are buying.
+            HUMAN_ keeps artist evidence, catalog notes, estimates, reserves, buyer premium, and bid preparation in the same product path.
           </p>
         </div>
 

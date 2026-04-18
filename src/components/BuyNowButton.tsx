@@ -42,6 +42,7 @@ export function BuyNowButton({
   rpcUrl,
 }: BuyNowButtonProps) {
   const [showFunding, setShowFunding] = useState(false);
+  const [fundingPurchaseData, setFundingPurchaseData] = useState<Record<string, unknown> | null>(null);
   const [busy, setBusy] = useState(false);
   const [purchaseState, setPurchaseState] = useState<PurchaseState | null>(null);
   const [statusMessage, setStatusMessage] = useState("idle");
@@ -127,15 +128,24 @@ export function BuyNowButton({
     setBusy(true);
     try {
       const balance = await buyerBalanceLamports();
+      const idempotencyKey = `${listingId}-${buyerSolAddress}-${Date.now()}`;
+      localStorage.setItem(STORAGE_KEY, idempotencyKey);
+
       if (balance < requiredLamports + 20_000) {
         setPurchaseState("NEEDS_FUNDING");
         setShowFunding(true);
+        setFundingPurchaseData({
+          idempotencyKey,
+          listingId,
+          assetId,
+          buyerWallet: buyerSolAddress,
+          sellerWallet,
+          treasuryMint,
+          priceLamports: requiredLamports,
+        });
         setStatusMessage("Insufficient balance. Fund wallet to continue.");
         return;
       }
-
-      const idempotencyKey = `${listingId}-${buyerSolAddress}-${Date.now()}`;
-      localStorage.setItem(STORAGE_KEY, idempotencyKey);
 
       const response = await fetch("/api/purchase", {
         method: "POST",
@@ -226,6 +236,7 @@ export function BuyNowButton({
           <p className="mb-3 text-xs uppercase tracking-[0.16em] text-white/45">Funding required</p>
           <BuyFundingWidget
             amount={priceInSol.toString()}
+            purchaseData={fundingPurchaseData ?? { listingId, assetId, buyerWallet: buyerSolAddress }}
             onSuccess={() => {
               setShowFunding(false);
               setPurchaseState("READY_TO_PURCHASE");

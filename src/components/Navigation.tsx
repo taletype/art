@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/#featured", label: "Explore" },
-  { href: "/#creators", label: "Creators" },
-  { href: "/#how-it-works", label: "How It Works" },
-  { href: "/submit", label: "Submit" },
+  { href: "/#featured", label: "Auctions" },
+  { href: "/sales/contemporary-digital-asia", label: "Catalog" },
+  { href: "/#creators", label: "Artists" },
+  { href: "/submit", label: "Consign" },
 ];
 
 export default function Navigation() {
@@ -22,7 +22,7 @@ export default function Navigation() {
           </span>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">HUMAN_ Arts</p>
-            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Verified digital originals</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/45">Solana auction house</p>
           </div>
         </Link>
 
@@ -40,10 +40,10 @@ export default function Navigation() {
 
         <div className="hidden items-center gap-3 md:flex">
           <Link href="/creator/creative-soul" className="button-secondary px-4 py-2">
-            Featured Creator
+            Featured Artist
           </Link>
           <Link href="/submit" className="button-primary px-5 py-2.5">
-            Submit Art
+            Consign Art
           </Link>
         </div>
 
@@ -72,7 +72,7 @@ export default function Navigation() {
               </Link>
             ))}
             <Link href="/submit" onClick={() => setOpen(false)} className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black">
-              Submit Art
+              Consign Art
             </Link>
           </div>
         </div>

@@ -18,6 +18,42 @@ export type ArtworkRecord = {
   evidenceLabels: string[];
 };
 
+export type AuctionLotStatus = "upcoming" | "live" | "sold" | "passed";
+
+export type AuctionLotRecord = ArtworkRecord & {
+  lotNumber: number;
+  saleId: string;
+  estimateLowSol: number;
+  estimateHighSol: number;
+  reserveSol: number;
+  currentBidSol: number;
+  minimumNextBidSol: number;
+  bidCount: number;
+  watchCount: number;
+  status: AuctionLotStatus;
+  closesAt: string;
+  conditionReport: string;
+  provenanceStatement: string;
+  authenticityStatement: string;
+  buyerPremiumBps: number;
+  platformSellerCommissionBps: number;
+};
+
+export type AuctionSaleRecord = {
+  id: string;
+  title: string;
+  subtitle: string;
+  curatorName: string;
+  curatorNote: string;
+  opensAt: string;
+  closesAt: string;
+  heroLotId: string;
+  lotIds: string[];
+  status: "preview" | "live" | "closed";
+  category: string;
+  location: string;
+};
+
 export type CreatorRecord = {
   wallet: string;
   name: string;
@@ -30,23 +66,23 @@ export type CreatorRecord = {
 };
 
 export const platformStats = [
-  { label: "Verified creator drops", value: "128+" },
-  { label: "Evidence packets reviewed", value: "1.9k" },
-  { label: "Average settlement time", value: "< 30s" },
+  { label: "Curated auction lots", value: "42" },
+  { label: "Verified artist packets", value: "1.9k" },
+  { label: "Devnet settlement target", value: "< 30s" },
 ];
 
 export const trustSignals = [
   {
-    label: "Human-made provenance",
-    description: "Every listing pairs collector-facing artwork with creator evidence and reviewer attestations.",
+    label: "Curated provenance",
+    description: "Every lot separates artist statements, platform catalog notes, and reviewer attestations for collector clarity.",
   },
   {
-    label: "Solana-native checkout",
-    description: "Fast, low-cost purchase preparation with durable purchase state and RPC confirmation.",
+    label: "Solana settlement",
+    description: "Auction bid preparation is designed around wallet-signed transactions, escrow inspection, and RPC confirmation.",
   },
   {
-    label: "Creator-first curation",
-    description: "Submission, review, minting, and listing live in one connected workflow.",
+    label: "Auction-house curation",
+    description: "Named sales, estimates, reserves, condition notes, and buyer-premium disclosure create a more formal collector path.",
   },
 ];
 
@@ -167,6 +203,70 @@ const artworks: ArtworkRecord[] = [
   },
 ];
 
+const auctionSales: AuctionSaleRecord[] = [
+  {
+    id: "contemporary-digital-asia",
+    title: "Contemporary Digital Asia",
+    subtitle: "A timed evening sale of verified 1/1 and limited digital works from emerging Asian and diaspora artists.",
+    curatorName: "HUMAN_ Curatorial Desk",
+    curatorNote:
+      "This sale favors process-rich works where collector confidence comes from authorship evidence, editorial context, and transparent on-chain settlement.",
+    opensAt: "2026-04-10T12:00:00.000Z",
+    closesAt: "2026-05-15T14:00:00.000Z",
+    heroLotId: "ethereal-waves",
+    lotIds: ["ethereal-waves", "abstract-dimensions", "crystalline-forms"],
+    status: "live",
+    category: "Digital art",
+    location: "Hong Kong / Online",
+  },
+  {
+    id: "new-collectors-evening",
+    title: "New Collectors Evening Sale",
+    subtitle: "Accessible artist-led works with verified provenance, transparent estimates, and collector-friendly bidding.",
+    curatorName: "Mina Lau",
+    curatorNote:
+      "A concise sale for new collectors who want formal lot details without the opacity of traditional gallery buying.",
+    opensAt: "2026-05-22T11:00:00.000Z",
+    closesAt: "2026-05-29T13:00:00.000Z",
+    heroLotId: "neon-landscapes",
+    lotIds: ["neon-landscapes", "chromatic-fusion", "quantum-dreams"],
+    status: "preview",
+    category: "Emerging artists",
+    location: "Online",
+  },
+];
+
+const auctionLots: AuctionLotRecord[] = artworks.map((artwork, index) => {
+  const sale = auctionSales.find((candidate) => candidate.lotIds.includes(artwork.id)) ?? auctionSales[0];
+  const estimateLowSol = Math.max(1, Number((artwork.priceSol * 0.8).toFixed(1)));
+  const estimateHighSol = Number((artwork.priceSol * 1.35).toFixed(1));
+  const currentBidSol = index % 3 === 0 ? Number((estimateLowSol * 0.92).toFixed(1)) : 0;
+  const minimumNextBidSol = Number((Math.max(currentBidSol, estimateLowSol) + 0.2).toFixed(1));
+
+  return {
+    ...artwork,
+    lotNumber: index + 1,
+    saleId: sale.id,
+    estimateLowSol,
+    estimateHighSol,
+    reserveSol: estimateLowSol,
+    currentBidSol,
+    minimumNextBidSol,
+    bidCount: index % 3 === 0 ? 7 + index : index + 1,
+    watchCount: 34 + index * 11,
+    status: sale.status === "closed" ? "sold" : sale.status === "live" ? "live" : "upcoming",
+    closesAt: sale.closesAt,
+    conditionReport:
+      "Digital file reviewed for collector display quality. Evidence packet includes process artifacts and reviewer notes; physical condition is not applicable unless a print addendum is issued.",
+    provenanceStatement:
+      "Consigned directly by the artist to HUMAN_ Arts. Off-chain editorial data is cached in Supabase; ownership and settlement are intended to resolve on Solana.",
+    authenticityStatement:
+      "Artist attestation, human-authorship evidence, and curatorial review are separated from platform-written catalog notes for collector clarity.",
+    buyerPremiumBps: 800,
+    platformSellerCommissionBps: 700,
+  };
+});
+
 const creators: CreatorRecord[] = [
   {
     wallet: "creative-soul",
@@ -208,7 +308,7 @@ function titleFromId(id: string) {
     .join(" ");
 }
 
-function fallbackArtwork(id: string): ArtworkRecord {
+function fallbackArtwork(id: string): AuctionLotRecord {
   return {
     id,
     title: titleFromId(id),
@@ -227,19 +327,35 @@ function fallbackArtwork(id: string): ArtworkRecord {
     background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(124, 58, 237, 0.68), rgba(212, 175, 55, 0.18))",
     accent: "#d4af37",
     evidenceLabels: ["Creator attestation", "Evidence packet", "Review log"],
+    lotNumber: 99,
+    saleId: "contemporary-digital-asia",
+    estimateLowSol: 3.2,
+    estimateHighSol: 5.6,
+    reserveSol: 3.2,
+    currentBidSol: 0,
+    minimumNextBidSol: 3.2,
+    bidCount: 0,
+    watchCount: 12,
+    status: "upcoming",
+    closesAt: "2026-05-15T14:00:00.000Z",
+    conditionReport: "Fallback catalog entry prepared for route continuity.",
+    provenanceStatement: "Consigned directly by the artist with platform-reviewed provenance pending.",
+    authenticityStatement: "Artist attestation and reviewer evidence are displayed separately when available.",
+    buyerPremiumBps: 800,
+    platformSellerCommissionBps: 700,
   };
 }
 
 export function getFeaturedArtworks() {
-  return artworks;
+  return auctionLots;
 }
 
 export function getFeaturedArtwork() {
-  return artworks[0];
+  return auctionLots[0];
 }
 
 export function getArtworkById(id: string) {
-  return artworks.find((artwork) => artwork.id === id) ?? fallbackArtwork(id);
+  return auctionLots.find((artwork) => artwork.id === id) ?? fallbackArtwork(id);
 }
 
 export function getCreators() {
@@ -254,4 +370,25 @@ export function getCreatorArtworks(wallet: string) {
   const creator = getCreatorByWallet(wallet);
   if (!creator) return [];
   return creator.artworkIds.map((id) => getArtworkById(id));
+}
+
+export function getAuctionSales() {
+  return auctionSales;
+}
+
+export function getAuctionSaleById(id: string) {
+  return auctionSales.find((sale) => sale.id === id) ?? null;
+}
+
+export function getAuctionLotsBySaleId(saleId: string) {
+  return auctionLots.filter((lot) => lot.saleId === saleId);
+}
+
+export function getAuctionLotById(lotId: string) {
+  return auctionLots.find((lot) => lot.id === lotId) ?? null;
+}
+
+export function getSaleForLot(lotId: string) {
+  const lot = getAuctionLotById(lotId);
+  return lot ? getAuctionSaleById(lot.saleId) : null;
 }

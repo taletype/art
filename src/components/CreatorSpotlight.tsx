@@ -11,26 +11,26 @@ export default function CreatorSpotlight() {
       <div className="section-shell grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
         <div className="space-y-6">
           <div className="section-heading">
-            <p className="eyebrow">Creator spotlight</p>
-            <h2 className="text-3xl text-white text-balance sm:text-5xl">Meet the artists building evidence-backed releases.</h2>
+            <p className="eyebrow">Artist spotlight</p>
+            <h2 className="text-3xl text-white text-balance sm:text-5xl">Meet the artists entering curated digital sales.</h2>
             <p className="section-kicker">
-              Profiles tie biography, practice, and published works together so discovery feels connected from the first visit through the final collector decision.
+              Profiles tie biography, practice, consigned lots, and provenance into the catalog experience before collectors place bids.
             </p>
           </div>
 
           <div className="grid gap-4">
             {[
               {
-                title: "Direct support",
-                detail: "Collectors can move from discovery to creator context without leaving the UI story.",
+                title: "Consignment support",
+                detail: "Artists get help shaping lot copy, evidence packets, and reserve expectations before publication.",
               },
               {
                 title: "Process visibility",
-                detail: "Evidence and review state travel with the artwork rather than hiding behind a separate admin flow.",
+                detail: "Evidence and review state travel with each lot rather than hiding behind a separate admin flow.",
               },
               {
-                title: "Career continuity",
-                detail: "Profiles now group artworks together so returning collectors can browse a creator’s body of work.",
+                title: "Collector continuity",
+                detail: "Profiles group sale history and available lots so returning collectors can follow an artist’s market.",
               },
             ].map((item) => (
               <div key={item.title} className="border-l border-white/10 pl-5">
@@ -41,7 +41,7 @@ export default function CreatorSpotlight() {
           </div>
 
           <Link href="/submit" className="button-primary">
-            Become a Featured Creator
+            Apply For Consignment
           </Link>
         </div>
 
@@ -64,7 +64,7 @@ export default function CreatorSpotlight() {
                     <p className="mt-1 text-sm text-white/55">{creator.discipline}</p>
                   </div>
                   <Link href={`/creator/${creator.wallet}`} className="inline-flex items-center text-sm font-semibold text-[#f5d06f] transition hover:text-[#ffe39a]">
-                    Open Creator Profile →
+                    Open Artist Profile →
                   </Link>
                 </div>
               </article>

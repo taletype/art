@@ -5,7 +5,9 @@ export type BlockerCode =
   | "UNSUPPORTED_BRANCH"
   | "RPC_UNAVAILABLE"
   | "SDK_BUILD_FAILED"
-  | "ACCOUNT_DERIVATION_FAILED";
+  | "ACCOUNT_DERIVATION_FAILED"
+  | "BID_RULE_FAILED"
+  | "AUCTION_NOT_OPEN";
 
 export interface BlockingIssue {
   code: BlockerCode;

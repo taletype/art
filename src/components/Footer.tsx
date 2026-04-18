@@ -18,27 +18,28 @@ export default function Footer() {
               </span>
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">HUMAN_ Arts</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Verified digital originals</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">Solana auction house</p>
               </div>
             </Link>
             <p className="max-w-sm text-sm leading-7 text-white/55">
-              A premium collector marketplace where human-made digital artworks carry evidence-backed provenance and a Solana-native purchase path.
+              A premium digital auction house where curated artworks carry evidence-backed provenance and a Solana-native bid path.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/submit" className="button-primary px-5 py-2.5">
-                Submit Artwork
+                Request Consignment
               </Link>
               <Link href="/#featured" className="button-secondary px-5 py-2.5">
-                Explore Market
+                Explore Auctions
               </Link>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Marketplace</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Auctions</h4>
             <ul className="space-y-2 text-sm text-white/58">
-              <li><Link href="/#featured" className="transition hover:text-white">Featured Artworks</Link></li>
-              <li><Link href="/#creators" className="transition hover:text-white">Creator Spotlight</Link></li>
+              <li><Link href="/#featured" className="transition hover:text-white">Featured Lots</Link></li>
+              <li><Link href="/sales/contemporary-digital-asia" className="transition hover:text-white">Contemporary Digital Asia</Link></li>
+              <li><Link href="/#creators" className="transition hover:text-white">Artist Spotlight</Link></li>
               <li><Link href="/#how-it-works" className="transition hover:text-white">How It Works</Link></li>
               {artworks.map((artwork) => (
                 <li key={artwork.id}>
@@ -49,7 +50,7 @@ export default function Footer() {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Creators</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Artists</h4>
             <ul className="space-y-2 text-sm text-white/58">
               {creators.map((creator) => (
                 <li key={creator.wallet}>
@@ -59,7 +60,7 @@ export default function Footer() {
                 </li>
               ))}
               <li>
-                <Link href="/submit" className="transition hover:text-white">Apply for Verification</Link>
+                <Link href="/submit" className="transition hover:text-white">Apply for Consignment</Link>
               </li>
             </ul>
           </div>
@@ -67,9 +68,9 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">Platform</h4>
             <ul className="space-y-2 text-sm text-white/58">
-              <li><Link href="/submit" className="transition hover:text-white">Mint & List Pipeline</Link></li>
+              <li><Link href="/submit" className="transition hover:text-white">Consignment Pipeline</Link></li>
               <li><Link href="/submit" className="transition hover:text-white">Evidence Requirements</Link></li>
-              <li><Link href="/submit" className="transition hover:text-white">Verification Queue</Link></li>
+              <li><Link href="/submit" className="transition hover:text-white">Curatorial Queue</Link></li>
             </ul>
           </div>
         </div>
