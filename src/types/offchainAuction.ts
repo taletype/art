@@ -31,3 +31,40 @@ export type CreateAuctionRequest = z.infer<typeof createAuctionRequestSchema>;
 export type ListAuctionsQuery = z.infer<typeof listAuctionsQuerySchema>;
 export type PlaceBidRequest = z.infer<typeof placeBidRequestSchema>;
 export type CloseAuctionRequest = z.infer<typeof closeAuctionRequestSchema>;
+
+export type OffchainAuctionStatus = z.infer<typeof auctionStatusSchema>;
+
+export type OffchainBid = {
+  id: string;
+  auctionId: string;
+  bidderWallet: string;
+  amountLamports: number;
+  amountSol: number;
+  isWinning: boolean;
+  createdAt: string;
+};
+
+export type OffchainAuctionSummary = {
+  id: string;
+  sellerWallet: string;
+  title: string;
+  description: string;
+  assetUrl: string;
+  startsAt: string;
+  endsAt: string;
+  startPriceLamports: number;
+  startPriceSol: number;
+  minIncrementLamports: number;
+  minIncrementSol: number;
+  status: OffchainAuctionStatus;
+  winnerBidId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  highestBidLamports: number | null;
+  highestBidSol: number | null;
+  bidCount: number;
+};
+
+export type OffchainAuctionDetail = OffchainAuctionSummary & {
+  bids: OffchainBid[];
+};

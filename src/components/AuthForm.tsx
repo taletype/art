@@ -86,7 +86,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
       {mode === "signup" ? (
         <div>
           <label htmlFor="signup-wallet" className="field-label">
-            Solana wallet
+            Wallet address
           </label>
           <input
             id="signup-wallet"
@@ -94,7 +94,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             value={walletAddress}
             onChange={(event) => setWalletAddress(event.target.value)}
             className="field-input"
-            placeholder="Optional now, editable later"
+            placeholder="Optional now, editable later from your auction profile"
           />
         </div>
       ) : null}

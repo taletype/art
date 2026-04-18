@@ -12,7 +12,7 @@ HUMAN_ Arts is human-made only. AI-generated artwork, AI-assisted final artwork,
 - `/submit` is the artist consignment workflow for drafting metadata, attaching human-authorship evidence, simulating review, and testing mint/list preparation.
 - `/creator/[wallet]` is the artist profile and consigned works view.
 - `/api/auction/bid` validates collector registration, sale window, bid increment, and English auction env before any wallet-signed bid transaction is emitted.
-- `/api/auctions` provides centralized auction CRUD for a fast off-chain V1 launch path backed by Supabase.
+- `/api/auctions` provides centralized auction CRUD for the active off-chain auction path backed by Supabase.
 - `/api/auctions/[id]/bids` records server-validated bids and keeps a single winning bid marker.
 - `/api/auctions/[id]/close` ends an off-chain auction and sets the winner snapshot for settlement.
 
@@ -117,6 +117,7 @@ Notes:
 - `npm test` runs the Vitest suite in `src/lib/__tests__`.
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
+- `npm run seed:mock-auctions` creates mock Supabase auth users plus sample `offchain_auctions` and `offchain_bids` rows for marketplace screens. It only clears previously seeded auctions for those mock sellers before re-inserting fresh sample data.
 - Apply `supabase/migrations/001_purchase_states.sql` before relying on Supabase-backed purchase recovery in shared environments.
 - Apply `supabase/migrations/002_curated_auction_house.sql` before relying on Supabase-backed auction artists, sales, lots, collectors, bids, or watchlists.
 - Apply `supabase/migrations/003_offchain_auctions.sql` before using off-chain auction APIs (`/api/auctions*`).

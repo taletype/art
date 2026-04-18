@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConnectButton } from "thirdweb/react";
+import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getThirdwebClient } from "@/lib/thirdweb";
@@ -12,6 +12,7 @@ type SessionState = {
 } | null;
 
 export default function WalletConnect() {
+  const activeAccount = useActiveAccount();
   const [session, setSession] = useState<SessionState>(null);
   const [walletAddress, setWalletAddress] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -45,6 +46,12 @@ export default function WalletConnect() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (activeAccount?.address) {
+      setWalletAddress(activeAccount.address);
+    }
+  }, [activeAccount?.address]);
 
   async function saveWalletAddress() {
     setMessage(null);
@@ -81,9 +88,9 @@ export default function WalletConnect() {
     <section className="space-y-5 rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-5">
       <div className="space-y-1">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Wallet + profile</p>
-        <h2 className="text-2xl">Connect funding, store Solana payout</h2>
+        <h2 className="text-2xl">Connect thirdweb wallet, store bidder profile</h2>
         <p className="text-sm text-white/65">
-          For V1 the auction logic stays off-chain, while the final payment is verified against a Solana transaction hash.
+          Off-chain auctions keep bidding in Supabase, and connected thirdweb wallets should still map cleanly into your bidder profile.
         </p>
       </div>
 
@@ -98,17 +105,17 @@ export default function WalletConnect() {
       <div className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
         <div className="space-y-1">
           <p className="text-sm font-medium text-white">{session?.email ?? "Not logged in"}</p>
-          <p className="text-sm text-white/55">Store the Solana wallet that should receive or send auction payments.</p>
+          <p className="text-sm text-white/55">Save the wallet you want attached to bids, auction ownership, and settlement records.</p>
         </div>
 
         <input
           value={walletAddress}
           onChange={(event) => setWalletAddress(event.target.value)}
           className="field-input"
-          placeholder="So1... wallet address"
+          placeholder="0x... or other connected wallet address"
         />
         <button type="button" onClick={saveWalletAddress} className="button-secondary w-full">
-          Save Solana wallet
+          {activeAccount?.address ? "Save connected wallet" : "Save wallet"}
         </button>
       </div>
 

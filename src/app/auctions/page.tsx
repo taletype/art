@@ -1,11 +1,11 @@
 import AuctionCard from "@/components/AuctionCard";
 import WalletConnect from "@/components/WalletConnect";
-import { listAuctions } from "@/lib/auction-v1";
+import { listOffchainAuctionSummaries } from "@/lib/offchainAuctions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AuctionsPage() {
-  const auctions = await listAuctions({ status: "all" });
+  const auctions = await listOffchainAuctionSummaries(undefined, 20);
   const live = auctions.filter((auction) => auction.status === "live");
   const upcoming = auctions.filter((auction) => auction.status === "draft");
   const settled = auctions.filter((auction) => auction.status === "settled" || auction.status === "ended");
@@ -15,10 +15,10 @@ export default async function AuctionsPage() {
       <section className="section-shell grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
         <div className="space-y-6">
           <div className="space-y-3">
-            <p className="eyebrow">Auction V1</p>
+            <p className="eyebrow">Off-chain auctions</p>
             <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Off-chain auctions. Solana settlement. Fast launch.</h1>
             <p className="max-w-2xl text-lg leading-8 text-white/68">
-              This lane keeps bidding and closing in Supabase so the team can move quickly, then verifies the final payment on Solana before marking an auction settled.
+              This lane keeps bidding and closing in Supabase-backed off-chain tables so the team can move quickly while keeping the marketplace flow consistent.
             </p>
           </div>
 
@@ -59,7 +59,7 @@ export default async function AuctionsPage() {
           <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
             <h3 className="text-2xl">No auctions yet</h3>
             <p className="mt-3 text-sm text-white/60">
-              Create your first auction via the API or seed one in Supabase to light up the V1 flow.
+              Create your first auction via the API or seed one in Supabase to light up the off-chain flow.
             </p>
           </div>
         )}

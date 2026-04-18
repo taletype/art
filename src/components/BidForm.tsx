@@ -1,17 +1,22 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useActiveAccount } from "thirdweb/react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import type { AuctionDetail } from "@/types/auction-v1";
+import type { OffchainAuctionDetail } from "@/types/offchainAuction";
 
 type BidFormProps = {
-  auction: AuctionDetail;
+  auction: OffchainAuctionDetail;
 };
 
 export default function BidForm({ auction }: BidFormProps) {
+  const activeAccount = useActiveAccount();
   const [amount, setAmount] = useState(
     String(
-      Math.max(auction.startPrice, (auction.highestBid ?? auction.startPrice) + auction.minIncrement).toFixed(2),
+      Math.max(
+        auction.startPriceSol,
+        (auction.highestBidSol ?? auction.startPriceSol) + auction.minIncrementSol,
+      ).toFixed(2),
     ),
   );
   const [walletAddress, setWalletAddress] = useState("");
@@ -19,9 +24,25 @@ export default function BidForm({ auction }: BidFormProps) {
   const [pending, setPending] = useState(false);
 
   const minimumBid = useMemo(
-    () => Math.max(auction.startPrice, (auction.highestBid ?? auction.startPrice) + auction.minIncrement),
-    [auction.highestBid, auction.minIncrement, auction.startPrice],
+    () => Math.max(auction.startPriceSol, (auction.highestBidSol ?? auction.startPriceSol) + auction.minIncrementSol),
+    [auction.highestBidSol, auction.minIncrementSol, auction.startPriceSol],
   );
+
+  useEffect(() => {
+    if (activeAccount?.address) {
+      setWalletAddress(activeAccount.address);
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    void supabase.auth.getUser().then(({ data }) => {
+      const savedWallet =
+        typeof data.user?.user_metadata?.wallet_address === "string"
+          ? data.user.user_metadata.wallet_address
+          : "";
+      setWalletAddress(savedWallet);
+    });
+  }, [activeAccount?.address]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,22 +50,24 @@ export default function BidForm({ auction }: BidFormProps) {
     setMessage(null);
 
     try {
-      const supabase = getSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const accessToken = data.session?.access_token;
-      if (!accessToken) {
-        throw new Error("Log in before placing a bid.");
+      const biddingWallet = activeAccount?.address ?? walletAddress.trim();
+      if (!biddingWallet) {
+        throw new Error("Connect your thirdweb wallet or save a wallet address before bidding.");
+      }
+
+      const amountLamports = Math.round(Number(amount) * 1_000_000_000);
+      if (!Number.isFinite(amountLamports) || amountLamports <= 0) {
+        throw new Error("Enter a valid bid amount.");
       }
 
       const response = await fetch(`/api/auctions/${auction.id}/bids`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          amount,
-          walletAddress: walletAddress || undefined,
+          bidderWallet: biddingWallet,
+          amountLamports,
         }),
       });
 
@@ -87,7 +110,7 @@ export default function BidForm({ auction }: BidFormProps) {
 
       <div>
         <label htmlFor="bid-wallet" className="field-label">
-          Solana wallet
+          Wallet address
         </label>
         <input
           id="bid-wallet"
@@ -95,8 +118,14 @@ export default function BidForm({ auction }: BidFormProps) {
           value={walletAddress}
           onChange={(event) => setWalletAddress(event.target.value)}
           className="field-input"
-          placeholder="Optional if already saved on your account"
+          placeholder="Connect with thirdweb or use the wallet saved on your profile"
+          readOnly={Boolean(activeAccount?.address)}
         />
+        <p className="mt-2 text-xs text-white/45">
+          {activeAccount?.address
+            ? "Using the wallet currently connected through thirdweb for this bid."
+            : "This wallet will be written into the off-chain bid record."}
+        </p>
       </div>
 
       <button type="submit" disabled={pending} className="button-primary w-full disabled:cursor-wait disabled:opacity-70">

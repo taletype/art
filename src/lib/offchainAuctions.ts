@@ -1,5 +1,12 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { CreateAuctionRequest, PlaceBidRequest } from "@/types/offchainAuction";
+import type {
+  CreateAuctionRequest,
+  OffchainAuctionDetail,
+  OffchainAuctionStatus,
+  OffchainAuctionSummary,
+  OffchainBid,
+  PlaceBidRequest,
+} from "@/types/offchainAuction";
 
 type AuctionRow = {
   id: string;
@@ -11,7 +18,7 @@ type AuctionRow = {
   ends_at: string;
   start_price_lamports: number;
   min_increment_lamports: number;
-  status: "draft" | "live" | "ended" | "settled" | "cancelled";
+  status: OffchainAuctionStatus;
   winner_bid_id: string | null;
   created_at: string;
   updated_at: string;
@@ -25,6 +32,71 @@ type BidRow = {
   is_winning: boolean;
   created_at: string;
 };
+
+const LAMPORTS_PER_SOL = 1_000_000_000;
+
+function lamportsToSol(value: number) {
+  return value / LAMPORTS_PER_SOL;
+}
+
+function mapBid(row: BidRow): OffchainBid {
+  return {
+    id: row.id,
+    auctionId: row.auction_id,
+    bidderWallet: row.bidder_wallet,
+    amountLamports: row.amount_lamports,
+    amountSol: lamportsToSol(row.amount_lamports),
+    isWinning: row.is_winning,
+    createdAt: row.created_at,
+  };
+}
+
+function mapAuctionSummary(row: AuctionRow, bids: BidRow[] = []): OffchainAuctionSummary {
+  const highestBidLamports = bids.reduce<number | null>((max, bid) => {
+    if (max === null || bid.amount_lamports > max) {
+      return bid.amount_lamports;
+    }
+    return max;
+  }, null);
+
+  return {
+    id: row.id,
+    sellerWallet: row.seller_wallet,
+    title: row.title,
+    description: row.description,
+    assetUrl: row.asset_url,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    startPriceLamports: row.start_price_lamports,
+    startPriceSol: lamportsToSol(row.start_price_lamports),
+    minIncrementLamports: row.min_increment_lamports,
+    minIncrementSol: lamportsToSol(row.min_increment_lamports),
+    status: row.status,
+    winnerBidId: row.winner_bid_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    highestBidLamports,
+    highestBidSol: highestBidLamports === null ? null : lamportsToSol(highestBidLamports),
+    bidCount: bids.length,
+  };
+}
+
+async function listBidsForAuction(auctionId: string) {
+  const db = createSupabaseAdminClient();
+  const { data, error } = await db
+    .from("offchain_bids")
+    .select("*")
+    .eq("auction_id", auctionId)
+    .order("amount_lamports", { ascending: false })
+    .order("created_at", { ascending: false })
+    .returns<BidRow[]>();
+
+  if (error) {
+    throw new Error(error.message || "Failed to load auction bids");
+  }
+
+  return data ?? [];
+}
 
 export async function createOffchainAuction(input: CreateAuctionRequest) {
   const startsAt = new Date(input.startsAt);
@@ -77,6 +149,41 @@ export async function listOffchainAuctions(status?: AuctionRow["status"], limit 
   }
 
   return data ?? [];
+}
+
+export async function listOffchainAuctionSummaries(status?: AuctionRow["status"], limit = 20) {
+  const auctions = await listOffchainAuctions(status, limit);
+  const summaries = await Promise.all(
+    auctions.map(async (auction) => {
+      const bids = await listBidsForAuction(auction.id);
+      return mapAuctionSummary(auction, bids);
+    }),
+  );
+
+  return summaries;
+}
+
+export async function getOffchainAuctionById(auctionId: string): Promise<OffchainAuctionDetail | null> {
+  const db = createSupabaseAdminClient();
+  const { data, error } = await db
+    .from("offchain_auctions")
+    .select("*")
+    .eq("id", auctionId)
+    .maybeSingle<AuctionRow>();
+
+  if (error) {
+    throw new Error(error.message || "Failed to load auction");
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const bids = await listBidsForAuction(auctionId);
+  return {
+    ...mapAuctionSummary(data, bids),
+    bids: bids.map(mapBid),
+  };
 }
 
 export async function placeOffchainBid(auctionId: string, input: PlaceBidRequest) {

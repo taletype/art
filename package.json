@@ -11,7 +11,8 @@
     "lint": "echo 'lint not configured'",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "readiness:v2:run": "node scripts/readiness-v2-run.mjs"
+    "readiness:v2:run": "node scripts/readiness-v2-run.mjs",
+    "seed:mock-auctions": "node scripts/seed-mock-auctions.mjs"
   },
   "dependencies": {
     "@metaplex-foundation/mpl-auction-house": "^2.5.1",
