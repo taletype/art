@@ -2,6 +2,20 @@
 
 This repo provides a Devnet-focused MVP for HUMAN_ Arts with strict provenance controls, SDK-backed transaction preparation, and durable server-side purchase state.
 
+## Supabase status
+
+Supabase is now wired into local project configuration through `.env.local` and shared helpers in `src/lib/supabase`.
+
+- Browser-safe access should use the publishable key via `getSupabaseBrowserClient()`.
+- Server-side RLS-aware access can use `createSupabaseServerClient()`.
+- Admin-only operations should use `createSupabaseAdminClient()` and stay on the server.
+- Postgres connection strings are exposed through `DATABASE_URL`, `POSTGRES_PRISMA_URL`, and `POSTGRES_URL`.
+
+What is still not migrated:
+- Purchase-state persistence is still file-backed in `src/lib/purchaseStateStore.ts`.
+- Provenance verification is still mock-driven.
+- Thirdweb webhook processing is still a placeholder.
+
 ## What works end-to-end on Devnet (with env + RPC)
 
 - **Metaplex Core mint prepare** (`/api/mint`) using `mpl-core` `createV1` instruction building.
@@ -50,6 +64,12 @@ If `assetId` is not a valid mint-shaped pubkey, the API returns typed blockers (
 
 ### Optional durable store
 - `PURCHASE_STATE_FILE` (defaults to `.data/purchase-state.json`)
+
+### Supabase / Postgres
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` for server admin flows
+- `DATABASE_URL` or `POSTGRES_URL` for direct database access
 
 ## Local run
 
