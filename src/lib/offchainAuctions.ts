@@ -1,4 +1,12 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  listAuctions,
+  getAuctionById,
+  createAuction,
+  updateAuction,
+  listBidsForAuction,
+  createBid,
+  updateBid,
+} from "@/lib/supabase-db";
 import type {
   CreateAuctionRequest,
   OffchainAuctionDetail,
@@ -81,21 +89,16 @@ function mapAuctionSummary(row: AuctionRow, bids: BidRow[] = []): OffchainAuctio
   };
 }
 
-async function listBidsForAuction(auctionId: string) {
-  const db = createSupabaseAdminClient();
-  const { data, error } = await db
-    .from("offchain_bids")
-    .select("*")
-    .eq("auction_id", auctionId)
-    .order("amount_lamports", { ascending: false })
-    .order("created_at", { ascending: false })
-    .returns<BidRow[]>();
-
-  if (error) {
-    throw new Error(error.message || "Failed to load auction bids");
-  }
-
-  return data ?? [];
+async function getBidsForAuction(auctionId: string): Promise<BidRow[]> {
+  const bids = await listBidsForAuction(auctionId);
+  return bids.map(bid => ({
+    id: bid.id,
+    auction_id: bid.auction_id,
+    bidder_wallet: bid.bidder_wallet,
+    amount_lamports: bid.amount_lamports,
+    is_winning: bid.is_winning,
+    created_at: bid.created_at,
+  }));
 }
 
 export async function createOffchainAuction(input: CreateAuctionRequest) {
@@ -106,57 +109,46 @@ export async function createOffchainAuction(input: CreateAuctionRequest) {
     throw new Error("Invalid auction schedule. endsAt must be after startsAt.");
   }
 
-  const db = createSupabaseAdminClient();
-  const { data, error } = await db
-    .from("offchain_auctions")
-    .insert({
-      seller_wallet: input.sellerWallet,
-      title: input.title,
-      description: input.description,
-      asset_url: input.assetUrl,
-      starts_at: input.startsAt,
-      ends_at: input.endsAt,
-      start_price_lamports: input.startPriceLamports,
-      min_increment_lamports: input.minIncrementLamports,
-      status: "live",
-    })
-    .select("*")
-    .single<AuctionRow>();
+  const data = await createAuction({
+    seller_wallet: input.sellerWallet,
+    title: input.title,
+    description: input.description,
+    asset_url: input.assetUrl,
+    starts_at: input.startsAt,
+    ends_at: input.endsAt,
+    start_price_lamports: input.startPriceLamports,
+    min_increment_lamports: input.minIncrementLamports,
+    status: "live",
+  });
 
-  if (error || !data) {
-    throw new Error(error?.message || "Failed to create auction");
-  }
-
-  return data;
+  return data as AuctionRow;
 }
 
 export async function listOffchainAuctions(status?: AuctionRow["status"], limit = 20) {
-  const db = createSupabaseAdminClient();
-  let query = db
-    .from("offchain_auctions")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (status) {
-    query = query.eq("status", status);
-  }
-
-  const { data, error } = await query.returns<AuctionRow[]>();
-
-  if (error) {
-    throw new Error(error.message || "Failed to list auctions");
-  }
-
-  return data ?? [];
+  const auctions = await listAuctions(status, limit);
+  return auctions.map(a => ({
+    id: a.id,
+    seller_wallet: a.seller_wallet,
+    title: a.title,
+    description: a.description,
+    asset_url: a.asset_url,
+    starts_at: a.starts_at,
+    ends_at: a.ends_at,
+    start_price_lamports: a.start_price_lamports,
+    min_increment_lamports: a.min_increment_lamports,
+    status: a.status,
+    winner_bid_id: a.winner_bid_id,
+    created_at: a.created_at,
+    updated_at: a.updated_at,
+  })) as AuctionRow[];
 }
 
 export async function listOffchainAuctionSummaries(status?: AuctionRow["status"], limit = 20) {
-  const auctions = await listOffchainAuctions(status, limit);
+  const auctions = await listAuctions(status, limit);
   const summaries = await Promise.all(
     auctions.map(async (auction) => {
-      const bids = await listBidsForAuction(auction.id);
-      return mapAuctionSummary(auction, bids);
+      const bids = await getBidsForAuction(auction.id);
+      return mapAuctionSummary(auction as AuctionRow, bids);
     }),
   );
 
@@ -164,37 +156,19 @@ export async function listOffchainAuctionSummaries(status?: AuctionRow["status"]
 }
 
 export async function getOffchainAuctionById(auctionId: string): Promise<OffchainAuctionDetail | null> {
-  const db = createSupabaseAdminClient();
-  const { data, error } = await db
-    .from("offchain_auctions")
-    .select("*")
-    .eq("id", auctionId)
-    .maybeSingle<AuctionRow>();
+  const data = await getAuctionById(auctionId);
+  if (!data) return null;
 
-  if (error) {
-    throw new Error(error.message || "Failed to load auction");
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  const bids = await listBidsForAuction(auctionId);
+  const bids = await getBidsForAuction(auctionId);
   return {
-    ...mapAuctionSummary(data, bids),
+    ...mapAuctionSummary(data as AuctionRow, bids),
     bids: bids.map(mapBid),
   };
 }
 
 export async function placeOffchainBid(auctionId: string, input: PlaceBidRequest) {
-  const db = createSupabaseAdminClient();
-  const { data: auction, error: auctionError } = await db
-    .from("offchain_auctions")
-    .select("*")
-    .eq("id", auctionId)
-    .single<AuctionRow>();
-
-  if (auctionError || !auction) {
+  const auction = await getAuctionById(auctionId);
+  if (!auction) {
     throw new Error("Auction not found");
   }
 
@@ -209,18 +183,8 @@ export async function placeOffchainBid(auctionId: string, input: PlaceBidRequest
     throw new Error("Auction is outside active bidding window");
   }
 
-  const { data: highestBid, error: highestBidError } = await db
-    .from("offchain_bids")
-    .select("*")
-    .eq("auction_id", auctionId)
-    .order("amount_lamports", { ascending: false })
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle<BidRow>();
-
-  if (highestBidError) {
-    throw new Error(highestBidError.message || "Failed to evaluate highest bid");
-  }
+  const bids = await getBidsForAuction(auctionId);
+  const highestBid = bids.length > 0 ? bids[0] : null;
 
   const minimumAllowed = highestBid
     ? highestBid.amount_lamports + auction.min_increment_lamports
@@ -231,43 +195,22 @@ export async function placeOffchainBid(auctionId: string, input: PlaceBidRequest
   }
 
   if (highestBid) {
-    const { error: demoteError } = await db
-      .from("offchain_bids")
-      .update({ is_winning: false })
-      .eq("id", highestBid.id);
-
-    if (demoteError) {
-      throw new Error(demoteError.message || "Failed to update existing winner");
-    }
+    await updateBid(highestBid.id, { is_winning: false });
   }
 
-  const { data: bid, error: bidError } = await db
-    .from("offchain_bids")
-    .insert({
-      auction_id: auctionId,
-      bidder_wallet: input.bidderWallet,
-      amount_lamports: input.amountLamports,
-      is_winning: true,
-    })
-    .select("*")
-    .single<BidRow>();
-
-  if (bidError || !bid) {
-    throw new Error(bidError?.message || "Failed to place bid");
-  }
+  const bid = await createBid({
+    auction_id: auctionId,
+    bidder_wallet: input.bidderWallet,
+    amount_lamports: input.amountLamports,
+    is_winning: true,
+  });
 
   return { auctionId, bidId: bid.id, amountLamports: bid.amount_lamports };
 }
 
 export async function closeOffchainAuction(auctionId: string, closedByWallet: string) {
-  const db = createSupabaseAdminClient();
-  const { data: auction, error: auctionError } = await db
-    .from("offchain_auctions")
-    .select("*")
-    .eq("id", auctionId)
-    .single<AuctionRow>();
-
-  if (auctionError || !auction) {
+  const auction = await getAuctionById(auctionId);
+  if (!auction) {
     throw new Error("Auction not found");
   }
 
@@ -279,35 +222,16 @@ export async function closeOffchainAuction(auctionId: string, closedByWallet: st
     throw new Error(`Auction cannot be closed from status ${auction.status}`);
   }
 
-  const { data: winningBid, error: bidError } = await db
-    .from("offchain_bids")
-    .select("*")
-    .eq("auction_id", auctionId)
-    .eq("is_winning", true)
-    .order("amount_lamports", { ascending: false })
-    .limit(1)
-    .maybeSingle<BidRow>();
+  const bids = await getBidsForAuction(auctionId);
+  const winningBid = bids.find(b => b.is_winning) ?? null;
 
-  if (bidError) {
-    throw new Error(bidError.message || "Failed to fetch winning bid");
-  }
-
-  const { data: updatedAuction, error: updateError } = await db
-    .from("offchain_auctions")
-    .update({
-      status: "ended",
-      winner_bid_id: winningBid?.id ?? null,
-    })
-    .eq("id", auctionId)
-    .select("*")
-    .single<AuctionRow>();
-
-  if (updateError || !updatedAuction) {
-    throw new Error(updateError?.message || "Failed to close auction");
-  }
+  const updatedAuction = await updateAuction(auctionId, {
+    status: "ended",
+    winner_bid_id: winningBid?.id ?? null,
+  });
 
   return {
-    auction: updatedAuction,
+    auction: updatedAuction as AuctionRow,
     winningBid,
   };
 }

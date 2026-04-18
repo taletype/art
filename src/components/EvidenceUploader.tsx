@@ -51,19 +51,22 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
   }
 
   return (
-    <section className="glass rounded-[1.75rem] border border-white/10 p-6">
+    <section className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="space-y-2">
           <p className="eyebrow">Evidence packet</p>
-          <h3 className="mt-2 text-2xl text-white">Attach the proof collectors and reviewers need.</h3>
+          <h3 className="text-2xl text-white sm:text-3xl">Attach the proof collectors and reviewers need.</h3>
+          <p className="text-sm text-white/65">Add source files, WIP screenshots, or process captures to verify human authorship.</p>
         </div>
-        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.16em] text-white/55">
-          {value.length} item{value.length === 1 ? "" : "s"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.16em] font-medium ${value.length > 0 ? "border-[#d4af37]/30 bg-[#d4af37]/12 text-[#f7d774]" : "border-white/10 bg-white/5 text-white/55"}`}>
+            {value.length} item{value.length === 1 ? "" : "s"}
+          </span>
+        </div>
       </div>
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-[180px_minmax(0,1fr)_minmax(0,1.2fr)_auto]">
-        <div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="sm:col-span-2 lg:col-span-1">
           <label htmlFor="evidence-kind" className="field-label">Evidence Type</label>
           <select
             id="evidence-kind"
@@ -80,30 +83,33 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
           </select>
         </div>
 
-        <div>
+        <div className="sm:col-span-2 lg:col-span-1">
           <label htmlFor="evidence-label" className="field-label">Label</label>
           <input
             id="evidence-label"
             name="evidenceLabel"
             className="field-input"
-            placeholder="WIP screenshot, source file, signed doc…"
+            placeholder="WIP screenshot, source file…"
             value={label}
             onChange={(event) => setLabel(event.target.value)}
           />
         </div>
 
-        <div>
-          <label className="field-label">SHA-256 hash</label>
+        <div className="sm:col-span-1">
+          <label htmlFor="evidence-hash" className="field-label">SHA-256 hash</label>
           <input
             id="evidence-hash"
             name="evidenceHash"
             className="field-input"
             spellCheck={false}
             autoComplete="off"
-            placeholder="Paste a 64-character hash…"
+            placeholder="64-character hash"
             value={hash}
             onChange={(event) => setHash(event.target.value)}
           />
+          {hash.length > 0 && hash.length < 64 && (
+            <p className="mt-2 text-xs text-white/45">Hash must be 64 characters</p>
+          )}
         </div>
 
         <div className="flex items-end">
@@ -118,40 +124,60 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3">
+      <div className="mt-8 space-y-3">
         {value.map((item, index) => (
           <div
             key={`${item.hash}-${index}`}
-            className="flex flex-col gap-3 rounded-[1.4rem] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="group flex flex-col gap-4 rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20 hover:bg-white/[0.05] sm:flex-row sm:items-center sm:justify-between sm:gap-6"
           >
-            <div className="min-w-0">
-              <p className="text-sm font-semibold capitalize text-white">{formatKind(item.kind)}</p>
-              <p className="mt-1 text-sm text-white/65">{item.label}</p>
-              <p className="mt-2 break-all text-xs uppercase tracking-[0.14em] text-white/38">
-                {shortenHash(item.hash)}
-              </p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-3">
+                <span className="rounded-full border border-white/10 bg-[#d4af37]/12 px-3 py-1 text-xs uppercase tracking-[0.14em] text-[#f7d774]">
+                  {formatKind(item.kind)}
+                </span>
+                <p className="text-sm font-semibold text-white">{item.label}</p>
+              </div>
+              <div className="mt-3 flex items-center gap-4">
+                <code className="text-xs font-mono text-white/45">{shortenHash(item.hash)}</code>
+                <span className="text-xs text-white/35">SHA-256</span>
+              </div>
             </div>
 
             <button
               type="button"
               onClick={() => removeEvidence(index)}
-              className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm font-medium text-white/75 transition hover:border-white/20 hover:bg-black/35 hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-black/30 px-5 py-2.5 text-sm font-medium text-white/70 transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
             >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               Remove
             </button>
           </div>
         ))}
 
         {value.length === 0 ? (
-          <div className="rounded-[1.4rem] border border-dashed border-white/10 bg-white/[0.02] p-5 text-sm leading-7 text-white/50">
-            No evidence attached yet. Add at least one strong source artifact or process capture before preparing the packet.
+          <div className="rounded-[1.6rem] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5">
+              <svg className="h-6 w-6 text-white/35" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-white/70">No evidence attached yet</p>
+            <p className="mt-2 text-xs text-white/45">Add at least one source artifact or process capture before preparing the packet.</p>
           </div>
         ) : null}
       </div>
 
-      <p className="mt-4 text-xs leading-6 text-white/40">
-        Linked hashes: {evidenceHashes.length > 0 ? `${evidenceHashes.length} record(s) ready` : "none yet"}
-      </p>
+      <div className="mt-6 flex items-center justify-between rounded-[1.4rem] border border-white/10 bg-black/30 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${evidenceHashes.length > 0 ? "bg-green-500" : "bg-white/30"}`} />
+          <span className="text-xs text-white/55">
+            {evidenceHashes.length > 0 ? `${evidenceHashes.length} record(s) ready` : "No hashes linked yet"}
+          </span>
+        </div>
+        <span className="text-xs text-white/35">SHA-256 verification</span>
+      </div>
     </section>
   );
 }

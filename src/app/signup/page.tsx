@@ -7,7 +7,7 @@ export default function SignupPage() {
       <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="space-y-5">
           <p className="eyebrow">Seller + bidder onboarding</p>
-          <h1 className="text-5xl leading-tight">Create a profile for V1 auctions.</h1>
+          <h1 className="text-5xl leading-tight">Create a profile for auctions.</h1>
           <p className="text-lg leading-8 text-white/68">
             The lean stack is simple: Supabase Auth for identity, Postgres for the auction book, and Solana only for the payment leg.
           </p>

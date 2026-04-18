@@ -1,3 +1,12 @@
+import {
+  listArtworks,
+  getArtworkById as getSupabaseArtworkById,
+  listSales,
+  getSaleById as getSupabaseSaleById,
+  getCreatorByWallet as getSupabaseCreatorByWallet,
+  listCreators,
+} from "@/lib/supabase-db";
+
 export type ArtworkRecord = {
   id: string;
   title: string;
@@ -16,6 +25,7 @@ export type ArtworkRecord = {
   background: string;
   accent: string;
   evidenceLabels: string[];
+  sale_id?: string;
 };
 
 export type AuctionLotStatus = "upcoming" | "live" | "sold" | "passed";
@@ -276,7 +286,7 @@ const creators: CreatorRecord[] = [
     discipline: "Painterly digital environments",
     bio: "Mina builds luminous, hand-crafted digital paintings rooted in physical texture studies and archival color references.",
     heroStatement: "Every published work ships with enough human-authorship evidence for collectors to understand how it was made, not just how it looks.",
-    artworkIds: ["ethereal-waves", "chromatic-fusion"],
+    artworkIds: ["c42262a7-f850-44bc-ad07-6df576d05979"],
   },
   {
     wallet: "visual-artist",
@@ -286,7 +296,7 @@ const creators: CreatorRecord[] = [
     discipline: "3D atmosphere and cinematic light",
     bio: "Ari designs worlds that feel both architectural and emotional, using custom lighting passes instead of one-click generators.",
     heroStatement: "Collectors should be able to trace human intent, revisions, and authorship without digging through developer tooling.",
-    artworkIds: ["neon-landscapes", "quantum-dreams"],
+    artworkIds: ["c42262a7-f850-44bc-ad07-6df576d05979"],
   },
   {
     wallet: "studio-collective",
@@ -296,7 +306,7 @@ const creators: CreatorRecord[] = [
     discipline: "Curated generative systems",
     bio: "Studio Parcel treats code as a studio material, combining authored rule sets with human review and curation.",
     heroStatement: "Code-based art can be transparent, collector-friendly, and deeply human when process is designed with evidence in mind.",
-    artworkIds: ["abstract-dimensions", "crystalline-forms"],
+    artworkIds: ["c42262a7-f850-44bc-ad07-6df576d05979"],
   },
 ];
 
@@ -346,49 +356,63 @@ function fallbackArtwork(id: string): AuctionLotRecord {
   };
 }
 
-export function getFeaturedArtworks() {
-  return auctionLots;
+export async function getFeaturedArtworks() {
+  const data = await listArtworks(6);
+  return data.length > 0 ? data : artworks;
 }
 
-export function getFeaturedArtwork() {
-  return auctionLots[0];
+export async function getFeaturedArtwork() {
+  const data = await listArtworks(1);
+  return data.length > 0 ? data[0] : artworks[0];
 }
 
-export function getArtworkById(id: string) {
-  return auctionLots.find((artwork) => artwork.id === id) ?? fallbackArtwork(id);
+export async function getArtworkById(id: string) {
+  const data = await getSupabaseArtworkById(id);
+  if (data) return data as AuctionLotRecord;
+  return artworks.find((artwork) => artwork.id === id) ?? fallbackArtwork(id);
 }
 
-export function getCreators() {
-  return creators;
+export async function getCreators() {
+  const data = await listCreators();
+  return data.length > 0 ? data : creators;
 }
 
-export function getCreatorByWallet(wallet: string) {
+export async function getCreatorByWallet(wallet: string) {
+  const data = await getSupabaseCreatorByWallet(wallet);
+  if (data) return data as CreatorRecord;
   return creators.find((creator) => creator.wallet === wallet) ?? null;
 }
 
-export function getCreatorArtworks(wallet: string) {
-  const creator = getCreatorByWallet(wallet);
+export async function getCreatorArtworks(wallet: string) {
+  const creator = await getCreatorByWallet(wallet);
   if (!creator) return [];
-  return creator.artworkIds.map((id) => getArtworkById(id));
+  const artworks = await listArtworks();
+  return artworks.filter(a => a.artist_wallet === wallet);
 }
 
-export function getAuctionSales() {
-  return auctionSales;
+export async function getAuctionSales() {
+  const data = await listSales();
+  return data.length > 0 ? data : auctionSales;
 }
 
-export function getAuctionSaleById(id: string) {
+export async function getAuctionSaleById(id: string) {
+  const data = await getSupabaseSaleById(id);
+  if (data) return data as AuctionSaleRecord;
   return auctionSales.find((sale) => sale.id === id) ?? null;
 }
 
-export function getAuctionLotsBySaleId(saleId: string) {
-  return auctionLots.filter((lot) => lot.saleId === saleId);
+export async function getAuctionLotsBySaleId(saleId: string) {
+  const artworks = await listArtworks();
+  return artworks.filter(lot => lot.sale_id === saleId) as AuctionLotRecord[];
 }
 
-export function getAuctionLotById(lotId: string) {
-  return auctionLots.find((lot) => lot.id === lotId) ?? null;
+export async function getAuctionLotById(lotId: string) {
+  const data = await getSupabaseArtworkById(lotId);
+  if (data) return data as AuctionLotRecord;
+  return artworks.find((lot) => lot.id === lotId) ?? null;
 }
 
-export function getSaleForLot(lotId: string) {
-  const lot = getAuctionLotById(lotId);
-  return lot ? getAuctionSaleById(lot.saleId) : null;
+export async function getSaleForLot(lotId: string) {
+  const lot = await getAuctionLotById(lotId);
+  return lot && lot.sale_id ? getAuctionSaleById(lot.sale_id) : null;
 }

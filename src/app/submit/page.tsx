@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useActiveAccount } from "thirdweb/react";
 import { EvidenceUploader } from "@/components/EvidenceUploader";
 import { ReviewPanel } from "@/components/ReviewPanel";
 import { validateProvenance } from "@/lib/provenance";
@@ -27,15 +28,31 @@ function defaultProvenance(): Provenance {
 }
 
 export default function SubmitPage() {
-  const [title, setTitle] = useState("Untitled work");
-  const [description, setDescription] = useState("A human-made piece submitted for auction listing.");
-  const [imageUrl, setImageUrl] = useState("https://example.com/art.png");
-  const [sellerWallet, setSellerWallet] = useState("SellerWallet1111111111111111111111111111111");
+  const activeAccount = useActiveAccount();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [sellerWallet, setSellerWallet] = useState("");
+  const [medium, setMedium] = useState("digital painting");
   const [priceLamports, setPriceLamports] = useState(1_000_000_000);
   const [provenance, setProvenance] = useState<Provenance>(defaultProvenance);
-  const [responseText, setResponseText] = useState("No action yet.");
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const categoryOptions: ArtCategory[] = ["visual", "audio", "video", "writing", "mixed_media"];
+
+  useEffect(() => {
+    if (activeAccount?.address) {
+      setSellerWallet(activeAccount.address);
+      setProvenance((prev) => ({
+        ...prev,
+        attestation: {
+          ...prev.attestation,
+          signerWallet: activeAccount.address,
+        },
+      }));
+    }
+  }, [activeAccount?.address]);
 
   const sanitizedProvenance = useMemo(() => {
     const evidenceHashes = provenance.evidence.map((item) => item.hash);
@@ -51,111 +68,207 @@ export default function SubmitPage() {
   }
 
   async function submitMint() {
-    const result = await fetch("/api/mint", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        title,
-        description,
-        imageUrl,
-        sellerWallet,
-        attributes: [],
-        provenance: sanitizedProvenance,
-      }),
-    });
+    if (!title || !description || !imageUrl || !sellerWallet) {
+      setMessage("Please fill in all required fields");
+      return;
+    }
 
-    setResponseText(await result.text());
+    setPending(true);
+    setMessage(null);
+    try {
+      const result = await fetch("/api/mint", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          imageUrl,
+          sellerWallet,
+          attributes: [],
+          provenance: { ...sanitizedProvenance, medium },
+        }),
+      });
+
+      if (!result.ok) {
+        throw new Error("Failed to mint draft");
+      }
+
+      setMessage("Draft minted successfully!");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to mint draft");
+    } finally {
+      setPending(false);
+    }
   }
 
   async function prepareListing() {
-    const result = await fetch("/api/list", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        listing: {
-          sellerWallet,
-          assetId: "draft-asset-local",
-          treasuryMint: "So11111111111111111111111111111111111111112",
-          priceLamports,
-          provenanceStatus: sanitizedProvenance.verificationStatus,
-        },
-        provenance: sanitizedProvenance,
-      }),
-    });
+    if (!sellerWallet || !priceLamports) {
+      setMessage("Please provide wallet address and reserve price");
+      return;
+    }
 
-    setResponseText(await result.text());
+    setPending(true);
+    setMessage(null);
+    try {
+      const result = await fetch("/api/list", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          listing: {
+            sellerWallet,
+            assetId: "draft-asset-local",
+            treasuryMint: "So11111111111111111111111111111111111111112",
+            priceLamports,
+            provenanceStatus: sanitizedProvenance.verificationStatus,
+          },
+          provenance: { ...sanitizedProvenance, medium },
+        }),
+      });
+
+      if (!result.ok) {
+        throw new Error("Failed to prepare listing");
+      }
+
+      setMessage("Listing prepared successfully!");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to prepare listing");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 pb-14 pt-24 text-white sm:px-6">
-      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-xl border border-white/10 bg-[#141414] p-5 sm:p-6">
-          <h1 className="text-2xl font-semibold">List artwork for auction</h1>
-          <p className="mt-2 text-sm text-white/70">Simple consignment form with proof of human authorship.</p>
+    <main className="pb-20 pt-28">
+      <section className="section-shell">
+        <div className="mb-10 space-y-4">
+          <p className="eyebrow">Consign artwork</p>
+          <h1 className="text-4xl text-white sm:text-5xl">List artwork for auction</h1>
+          <p className="max-w-2xl text-lg leading-8 text-white/68">
+            Submit your artwork with proof of human authorship. Our curatorial team reviews each submission before it goes to auction.
+          </p>
+        </div>
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <label className="text-sm sm:col-span-2">
-              <span className="mb-1 block text-white/75">Title</span>
-              <input className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={title} onChange={(e) => setTitle(e.target.value)} />
-            </label>
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+            <div className="space-y-5">
+              <div className="sm:col-span-2">
+                <label htmlFor="title" className="field-label">Title *</label>
+                <input
+                  id="title"
+                  className="field-input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Artwork title"
+                  required
+                />
+              </div>
 
-            <label className="text-sm sm:col-span-2">
-              <span className="mb-1 block text-white/75">Description</span>
-              <textarea className="min-h-28 w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={description} onChange={(e) => setDescription(e.target.value)} />
-            </label>
+              <div className="sm:col-span-2">
+                <label htmlFor="description" className="field-label">Description *</label>
+                <textarea
+                  id="description"
+                  className="field-textarea"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your artwork"
+                  required
+                />
+              </div>
 
-            <label className="text-sm">
-              <span className="mb-1 block text-white/75">Image URL</span>
-              <input className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-            </label>
+              <div>
+                <label htmlFor="image-url" className="field-label">Image URL *</label>
+                <input
+                  id="image-url"
+                  className="field-input"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/art.png"
+                  required
+                />
+              </div>
 
-            <label className="text-sm">
-              <span className="mb-1 block text-white/75">Wallet</span>
-              <input className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2" value={sellerWallet} onChange={(e) => setSellerWallet(e.target.value)} />
-            </label>
+              <div>
+                <label htmlFor="wallet" className="field-label">Seller Wallet *</label>
+                <input
+                  id="wallet"
+                  className="field-input"
+                  value={sellerWallet}
+                  onChange={(e) => setSellerWallet(e.target.value)}
+                  placeholder="Connect wallet from navigation"
+                  spellCheck={false}
+                  readOnly={Boolean(activeAccount?.address)}
+                />
+                {activeAccount?.address && (
+                  <p className="mt-2 text-xs text-white/45">Using wallet connected via thirdweb</p>
+                )}
+              </div>
 
-            <label className="text-sm">
-              <span className="mb-1 block text-white/75">Category</span>
-              <select
-                className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2"
-                value={provenance.category}
-                onChange={(e) => setProvenance((prev) => ({ ...prev, category: e.target.value as ArtCategory }))}
-              >
-                {categoryOptions.map((category) => (
-                  <option key={category} value={category}>{category.replace(/_/g, " ")}</option>
-                ))}
-              </select>
-            </label>
+              <div>
+                <label htmlFor="medium" className="field-label">Medium</label>
+                <input
+                  id="medium"
+                  className="field-input"
+                  value={medium}
+                  onChange={(e) => setMedium(e.target.value)}
+                  placeholder="digital painting"
+                />
+              </div>
 
-            <label className="text-sm">
-              <span className="mb-1 block text-white/75">Reserve (lamports)</span>
-              <input
-                type="number"
-                className="w-full rounded-md border border-white/20 bg-[#101010] px-3 py-2"
-                value={priceLamports}
-                onChange={(e) => setPriceLamports(Number(e.target.value))}
-              />
-            </label>
-          </div>
+              <div>
+                <label htmlFor="category" className="field-label">Category</label>
+                <select
+                  id="category"
+                  className="field-select"
+                  value={provenance.category}
+                  onChange={(e) => setProvenance((prev) => ({ ...prev, category: e.target.value as ArtCategory }))}
+                >
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>{category.replace(/_/g, " ")}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button onClick={submitMint} className="rounded-md bg-white px-4 py-2 text-sm font-medium text-black">Mint draft</button>
-            <button onClick={prepareListing} className="rounded-md border border-white/20 px-4 py-2 text-sm font-medium">Prepare listing</button>
-          </div>
+              <div>
+                <label htmlFor="reserve" className="field-label">Reserve (lamports) *</label>
+                <input
+                  id="reserve"
+                  type="number"
+                  className="field-input"
+                  value={priceLamports}
+                  onChange={(e) => setPriceLamports(Number(e.target.value))}
+                  placeholder="1000000000"
+                  required
+                />
+              </div>
+            </div>
 
-          <pre className="mt-4 overflow-x-auto rounded-md border border-white/10 bg-[#101010] p-3 text-xs text-white/80">{responseText}</pre>
-        </section>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button onClick={submitMint} disabled={pending} className="button-primary disabled:cursor-wait disabled:opacity-70">
+                {pending ? "Minting..." : "Mint draft"}
+              </button>
+              <button onClick={prepareListing} disabled={pending} className="button-secondary disabled:cursor-wait disabled:opacity-70">
+                {pending ? "Preparing..." : "Prepare listing"}
+              </button>
+            </div>
 
-        <section className="space-y-6">
-          <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
-          <ReviewPanel
-            provenance={sanitizedProvenance}
-            reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "mock-admin-wallet"}
-            enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
-            onUpdate={setProvenance}
-          />
-        </section>
-      </div>
+            {message && (
+              <div className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${message.includes("success") ? "border-green-500/30 bg-green-500/10 text-green-400" : "border-red-500/30 bg-red-500/10 text-red-400"}`}>
+                {message}
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-6">
+            <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
+            <ReviewPanel
+              provenance={sanitizedProvenance}
+              reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "mock-admin-wallet"}
+              enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
+              onUpdate={setProvenance}
+            />
+          </section>
+        </div>
+      </section>
     </main>
   );
 }
