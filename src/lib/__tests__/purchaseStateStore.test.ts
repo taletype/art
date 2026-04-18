@@ -1,9 +1,14 @@
-import { describe, expect, it } from "vitest";
-import { getPurchaseStateStore } from "../purchaseStateStore";
+import { rm } from "node:fs/promises";
+import { describe, expect, it, vi } from "vitest";
 
 describe("purchase state store", () => {
   it("persists and updates by idempotency key", async () => {
+    process.env.PURCHASE_STATE_BACKEND = "file";
+    process.env.PURCHASE_STATE_FILE = `.data/purchase-state-test-${Date.now()}.json`;
+    vi.resetModules();
+
     const key = `test-${Date.now()}`;
+    const { getPurchaseStateStore } = await import("../purchaseStateStore");
     const store = getPurchaseStateStore();
 
     await store.upsert({
@@ -30,5 +35,7 @@ describe("purchase state store", () => {
     const updated = await store.update(key, { status: "TX_CONFIRMED", txSignature: "sig-123" });
     expect(updated?.status).toBe("TX_CONFIRMED");
     expect(updated?.txSignature).toBe("sig-123");
+
+    await rm(process.env.PURCHASE_STATE_FILE!, { force: true });
   });
 });
