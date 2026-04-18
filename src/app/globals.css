@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --background: #0b0b0d;
+  --foreground: #f5f1e8;
+  --primary: #d4af37;
+  --secondary: #141418;
+  --accent: rgba(255, 255, 255, 0.08);
+  --accent-light: rgba(212, 175, 55, 0.14);
+  --border: rgba(255, 255, 255, 0.12);
+  --text-muted: #b8b1a4;
+  --radius: 1rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at top, rgba(212, 175, 55, 0.12), transparent 28%),
+    linear-gradient(180deg, #0b0b0d 0%, #111116 52%, #0b0b0d 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
+p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(212, 175, 55, 0.28);
+  color: #fff8e7;
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.mesh-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.mesh-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.16), transparent 42%, rgba(255, 255, 255, 0.04));
+  pointer-events: none;
+}
+
+.section-shell {
+  @apply mx-auto w-full max-w-7xl px-6 lg:px-8;
+}
+
+.section-heading {
+  @apply max-w-3xl space-y-4;
+}
+
+.eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.28em] text-white/55;
+}
+
+.card-border {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-pill {
+  @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/70;
+}
+
+.field-label {
+  @apply mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-white/55;
+}
+
+.field-input {
+  @apply w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+}
+
+.field-textarea {
+  @apply min-h-[140px] w-full resize-y rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+}
+
+.field-select {
+  @apply w-full appearance-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm capitalize text-white outline-none transition focus:border-[#f3d27a]/45 focus:bg-white/[0.07] focus:ring-2 focus:ring-[#f3d27a]/15;
+}
+
+@media (max-width: 768px) {
+  body {
+    background:
+      radial-gradient(circle at top, rgba(212, 175, 55, 0.1), transparent 22%),
+      linear-gradient(180deg, #0b0b0d 0%, #101015 100%);
+  }
+}
