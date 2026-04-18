@@ -38,9 +38,9 @@ async function AuctionsContent() {
       <div className="space-y-6">
         <div className="space-y-3">
           <p className="eyebrow">Marketplace</p>
-          <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Thirdweb-linked auctions with Supabase as the catalog layer.</h1>
+          <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Solana devnet auctions with Supabase as the catalog layer.</h1>
           <p className="max-w-2xl text-lg leading-8 text-white/68">
-            Seller-owned artworks are prepared from the dashboard, projected into auction records, and rendered here for collectors and bidders.
+            Seller-owned artworks are prepared from Seller Hub with Solana devnet launch references, projected into auction records, and rendered here for collectors and bidders.
           </p>
         </div>
 

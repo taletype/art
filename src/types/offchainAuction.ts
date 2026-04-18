@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidSolanaAddress } from "@/lib/solanaAddress";
 
 export const auctionStatusSchema = z.enum(["draft", "live", "ended", "settled", "cancelled"]);
 
@@ -19,7 +20,9 @@ export const listAuctionsQuerySchema = z.object({
 });
 
 export const placeBidRequestSchema = z.object({
-  bidderWallet: z.string().min(32),
+  bidderWallet: z.string().trim().refine(isValidSolanaAddress, {
+    message: "Enter a valid Solana wallet address.",
+  }),
   amountLamports: z.number().int().positive(),
 });
 

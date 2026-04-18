@@ -30,8 +30,8 @@ type NormalizedArtwork = {
   minimumNextBidSol: number | null;
   currentBidSol: number | null;
   closesAt: string | null;
-  thirdwebListingId: string | null;
-  thirdwebListingUrl: string | null;
+  marketplaceReferenceId: string | null;
+  marketplaceReferenceUrl: string | null;
   syncStatus: string | null;
 };
 
@@ -158,11 +158,11 @@ function normalizeArtwork(record: Record<string, unknown>): NormalizedArtwork {
         : typeof record.closes_at === "string"
           ? record.closes_at
           : null,
-    thirdwebListingId:
+    marketplaceReferenceId:
       typeof record.thirdweb_listing_id === "string"
         ? record.thirdweb_listing_id
         : null,
-    thirdwebListingUrl:
+    marketplaceReferenceUrl:
       typeof record.thirdweb_listing_url === "string"
         ? record.thirdweb_listing_url
         : null,
@@ -290,11 +290,11 @@ export default async function ArtDetailPage({ params }: ArtPageProps) {
                     </Link>
                   </>
                 ) : (
-                  <p>No linked auction is live yet. Open Seller Hub to prepare the artwork with thirdweb and launch it.</p>
+                  <p>No linked auction is live yet. Open Seller Hub to prepare the Solana devnet launch and open the auction.</p>
                 )}
-                {artwork.thirdwebListingUrl ? (
-                  <a href={artwork.thirdwebListingUrl} target="_blank" rel="noreferrer" className="button-secondary block w-full text-center">
-                    Open thirdweb reference
+                {artwork.marketplaceReferenceUrl ? (
+                  <a href={artwork.marketplaceReferenceUrl} target="_blank" rel="noreferrer" className="button-secondary block w-full text-center">
+                    Open Solana devnet reference
                   </a>
                 ) : null}
                 {artwork.syncStatus ? (

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { isValidSolanaAddress } from "@/lib/solanaAddress";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AuthFormProps = {
@@ -24,19 +25,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
     const supabase = getSupabaseBrowserClient();
     try {
       if (mode === "signup") {
+        const normalizedWallet = walletAddress.trim();
+        if (normalizedWallet && !isValidSolanaAddress(normalizedWallet)) {
+          throw new Error("Enter a valid Solana wallet address or leave it blank for now.");
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
-              wallet_address: walletAddress.trim() || null,
+              wallet_address: normalizedWallet || null,
             },
           },
         });
         if (error) {
           throw error;
         }
-        setMessage("Account created. Check your inbox if email confirmation is enabled, then connect your thirdweb wallet from Seller Hub.");
+        setMessage("Account created. Check your inbox if email confirmation is enabled, then add your Solana devnet wallet from Seller Hub.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -86,7 +92,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
       {mode === "signup" ? (
         <div>
           <label htmlFor="signup-wallet" className="field-label">
-            Wallet address
+            Solana wallet address
           </label>
           <input
             id="signup-wallet"
@@ -94,7 +100,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             value={walletAddress}
             onChange={(event) => setWalletAddress(event.target.value)}
             className="field-input"
-            placeholder="Optional now, editable later from your auction profile"
+            placeholder="Optional now, editable later from your seller profile"
           />
         </div>
       ) : null}

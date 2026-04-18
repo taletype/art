@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
-import { getAuthenticatedAppUser, requireAuthenticatedAppUserResponse, requireLinkedWalletResponse } from "@/lib/auth";
-import { createSellerAuction } from "@/lib/seller";
+import {
+  getAuthenticatedAppUser,
+  requireAuthenticatedAppUserResponse,
+  requireLinkedWalletResponse,
+  resolveMatchingSellerWallet,
+} from "@/lib/auth";
+import { prepareSellerAuction } from "@/lib/seller";
 import { listOffchainAuctions } from "@/lib/offchainAuctions";
 import { createSellerAuctionSchema } from "@/types/seller";
 import { listAuctionsQuerySchema } from "@/types/offchainAuction";
@@ -54,9 +59,6 @@ export async function POST(request: Request) {
   if (!sessionUser) {
     return requireAuthenticatedAppUserResponse();
   }
-  if (!sessionUser.walletAddress) {
-    return requireLinkedWalletResponse();
-  }
 
   const rateLimit = enforceRouteRateLimit(request, "auctions-post", {
     max: Number(process.env.API_AUCTIONS_RATE_LIMIT_MAX || 30),
@@ -67,17 +69,34 @@ export async function POST(request: Request) {
 
   try {
     const payload = createSellerAuctionSchema.parse(await request.json());
-    const auction = await createSellerAuction({
+    const sellerWallet = resolveMatchingSellerWallet({
+      profileWalletAddress: sessionUser.walletAddress,
+      requestWalletAddress: payload.sellerWallet,
+    });
+    if (sellerWallet.mismatch) {
+      return applyRateLimitHeaders(
+        NextResponse.json(
+          { ok: false, message: "Connect the same Solana wallet that is saved on your seller profile before signing." },
+          { status: 400 },
+        ),
+        rateLimit,
+      );
+    }
+    if (!sellerWallet.wallet) {
+      return requireLinkedWalletResponse();
+    }
+
+    const prepared = await prepareSellerAuction({
       artworkId: payload.artworkId,
       ownerUserId: sessionUser.id,
-      sellerWallet: sessionUser.walletAddress,
+      sellerWallet: sellerWallet.wallet,
       startsAt: payload.startsAt,
       endsAt: payload.endsAt,
       startPriceLamports: payload.startPriceLamports,
       minIncrementLamports: payload.minIncrementLamports,
     });
 
-    return applyRateLimitHeaders(NextResponse.json({ ok: true, auction }, { status: 201 }), rateLimit);
+    return applyRateLimitHeaders(NextResponse.json(prepared, { status: 201 }), rateLimit);
   } catch (error) {
     if (error instanceof ZodError) {
       return applyRateLimitHeaders(

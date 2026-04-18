@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
+import { isValidSolanaAddress } from "@/lib/solanaAddress";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { OffchainAuctionDetail } from "@/types/offchainAuction";
 
@@ -29,7 +30,7 @@ export default function BidForm({ auction }: BidFormProps) {
   );
 
   useEffect(() => {
-    if (activeAccount?.address) {
+    if (activeAccount?.address && isValidSolanaAddress(activeAccount.address)) {
       setWalletAddress(activeAccount.address);
       return;
     }
@@ -50,9 +51,13 @@ export default function BidForm({ auction }: BidFormProps) {
     setMessage(null);
 
     try {
-      const biddingWallet = activeAccount?.address ?? walletAddress.trim();
+      const biddingWallet = walletAddress.trim();
       if (!biddingWallet) {
-        throw new Error("Connect your thirdweb wallet or save a wallet address before bidding.");
+        throw new Error("Enter the Solana wallet address that should be attached to this bid.");
+      }
+
+      if (!isValidSolanaAddress(biddingWallet)) {
+        throw new Error("Enter a valid Solana wallet address.");
       }
 
       const amountLamports = Math.round(Number(amount) * 1_000_000_000);
@@ -110,7 +115,7 @@ export default function BidForm({ auction }: BidFormProps) {
 
       <div>
         <label htmlFor="bid-wallet" className="field-label">
-          Wallet address
+          Solana wallet address
         </label>
         <input
           id="bid-wallet"
@@ -118,13 +123,12 @@ export default function BidForm({ auction }: BidFormProps) {
           value={walletAddress}
           onChange={(event) => setWalletAddress(event.target.value)}
           className="field-input"
-          placeholder="Connect with thirdweb or use the wallet saved on your profile"
-          readOnly={Boolean(activeAccount?.address)}
+          placeholder="Enter the Solana address to record for this bid"
         />
         <p className="mt-2 text-xs text-white/45">
-          {activeAccount?.address
-            ? "Using the wallet currently connected through thirdweb for this bid."
-            : "This wallet will be written into the off-chain bid record."}
+          {activeAccount?.address && !isValidSolanaAddress(activeAccount.address)
+            ? "Your connected thirdweb wallet is an EVM address, so it will not be used for Solana bidding."
+            : "This Solana wallet will be written into the off-chain bid record."}
         </p>
       </div>
 

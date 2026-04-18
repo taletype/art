@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useActiveAccount, ConnectButton } from "thirdweb/react";
-import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/auctions", label: "Auctions" },
   { href: "/seller", label: "Seller Hub" },
-  { href: "/submit", label: "List Art" },
 ];
 
 export default function Navigation() {
@@ -38,8 +37,8 @@ export default function Navigation() {
         <div className="hidden items-center gap-3 md:flex">
           <ConnectButton
             client={getThirdwebClient()}
-            wallets={[inAppWallet(), createWallet("io.metamask"), createWallet("com.coinbase.wallet")]}
-            connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
+            wallets={getThirdwebWalletOptions()}
+            connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Solana wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
           />
           <Link href="/seller" className="button-secondary px-5 py-2.5 text-sm">
             Seller Hub
@@ -73,8 +72,8 @@ export default function Navigation() {
             <div className="mt-2 pt-2 border-t border-[#d4af37]/20">
               <ConnectButton
                 client={getThirdwebClient()}
-                wallets={[inAppWallet(), createWallet("io.metamask"), createWallet("com.coinbase.wallet")]}
-                connectButton={{ label: activeAccount ? "Connected" : "Connect Wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
+                wallets={getThirdwebWalletOptions()}
+                connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Solana wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
               />
             </div>
             <Link

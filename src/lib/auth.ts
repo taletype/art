@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isValidSolanaAddress } from "@/lib/solanaAddress";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type AuthenticatedAppUser = {
@@ -23,7 +24,7 @@ export async function getAuthenticatedAppUser(): Promise<AuthenticatedAppUser | 
   return {
     id: data.user.id,
     email: data.user.email ?? null,
-    walletAddress,
+    walletAddress: walletAddress && isValidSolanaAddress(walletAddress) ? walletAddress : null,
   };
 }
 
@@ -36,7 +37,44 @@ export function requireAuthenticatedAppUserResponse() {
 
 export function requireLinkedWalletResponse() {
   return NextResponse.json(
-    { ok: false, message: "Connect a thirdweb wallet and save it to your profile before selling." },
+    { ok: false, message: "Add a valid Solana devnet wallet address to your profile before selling." },
     { status: 400 },
   );
+}
+
+export function resolveSellerWallet(options: {
+  profileWalletAddress: string | null;
+  requestWalletAddress?: string | null;
+}) {
+  const requestWallet = options.requestWalletAddress?.trim() || null;
+  if (requestWallet && isValidSolanaAddress(requestWallet)) {
+    return requestWallet;
+  }
+
+  return options.profileWalletAddress;
+}
+
+export function resolveMatchingSellerWallet(options: {
+  profileWalletAddress: string | null;
+  requestWalletAddress?: string | null;
+}) {
+  const profileWallet = options.profileWalletAddress?.trim() || null;
+  if (!profileWallet || !isValidSolanaAddress(profileWallet)) {
+    return { wallet: null, mismatch: false };
+  }
+
+  const requestWallet = options.requestWalletAddress?.trim() || null;
+  if (!requestWallet) {
+    return { wallet: profileWallet, mismatch: false };
+  }
+
+  if (!isValidSolanaAddress(requestWallet)) {
+    return { wallet: null, mismatch: false };
+  }
+
+  if (requestWallet !== profileWallet) {
+    return { wallet: null, mismatch: true };
+  }
+
+  return { wallet: profileWallet, mismatch: false };
 }

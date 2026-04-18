@@ -1,9 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+const supabaseAdmin = createSupabaseAdminClient();
 
 // Auctions
 export async function listAuctions(status?: string, limit = 20) {
@@ -50,7 +52,7 @@ export async function createAuction(auction: {
   min_increment_lamports: number;
   status?: string;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("offchain_auctions")
     .insert(auction)
     .select("*")
@@ -64,7 +66,7 @@ export async function createAuction(auction: {
 }
 
 export async function updateAuction(id: string, updates: Record<string, any>) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("offchain_auctions")
     .update(updates)
     .eq("id", id)
@@ -100,7 +102,7 @@ export async function createBid(bid: {
   amount_lamports: number;
   is_winning?: boolean;
 }) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("offchain_bids")
     .insert(bid)
     .select("*")
@@ -114,7 +116,7 @@ export async function createBid(bid: {
 }
 
 export async function updateBid(id: string, updates: Record<string, any>) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("offchain_bids")
     .update(updates)
     .eq("id", id)
