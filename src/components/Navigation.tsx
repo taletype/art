@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/#featured", label: "Auctions" },
+  { href: "/auctions", label: "Auctions" },
   { href: "/sales/contemporary-digital-asia", label: "Catalog" },
   { href: "/#creators", label: "Artists" },
   { href: "/submit", label: "Consign" },
@@ -39,6 +39,9 @@ export default function Navigation() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <Link href="/login" className="button-secondary px-4 py-2">
+            Log in
+          </Link>
           <Link href="/creator/creative-soul" className="button-secondary px-4 py-2">
             Featured Artist
           </Link>
@@ -71,6 +74,9 @@ export default function Navigation() {
                 {item.label}
               </Link>
             ))}
+            <Link href="/login" onClick={() => setOpen(false)} className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/80 transition hover:bg-white/[0.06] hover:text-white">
+              Log in
+            </Link>
             <Link href="/submit" onClick={() => setOpen(false)} className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black">
               Consign Art
             </Link>
