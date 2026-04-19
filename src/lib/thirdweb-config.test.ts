@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { getListingRouteId, parseListingRouteId } from "@/lib/thirdweb-config";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { getListingRouteId, getMarketplaceChain, getMarketplaceChainLabel, parseListingRouteId } from "@/lib/thirdweb-config";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 
 describe("evmAddress", () => {
@@ -23,5 +23,25 @@ describe("thirdweb-config route ids", () => {
   it("returns null for malformed route ids", () => {
     expect(parseListingRouteId("bad-value")).toBeNull();
     expect(parseListingRouteId("auction-nope")).toBeNull();
+  });
+});
+
+describe("thirdweb-config Base Sepolia chain", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("defaults to Base Sepolia", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "");
+
+    expect(getMarketplaceChain().id).toBe(84532);
+    expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
+  });
+
+  it("uses Base mainnet only when configured", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "base");
+
+    expect(getMarketplaceChain().id).toBe(8453);
+    expect(getMarketplaceChainLabel()).toBe("Base");
   });
 });

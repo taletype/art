@@ -11,6 +11,7 @@ const navItems = [
   { href: "/", label: "Home" },
   { href: "/auctions", label: "Auctions" },
   { href: "/seller", label: "Seller Hub" },
+  { href: "/admin", label: "Admin" },
 ];
 
 export default function Navigation() {

@@ -15,6 +15,7 @@ export default function HomePage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/seller" className="button-primary">Open seller hub</Link>
             <Link href="/auctions" className="button-secondary">Browse auctions</Link>
+            <Link href="/admin" className="button-secondary">Admin deploy</Link>
           </div>
         </div>
       </section>
