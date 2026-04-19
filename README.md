@@ -86,7 +86,7 @@ Notes:
 - `npm run seed:mock-auctions` still seeds legacy Supabase auction rows, but the live marketplace UI now reads from the configured Thirdweb contracts.
 - Apply `supabase/migrations/001_purchase_states.sql` before relying on Supabase-backed purchase recovery in shared environments.
 - Apply `supabase/migrations/002_curated_auction_house.sql` before relying on Supabase-backed auction artists, sales, lots, collectors, bids, or watchlists.
-- Apply `supabase/migrations/003_offchain_auctions.sql` before using off-chain auction APIs (`/api/auctions*`).
+- Legacy off-chain auction migrations can remain in the database for historical data, but the live marketplace flow no longer depends on `/api/auctions*` as the bidding source of truth.
 
 ## Primary user flow
 
