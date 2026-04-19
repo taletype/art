@@ -55,44 +55,44 @@ export default function AuctionCountdown({ endsAt, className = "" }: AuctionCoun
 
   if (totalSeconds <= 0) {
     return (
-      <div className={`flex items-center gap-2 text-sm ${className}`}>
+      <div className={`flex items-center gap-2 text-xs sm:text-sm ${className}`}>
         <span className="text-white/60">Auction ended</span>
       </div>
     );
   }
 
   return (
-    <div className={`flex items-center gap-3 text-sm ${className}`}>
+    <div className={`flex items-center gap-2 sm:gap-3 text-xs sm:text-sm ${className}`}>
       {timeLeft.days > 0 && (
         <div className="flex flex-col items-center">
-          <span className={`font-mono text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-white'}`}>
+          <span className={`font-mono text-sm sm:text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-white'}`}>
             {timeLeft.days}
           </span>
-          <span className="text-xs uppercase tracking-wider text-white/45">Days</span>
+          <span className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Days</span>
         </div>
       )}
       <div className="flex flex-col items-center">
-        <span className={`font-mono text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-white'}`}>
+        <span className={`font-mono text-sm sm:text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-white'}`}>
           {String(timeLeft.hours).padStart(2, '0')}
         </span>
-        <span className="text-xs uppercase tracking-wider text-white/45">Hrs</span>
+        <span className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Hrs</span>
       </div>
-      <span className="text-white/30">:</span>
+      <span className="text-white/30 text-sm sm:text-base">:</span>
       <div className="flex flex-col items-center">
-        <span className={`font-mono text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-white'}`}>
+        <span className={`font-mono text-sm sm:text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-white'}`}>
           {String(timeLeft.minutes).padStart(2, '0')}
         </span>
-        <span className="text-xs uppercase tracking-wider text-white/45">Min</span>
+        <span className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Min</span>
       </div>
-      <span className="text-white/30">:</span>
+      <span className="text-white/30 text-sm sm:text-base">:</span>
       <div className="flex flex-col items-center">
-        <span className={`font-mono text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-[#e8c547]'}`}>
+        <span className={`font-mono text-sm sm:text-lg font-bold ${isUrgent ? 'text-[#ff4757] animate-pulse' : 'text-[#e8c547]'}`}>
           {String(timeLeft.seconds).padStart(2, '0')}
         </span>
-        <span className="text-xs uppercase tracking-wider text-white/45">Sec</span>
+        <span className="text-[10px] sm:text-xs uppercase tracking-wider text-white/45">Sec</span>
       </div>
       {isUrgent && (
-        <span className="ml-2 inline-flex items-center gap-1.5 rounded-full border border-[#ff4757]/50 bg-[#ff4757]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#ff4757]">
+        <span className="hidden sm:inline-flex ml-2 items-center gap-1.5 rounded-full border border-[#ff4757]/50 bg-[#ff4757]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#ff4757]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#ff4757] animate-pulse" />
           Ending soon
         </span>

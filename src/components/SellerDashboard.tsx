@@ -7,7 +7,6 @@ import { ConnectButton, useActiveAccount, useSendAndConfirmTransaction } from "t
 import { getAllAuctions, getAllListings, createAuction, createListing } from "thirdweb/extensions/marketplace";
 import { mintTo, nextTokenIdToMint, setApprovalForAll } from "thirdweb/extensions/erc721";
 import { EvidenceUploader } from "@/components/EvidenceUploader";
-import { ReviewPanel } from "@/components/ReviewPanel";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 import { validateProvenance } from "@/lib/provenance";
 import {
@@ -83,6 +82,30 @@ function toEthValue(value: number | null | undefined) {
   return value && Number.isFinite(value) ? value : 0.05;
 }
 
+function shortAddress(value: string | null | undefined) {
+  if (!value) {
+    return "Not set";
+  }
+
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function flowLabel(value: string | null | undefined) {
+  return value ? value.replace(/_/g, " ") : "draft";
+}
+
+function flowTone(value: string | null | undefined) {
+  if (value === "in_auction" || value === "listing_confirmed") {
+    return "border-emerald-300/25 bg-emerald-300/10 text-emerald-100";
+  }
+
+  if (value === "prepared" || value === "mint_confirmed") {
+    return "border-[#d4af37]/35 bg-[#d4af37]/12 text-[#f0d46e]";
+  }
+
+  return "border-white/10 bg-white/5 text-white/65";
+}
+
 export default function SellerDashboard({ email, walletAddress, artworks }: SellerDashboardProps) {
   const router = useRouter();
   const activeAccount = useActiveAccount();
@@ -107,6 +130,18 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     !connectedWalletAddress || !walletAddress || connectedWalletAddress.toLowerCase() === walletAddress.toLowerCase();
   const sellerIdentityLabel = email ?? (connectedWalletAddress ? "Thirdweb wallet" : "Connect wallet");
   const categoryOptions: ArtCategory[] = ["visual", "audio", "video", "writing", "mixed_media"];
+  const marketplaceAddress = getMarketplaceContractAddress();
+  const collectionAddress = getNftCollectionAddress();
+  const draftReady = Boolean(title && description && imageUrl && actionWalletAddress);
+  const mintedCount = sellerArtworks.filter((artwork) => Boolean(artwork.thirdweb_token_id)).length;
+  const listedCount = sellerArtworks.filter((artwork) => Boolean(artwork.thirdweb_listing_id)).length;
+  const contractReady = Boolean(marketplaceAddress && collectionAddress);
+  const workflowSteps = [
+    { label: "Wallet", value: connectedWalletAddress ? "Connected" : "Connect", ready: Boolean(connectedWalletAddress) },
+    { label: "Contracts", value: contractReady ? "Ready" : "Missing", ready: contractReady },
+    { label: "Draft", value: sellerArtworks.length ? `${sellerArtworks.length} saved` : "New", ready: sellerArtworks.length > 0 },
+    { label: "Listed", value: listedCount ? `${listedCount} live` : "Pending", ready: listedCount > 0 },
+  ];
 
   const preparedCount = useMemo(
     () => sellerArtworks.filter((artwork) => artwork.seller_flow_status === "prepared").length,
@@ -458,199 +493,275 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   }
 
   return (
-    <main className="section-shell pb-24 pt-28">
-      <div className="space-y-10">
-        <section className="grid gap-8 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.03] p-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-5">
-            <p className="eyebrow">Seller Hub</p>
-            <h1 className="text-5xl leading-tight sm:text-6xl">Create the draft here, then mint and list it on {getMarketplaceChainLabel()}.</h1>
-            <p className="max-w-3xl text-lg leading-8 text-white/68">
-              Seller Hub now handles the Base Sepolia flow: create the draft, verify the work, mint it into your NFT collection, then push either an auction or a direct listing to your Thirdweb marketplace.
-            </p>
+    <main className="pb-16 sm:pb-24 pt-20 sm:pt-24">
+      <section className="section-shell">
+        <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/25 bg-[#070708]">
+          <div
+            className="absolute inset-0 opacity-35"
+            style={{
+              backgroundImage:
+                "linear-gradient(120deg, rgba(212,175,55,0.22), transparent 36%), linear-gradient(180deg, rgba(255,255,255,0.08), transparent 44%)",
+            }}
+          />
+          <div className="relative grid gap-6 sm:gap-8 p-5 sm:p-6 lg:p-8 lg:grid-cols-[1.35fr_0.75fr]">
+            <div className="space-y-5 sm:space-y-7">
+              <div className="space-y-3 sm:space-y-4">
+                <p className="eyebrow text-[#f0d46e]">Seller Hub</p>
+                <h1 className="max-w-4xl text-3xl leading-tight sm:text-4xl lg:text-5xl xl:text-6xl">
+                  Mint, list, and manage auctions on {getMarketplaceChainLabel()}.
+                </h1>
+                <p className="max-w-2xl text-sm leading-6 sm:text-base sm:leading-8 text-white/70">
+                  A focused workspace for turning a verified artwork record into a live Thirdweb auction or direct listing.
+                </p>
+              </div>
 
-            <dl className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <dt className="text-sm text-white/45">Seller identity</dt>
-                <dd className="mt-2 text-lg font-semibold text-white">{sellerIdentityLabel}</dd>
+              <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                {workflowSteps.map((step, index) => (
+                  <div key={step.label} className="border-l border-white/12 pl-3 sm:pl-4">
+                    <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                      {String(index + 1).padStart(2, "0")} {step.label}
+                    </p>
+                    <p className={step.ready ? "mt-1 sm:mt-2 text-base sm:text-lg font-semibold text-white" : "mt-1 sm:mt-2 text-base sm:text-lg font-semibold text-white/48"}>
+                      {step.value}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <dt className="text-sm text-white/45">Linked wallet</dt>
-                <dd className="mt-2 break-all text-sm font-semibold text-white">{actionWalletAddress ?? "Add Base wallet"}</dd>
-              </div>
-              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <dt className="text-sm text-white/45">Ready to list</dt>
-                <dd className="mt-2 text-lg font-semibold text-white">{preparedCount}</dd>
-              </div>
-            </dl>
 
-            {!profileWalletMatchesConnected ? (
-              <p className="rounded-[1.2rem] border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm text-amber-50">
-                The connected wallet does not match the wallet saved on your seller profile. Listing actions stay blocked until they match.
-              </p>
-            ) : null}
-            {!email && connectedWalletAddress ? (
-              <p className="rounded-[1.2rem] border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-3 text-sm text-[#f0d46e]">
-                Wallet mode active. You can create drafts, mint, and list with this Thirdweb wallet without Supabase login.
-              </p>
-            ) : null}
+              <div className="flex flex-wrap gap-3">
+                <a href="#seller-draft" className="button-primary text-sm sm:text-base px-5 sm:px-6 py-3 active:scale-[0.98]">
+                  Create draft
+                </a>
+                <a href="#seller-inventory" className="button-secondary text-sm sm:text-base px-5 sm:px-6 py-3 active:scale-[0.98]">
+                  Manage inventory
+                </a>
+              </div>
+            </div>
+
+            <aside className="space-y-4 sm:space-y-5 rounded-[1.5rem] border border-white/10 bg-black/35 p-4 sm:p-5 backdrop-blur">
+              <ConnectButton
+                client={getThirdwebClient()}
+                wallets={getThirdwebWalletOptions()}
+                chain={getMarketplaceChain()}
+                connectButton={{
+                  label: connectedWalletAddress ? "Wallet connected" : "Connect seller wallet",
+                  className: "!w-full !rounded-full !bg-white !px-4 sm:!px-5 !py-3 !font-semibold !text-black text-sm sm:text-base",
+                }}
+              />
+
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between gap-3 sm:gap-4">
+                  <span className="text-xs sm:text-sm text-white/45">Seller</span>
+                  <span className="text-right text-xs sm:text-sm font-semibold text-white truncate max-w-[120px] sm:max-w-none">{sellerIdentityLabel}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 sm:gap-4">
+                  <span className="text-xs sm:text-sm text-white/45">Wallet</span>
+                  <span className="text-right text-xs sm:text-sm font-semibold text-white">{shortAddress(actionWalletAddress)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 sm:gap-4">
+                  <span className="text-xs sm:text-sm text-white/45">Marketplace</span>
+                  <span className="text-right text-xs sm:text-sm font-semibold text-white">{shortAddress(marketplaceAddress)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 sm:gap-4">
+                  <span className="text-xs sm:text-sm text-white/45">Collection</span>
+                  <span className="text-right text-xs sm:text-sm font-semibold text-white">{shortAddress(collectionAddress)}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 border-t border-white/10 pt-3 sm:pt-4">
+                <div>
+                  <p className="text-[10px] sm:text-xs text-white/42">Drafts</p>
+                  <p className="mt-1 text-xl sm:text-2xl font-semibold text-white">{sellerArtworks.length}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-xs text-white/42">Minted</p>
+                  <p className="mt-1 text-xl sm:text-2xl font-semibold text-white">{mintedCount}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-xs text-white/42">Ready</p>
+                  <p className="mt-1 text-xl sm:text-2xl font-semibold text-white">{preparedCount}</p>
+                </div>
+              </div>
+
+              {!profileWalletMatchesConnected ? (
+                <p className="rounded-[1rem] border border-amber-300/20 bg-amber-300/10 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-amber-50">
+                  Connect the same wallet saved on your seller profile before listing.
+                </p>
+              ) : null}
+              {!email && connectedWalletAddress ? (
+                <p className="rounded-[1rem] border border-[#d4af37]/20 bg-[#d4af37]/10 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-[#f0d46e]">
+                  Wallet mode active. Drafts, mints, and listings attach to this Thirdweb wallet.
+                </p>
+              ) : null}
+            </aside>
           </div>
+        </div>
+      </section>
 
-          <div className="space-y-3 rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
-            <ConnectButton
-              client={getThirdwebClient()}
-              wallets={getThirdwebWalletOptions()}
-              chain={getMarketplaceChain()}
-              connectButton={{
-                label: connectedWalletAddress ? "Wallet connected" : "Connect seller wallet",
-                className: "!w-full !rounded-full !bg-white !px-5 !py-3 !font-semibold !text-black",
-              }}
-            />
-            <p className="eyebrow">Contract config</p>
-            <p className="text-sm text-white/65">
-              The live marketplace flow depends on your Thirdweb contract env vars.
-            </p>
-            <p className="text-sm text-white/78">
-              Marketplace:
-              {" "}
-              {getMarketplaceContractAddress() ?? "Missing NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT"}
-            </p>
-            <p className="text-sm text-white/78">
-              NFT collection:
-              {" "}
-              {getNftCollectionAddress() ?? "Missing NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT"}
-            </p>
-          </div>
-        </section>
-
-        <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="space-y-6 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.03] p-8">
+      <section id="seller-draft" className="section-shell mt-8 sm:mt-10 grid gap-6 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="space-y-5 sm:space-y-6 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.035] p-4 sm:p-6 lg:p-8">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_220px]">
             <div className="space-y-2">
               <p className="eyebrow">New listing</p>
-              <h2 className="text-3xl">Create artwork draft</h2>
-              <p className="text-sm leading-7 text-white/65">
-                Draft the artwork record first so your provenance, image, and marketplace metadata stay together.
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl">Artwork draft</h2>
+              <p className="text-xs sm:text-sm leading-6 sm:leading-7 text-white/65">
+                Prepare the catalog metadata, authorship packet, and launch price before minting.
               </p>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label htmlFor="title" className="field-label">Title</label>
-                <input id="title" value={title} onChange={(event) => setTitle(event.target.value)} className="field-input" />
-              </div>
-              <div>
-                <label htmlFor="medium" className="field-label">Medium</label>
-                <input id="medium" value={medium} onChange={(event) => setMedium(event.target.value)} className="field-input" />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="description" className="field-label">Description</label>
-                <textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} className="field-input min-h-28" />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="image-url" className="field-label">Image URL</label>
-                <input id="image-url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} className="field-input" />
-              </div>
-              <div>
-                <label htmlFor="price-eth" className="field-label">Starting price (ETH)</label>
-                <input id="price-eth" type="number" min="0" step="0.0001" value={priceEth} onChange={(event) => setPriceEth(event.target.value)} className="field-input" />
-              </div>
-              <div>
-                <label htmlFor="wallet" className="field-label">Active seller wallet</label>
-                <input id="wallet" value={actionWalletAddress ?? ""} className="field-input" readOnly placeholder="Link an EVM wallet in your seller profile" />
-              </div>
-            </div>
-
-            <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
-
-            <div className="grid gap-4 md:grid-cols-3">
-              {categoryOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setProvenance((prev) => ({ ...prev, category: option }))}
-                  className={`rounded-2xl border px-4 py-3 text-sm capitalize transition ${provenance.category === option ? "border-[#d4af37]/40 bg-[#d4af37]/10 text-[#f0d46e]" : "border-white/10 bg-black/20 text-white/70"}`}
-                >
-                  {option.replace("_", " ")}
-                </button>
-              ))}
-            </div>
-
-            <button type="button" onClick={createArtworkDraft} disabled={draftState.pending} className="button-primary w-full disabled:cursor-wait disabled:opacity-60">
-              {draftState.pending ? "Saving..." : "Create listing draft"}
-            </button>
-
-            {draftState.message ? (
-              <p className="rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{draftState.message}</p>
-            ) : null}
-          </div>
-
-          <ReviewPanel
-            provenance={sanitizedProvenance}
-            onUpdate={setProvenance}
-            reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "0x0000000000000000000000000000000000000000"}
-            enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
-          />
-        </section>
-
-        <section className="space-y-5">
-          <div className="flex items-end justify-between gap-4">
-            <div className="space-y-2">
-              <p className="eyebrow">Inventory</p>
-              <h2 className="text-3xl">Drafts and live listings</h2>
+            <div className="aspect-square w-full max-w-[180px] sm:max-w-[220px] mx-auto lg:mx-0 overflow-hidden rounded-[1.4rem] border border-white/10 bg-black/30">
+              {imageUrl ? (
+                <div
+                  className="h-full w-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${imageUrl})` }}
+                  aria-label="Artwork image preview"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 sm:px-6 text-center text-xs sm:text-sm text-white/42">
+                  Image preview appears here
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            {sellerArtworks.map((artwork) => {
-              const state = launchState[artwork.id] ?? defaultArtworkActionState();
-              const listingType = listingKindByArtworkId[artwork.id] ?? "auction";
-              const listingHref = artwork.thirdweb_listing_id ? `/auctions/${artwork.thirdweb_listing_id}` : null;
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="title" className="field-label">Title</label>
+              <input id="title" value={title} onChange={(event) => setTitle(event.target.value)} className="field-input py-3" placeholder="Artwork title" />
+            </div>
+            <div>
+              <label htmlFor="medium" className="field-label">Medium</label>
+              <input id="medium" value={medium} onChange={(event) => setMedium(event.target.value)} className="field-input py-3" />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="description" className="field-label">Description</label>
+              <textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} className="field-input min-h-24 sm:min-h-32 py-3" placeholder="Collector-facing context, process notes, and provenance summary" />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="image-url" className="field-label">Image URL</label>
+              <input id="image-url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} className="field-input py-3" placeholder="https://..." />
+            </div>
+            <div>
+              <label htmlFor="price-eth" className="field-label">Starting price (ETH)</label>
+              <input id="price-eth" type="number" min="0" step="0.0001" value={priceEth} onChange={(event) => setPriceEth(event.target.value)} className="field-input py-3" />
+            </div>
+            <div>
+              <label htmlFor="wallet" className="field-label">Active seller wallet</label>
+              <input id="wallet" value={actionWalletAddress ?? ""} className="field-input py-3" readOnly placeholder="Connect an EVM wallet" />
+            </div>
+          </div>
 
-              return (
-                <article key={artwork.id} className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="eyebrow">Artwork</p>
-                      <h3 className="mt-2 text-2xl">{artwork.title}</h3>
-                      <p className="mt-2 text-sm text-white/60">{artwork.description ?? "No description yet."}</p>
+          <div className="grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            {categoryOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setProvenance((prev) => ({ ...prev, category: option }))}
+                className={`min-h-10 sm:min-h-12 rounded-full border px-3 sm:px-4 py-2 text-[10px] sm:text-sm capitalize transition ${
+                  provenance.category === option
+                    ? "border-[#d4af37]/45 bg-[#d4af37]/12 text-[#f0d46e]"
+                    : "border-white/10 bg-black/20 text-white/70 hover:border-white/20"
+                }`}
+              >
+                {option.replace("_", " ")}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={createArtworkDraft}
+            disabled={draftState.pending || !draftReady}
+            className="button-primary w-full text-sm sm:text-base py-3 disabled:cursor-not-allowed disabled:opacity-45 active:scale-[0.98]"
+          >
+            {draftState.pending ? "Saving draft..." : "Create listing draft"}
+          </button>
+
+          {draftState.message ? (
+            <p className="rounded-[1.2rem] border border-white/10 bg-black/20 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-white/80">{draftState.message}</p>
+          ) : null}
+        </div>
+
+        <div className="space-y-8">
+          <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
+        </div>
+      </section>
+
+      <section id="seller-inventory" className="section-shell mt-8 sm:mt-12 space-y-4 sm:space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <p className="eyebrow">Inventory</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl">Drafts and live listings</h2>
+          </div>
+          <p className="max-w-xl text-xs sm:text-sm leading-6 sm:leading-7 text-white/55">
+            Mint drafts into the configured collection, then launch auctions or direct listings through the marketplace contract.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
+          {sellerArtworks.map((artwork) => {
+            const state = launchState[artwork.id] ?? defaultArtworkActionState();
+            const listingType = listingKindByArtworkId[artwork.id] ?? "auction";
+            const listingHref = artwork.thirdweb_listing_id ? `/auctions/${artwork.thirdweb_listing_id}` : null;
+
+            return (
+              <article key={artwork.id} className="group grid overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[0.03] transition hover:border-[#d4af37]/35 sm:grid-cols-[170px_1fr]">
+                <div className="min-h-40 sm:min-h-52 bg-black/35 sm:min-h-full">
+                  {artwork.image_url ? (
+                    <div
+                      className="h-full min-h-40 sm:min-h-52 bg-cover bg-center transition duration-500 group-hover:scale-[1.03]"
+                      style={{ backgroundImage: `url(${artwork.image_url})` }}
+                    />
+                  ) : (
+                    <div className="flex h-full min-h-40 sm:min-h-52 items-center justify-center px-4 sm:px-6 text-center text-xs sm:text-sm text-white/35">
+                      No image
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {artwork.seller_flow_status ? <span className="status-pill">{artwork.seller_flow_status}</span> : null}
-                      {artwork.thirdweb_token_id ? <span className="status-pill">token #{artwork.thirdweb_token_id}</span> : null}
+                  )}
+                </div>
+
+                <div className="space-y-4 sm:space-y-5 p-4 sm:p-5">
+                  <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="eyebrow text-[10px] sm:text-xs">Artwork</p>
+                      <h3 className="mt-1 sm:mt-2 text-lg sm:text-2xl leading-tight">{artwork.title}</h3>
+                      <p className="mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm leading-5 sm:leading-6 text-white/60">{artwork.description ?? "No description yet."}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:justify-end">
+                      <span className={`status-pill text-[10px] sm:text-xs ${flowTone(artwork.seller_flow_status)}`}>
+                        {flowLabel(artwork.seller_flow_status)}
+                      </span>
+                      {artwork.thirdweb_token_id ? <span className="status-pill text-[10px] sm:text-xs">token #{artwork.thirdweb_token_id}</span> : null}
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-4">
-                      <p className="text-sm text-white/45">List type</p>
-                      <div className="mt-3 flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setListingKindByArtworkId((current) => ({ ...current, [artwork.id]: "auction" }))}
-                          className={`rounded-full px-4 py-2 text-sm ${listingType === "auction" ? "bg-white text-black" : "bg-white/5 text-white/70"}`}
-                        >
-                          Auction
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setListingKindByArtworkId((current) => ({ ...current, [artwork.id]: "direct" }))}
-                          className={`rounded-full px-4 py-2 text-sm ${listingType === "direct" ? "bg-white text-black" : "bg-white/5 text-white/70"}`}
-                        >
-                          Direct
-                        </button>
-                      </div>
+                  <div className="grid gap-2 sm:gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                    <div className="inline-flex rounded-full border border-white/10 bg-black/25 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setListingKindByArtworkId((current) => ({ ...current, [artwork.id]: "auction" }))}
+                        className={`min-w-20 sm:min-w-24 rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm transition ${listingType === "auction" ? "bg-white text-black" : "text-white/65 hover:text-white"}`}
+                      >
+                        Auction
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setListingKindByArtworkId((current) => ({ ...current, [artwork.id]: "direct" }))}
+                        className={`min-w-20 sm:min-w-24 rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm transition ${listingType === "direct" ? "bg-white text-black" : "text-white/65 hover:text-white"}`}
+                      >
+                        Direct
+                      </button>
                     </div>
-                    <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-4">
-                      <p className="text-sm text-white/45">Price</p>
-                      <p className="mt-3 text-xl font-semibold text-white">{toEthValue(artwork.price_sol).toFixed(4)} ETH</p>
+                    <div className="text-left sm:text-right">
+                      <p className="text-[10px] sm:text-xs text-white/42">Price</p>
+                      <p className="text-base sm:text-lg font-semibold text-white">{toEthValue(artwork.price_sol).toFixed(4)} ETH</p>
                     </div>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     <button
                       type="button"
                       onClick={() => void mintArtwork(artwork)}
                       disabled={state.pending || Boolean(artwork.thirdweb_token_id)}
-                      className="button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                      className="button-secondary text-xs sm:text-sm px-4 sm:px-5 py-2.5 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
                     >
                       {artwork.thirdweb_token_id ? "Minted" : state.pending && state.stage === "minting" ? "Minting..." : "Mint to collection"}
                     </button>
@@ -658,7 +769,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
                       type="button"
                       onClick={() => void launchListing(artwork)}
                       disabled={state.pending || !artwork.thirdweb_token_id}
-                      className="button-primary disabled:cursor-not-allowed disabled:opacity-50"
+                      className="button-primary text-xs sm:text-sm px-4 sm:px-5 py-2.5 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
                     >
                       {state.pending && (state.stage === "approving" || state.stage === "listing")
                         ? "Listing..."
@@ -667,30 +778,32 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
                           : "Create direct listing"}
                     </button>
                     {listingHref ? (
-                      <Link href={listingHref} className="button-secondary">
-                        View live listing
+                      <Link href={listingHref} className="button-secondary text-xs sm:text-sm px-4 sm:px-5 py-2.5 active:scale-[0.98]">
+                        View listing
                       </Link>
                     ) : null}
                   </div>
 
                   {state.message ? (
-                    <p className="mt-4 rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">
+                    <p className="rounded-[1rem] border border-white/10 bg-black/20 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-white/80">
                       {state.message}
                     </p>
                   ) : null}
-                </article>
-              );
-            })}
-          </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
 
-          {!sellerArtworks.length ? (
-            <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
-              <h3 className="text-2xl">No drafts yet</h3>
-              <p className="mt-3 text-sm text-white/60">Start your first listing above, then mint it and push it to the marketplace from this hub.</p>
-            </div>
-          ) : null}
-        </section>
-      </div>
+        {!sellerArtworks.length ? (
+          <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-10 text-center">
+            <h3 className="text-3xl">No drafts yet</h3>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-white/60">
+              Create the first artwork draft above. Once it appears here, mint it into your collection and launch the auction.
+            </p>
+          </div>
+        ) : null}
+      </section>
     </main>
   );
 }

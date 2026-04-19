@@ -59,7 +59,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.04] p-8 backdrop-blur-xl shadow-2xl shadow-black/40">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.04] p-5 sm:p-6 lg:p-8 backdrop-blur-xl shadow-2xl shadow-black/40">
       <div>
         <label htmlFor={`${mode}-email`} className="field-label">
           Email
@@ -69,7 +69,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="field-input"
+          className="field-input py-3 sm:py-3"
           required
         />
       </div>
@@ -83,7 +83,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="field-input"
+          className="field-input py-3 sm:py-3"
           minLength={8}
           required
         />
@@ -99,18 +99,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
             type="text"
             value={walletAddress}
             onChange={(event) => setWalletAddress(event.target.value)}
-            className="field-input"
+            className="field-input py-3 sm:py-3"
             placeholder="Optional now, editable later from your seller profile"
           />
         </div>
       ) : null}
 
-      <button type="submit" className="button-primary w-full disabled:cursor-wait disabled:opacity-60" disabled={pending}>
+      <button type="submit" className="button-primary w-full text-sm sm:text-base py-3 sm:py-3 disabled:cursor-wait disabled:opacity-60 active:scale-[0.98]" disabled={pending}>
         {pending ? "Processing..." : mode === "signup" ? "Create account" : "Log in"}
       </button>
 
       {message ? (
-        <p className="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/5 px-4 py-3 text-sm text-white/90 backdrop-blur-sm">{message}</p>
+        <p className="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/5 px-4 py-3 text-xs sm:text-sm text-white/90 backdrop-blur-sm">{message}</p>
       ) : null}
     </form>
   );

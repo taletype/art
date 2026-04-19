@@ -60,30 +60,30 @@ export default function Navigation() {
       </div>
 
       {open ? (
-        <div className="border-t border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl md:hidden">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
+        <div className="border-t border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl md:hidden animate-fade-in">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-6 sm:px-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl px-4 py-3 text-sm font-medium text-white/70 transition-all duration-200 hover:bg-[#d4af37]/10 hover:text-[#f0d46e]"
+                className="rounded-2xl px-5 py-4 text-base font-medium text-white/70 transition-all duration-200 hover:bg-[#d4af37]/10 hover:text-[#f0d46e] active:scale-[0.98]"
               >
                 {item.label}
               </Link>
             ))}
-            <div className="mt-2 pt-2 border-t border-[#d4af37]/20">
+            <div className="mt-4 pt-4 border-t border-[#d4af37]/20">
               <ConnectButton
                 client={getThirdwebClient()}
                 wallets={getThirdwebWalletOptions()}
                 chain={getMarketplaceChain()}
-                connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
+                connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-4 !text-base !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300 active:scale-[0.98]" }}
               />
             </div>
             <Link
               href="/seller"
               onClick={() => setOpen(false)}
-              className="button-primary px-4 py-3 text-sm"
+              className="button-primary px-5 py-4 text-base mt-2 active:scale-[0.98]"
             >
               Seller Hub
             </Link>

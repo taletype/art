@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { getThirdwebClient } from "@/lib/thirdweb";
 import { getMarketplaceChain } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
+import { ReviewPanel } from "@/components/ReviewPanel";
+import type { Provenance } from "@/types/provenance";
 
 type AdminPanelProps = {
   adminWallet: string | null;
@@ -38,6 +41,23 @@ export default function AdminPanel({
     connectedWallet?.toLowerCase() === adminWallet?.toLowerCase();
   const readyCount = envStatus.filter((item) => item.configured).length;
   const missingCount = envStatus.length - readyCount;
+  const [provenance, setProvenance] = useState<Provenance>({
+    category: "visual",
+    medium: "digital painting",
+    creationMethod: "HUMAN_ORIGINAL",
+    attestation: {
+      text: "I certify this artwork is human-created, not AI-generated or AI-assisted.",
+      signerWallet: connectedWallet || "0x0000000000000000000000000000000000000000",
+      timestamp: new Date().toISOString(),
+      signatureRef: "sig-ref-base",
+    },
+    evidence: [
+      { kind: "source_file", hash: "a".repeat(64), label: "Source file" },
+      { kind: "wip_image", hash: "b".repeat(64), label: "WIP screenshot" },
+    ],
+    evidenceHashes: ["a".repeat(64), "b".repeat(64)],
+    verificationStatus: "PENDING_REVIEW",
+  });
 
   return (
     <main className="section-shell pb-24 pt-28">
@@ -162,6 +182,15 @@ export default function AdminPanel({
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="mt-12">
+        <ReviewPanel
+          provenance={provenance}
+          onUpdate={setProvenance}
+          reviewerWallet={adminWallet || "0x0000000000000000000000000000000000000000"}
+          enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
+        />
       </section>
     </main>
   );
