@@ -7,10 +7,12 @@ import { baseSepolia } from "thirdweb/chains";
 import { mintTo, nextTokenIdToMint, setApprovalForAll } from "thirdweb/extensions/erc721";
 import { createAuction, createListing } from "thirdweb/extensions/marketplace";
 import { privateKeyToAccount } from "thirdweb/wallets";
-import { prepareTransaction, sendTransaction } from "thirdweb";
+import { sendAndConfirmTransaction } from "thirdweb";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { prepareContractCall, readContract } from "thirdweb";
+import { ethers } from "ethers";
 
-const PRIVATE_KEY = "0xb80e51c61ea3123939c785f77dfa9cd77518413a7eb232534504d47dbdef83c0";
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT;
 const COLLECTION_ADDRESS = process.env.NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT;
 const CLIENT_ID = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
@@ -69,6 +71,31 @@ async function uploadToSupabase(buffer, contentType, filename) {
     .getPublicUrl(filename);
 
   return publicUrl;
+}
+
+// Function to insert artwork into Supabase database
+async function insertArtworkToDatabase(artwork, imageUrl) {
+  const { data, error } = await supabase
+    .from('artworks')
+    .insert({
+      title: artwork.name,
+      artist_name: 'Seeded Artist',
+      artist_wallet: account.address,
+      description: artwork.description,
+      background: `url(${imageUrl})`,
+      category: 'Digital Art',
+      price_sol: artwork.startPrice,
+      status: 'live',
+      closes_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to insert artwork to database: ${error.message}`);
+  }
+
+  return data;
 }
 
 if (!PRIVATE_KEY) {
@@ -164,10 +191,13 @@ async function main() {
   // Approve marketplace to transfer all NFTs
   console.log("Approving marketplace contract...");
   try {
-    const approvalReceipt = await setApprovalForAll({
+    const approvalTx = await prepareContractCall({
       contract: collectionContract,
-      operator: MARKETPLACE_ADDRESS,
-      approved: true,
+      method: "function setApprovalForAll(address operator, bool approved)",
+      params: [MARKETPLACE_ADDRESS, true],
+    });
+    const approvalReceipt = await sendAndConfirmTransaction({
+      transaction: approvalTx,
       account,
     });
     console.log("✅ Approval transaction sent:", approvalReceipt.transactionHash);
@@ -191,13 +221,18 @@ async function main() {
       const supabaseUrl = await uploadToSupabase(buffer, contentType, filename);
       console.log(`✅ Image uploaded to Supabase: ${supabaseUrl}`);
 
+      // Insert artwork into Supabase database
+      console.log("Inserting artwork into database...");
+      const dbRecord = await insertArtworkToDatabase(artwork, supabaseUrl);
+      console.log(`✅ Artwork inserted into database: ${dbRecord.id}`);
+
       // Get next token ID
       const nextTokenId = await nextTokenIdToMint({ contract: collectionContract });
       console.log(`Next token ID: ${nextTokenId}`);
 
       // Mint the artwork
       console.log("Minting artwork...");
-      const mintReceipt = await mintTo({
+      const mintTx = mintTo({
         contract: collectionContract,
         to: account.address,
         nft: {
@@ -205,22 +240,28 @@ async function main() {
           description: artwork.description,
           image: supabaseUrl,
         },
+      });
+      const mintReceipt = await sendAndConfirmTransaction({
+        transaction: mintTx,
         account,
       });
       console.log(`✅ Minted token ${nextTokenId}:`, mintReceipt.transactionHash);
 
       // Wait a bit for the mint to be confirmed
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       // Create auction listing
       console.log("Creating auction listing...");
-      const auctionReceipt = await createAuction({
+      const auctionTx = createAuction({
         contract: marketplaceContract,
         assetContractAddress: COLLECTION_ADDRESS,
         tokenId: nextTokenId,
         minimumBidAmount: artwork.startPrice.toFixed(4),
         buyoutBidAmount: (artwork.startPrice * 2).toFixed(4),
         endTimestamp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      });
+      const auctionReceipt = await sendAndConfirmTransaction({
+        transaction: auctionTx,
         account,
       });
       console.log(`✅ Auction created:`, auctionReceipt.transactionHash);

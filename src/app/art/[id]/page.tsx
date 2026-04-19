@@ -86,7 +86,9 @@ function normalizeArtwork(record: Record<string, unknown>): NormalizedArtwork {
         ? record.image_url
         : typeof record.asset_url === "string"
           ? record.asset_url
-          : null,
+          : typeof record.background === "string"
+            ? record.background.replace(/^url\(|\)$/g, '')
+            : null,
     medium: typeof record.medium === "string" ? record.medium : null,
     category:
       typeof record.category === "string"
