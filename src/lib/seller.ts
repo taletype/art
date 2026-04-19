@@ -16,7 +16,7 @@ export type SellerArtworkInput = {
   medium?: string | null;
   category?: string | null;
   provenanceText?: string | null;
-  reservePriceLamports?: number | null;
+  priceEth?: number | null;
 };
 
 export type AuctionLaunchInput = {
@@ -85,8 +85,8 @@ export async function createSellerArtwork(input: SellerArtworkInput) {
       medium: input.medium ?? null,
       category: input.category ?? null,
       provenance_text: input.provenanceText ?? null,
-      reserve_price_lamports: input.reservePriceLamports ?? null,
-      price_sol: input.reservePriceLamports ? input.reservePriceLamports / 1_000_000_000 : 0,
+      reserve_price_lamports: null,
+      price_sol: input.priceEth ?? 0,
       status: "draft",
       seller_flow_status: "draft",
     })

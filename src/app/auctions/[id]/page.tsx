@@ -1,5 +1,5 @@
-import BidForm from "@/components/BidForm";
-import { getOffchainAuctionById } from "@/lib/offchainAuctions";
+import MarketplaceActionPanel from "@/components/MarketplaceActionPanel";
+import { getMarketplaceDetail } from "@/lib/marketplace";
 
 type AuctionDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -14,7 +14,7 @@ function formatStatus(date: string) {
 
 export default async function AuctionDetailPage({ params }: AuctionDetailPageProps) {
   const { id } = await params;
-  const auction = await getOffchainAuctionById(id);
+  const auction = await getMarketplaceDetail(id);
 
   if (!auction) {
     return (
@@ -46,12 +46,12 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
               <p className="mt-2 text-sm font-semibold text-white">{formatStatus(auction.endsAt)}</p>
             </div>
             <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm text-white/45">Opening bid</p>
-              <p className="mt-2 text-sm font-semibold text-white">{auction.startPriceSol.toFixed(2)} SOL</p>
+              <p className="text-sm text-white/45">{auction.type === "auction" ? "Opening bid" : "List price"}</p>
+              <p className="mt-2 text-sm font-semibold text-white">{(auction.startPriceEth ?? auction.buyoutPriceEth ?? 0).toFixed(4)} ETH</p>
             </div>
             <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm text-white/45">Minimum increment</p>
-              <p className="mt-2 text-sm font-semibold text-white">{auction.minIncrementSol.toFixed(2)} SOL</p>
+              <p className="text-sm text-white/45">{auction.type === "auction" ? "Buyout" : "Chain"}</p>
+              <p className="mt-2 text-sm font-semibold text-white">{auction.type === "auction" ? `${(auction.buyoutPriceEth ?? 0).toFixed(4)} ETH` : auction.chainLabel}</p>
             </div>
           </div>
 
@@ -68,61 +68,44 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
             <div className="mt-4 grid gap-4">
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
                 <p className="text-sm text-white/45">Status</p>
-                <p className="mt-2 text-2xl font-semibold capitalize text-white">{auction.status}</p>
+                <p className="mt-2 text-2xl font-semibold capitalize text-white">{auction.type === "auction" ? "Auction listing" : "Direct listing"}</p>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <p className="text-sm text-white/45">Current lead</p>
+                <p className="text-sm text-white/45">{auction.type === "auction" ? "Minimum bid" : "List price"}</p>
                 <p className="mt-2 text-2xl font-semibold text-white">
-                  {auction.highestBidSol ? `${auction.highestBidSol.toFixed(2)} SOL` : "No bids yet"}
+                  {auction.type === "auction"
+                    ? `${(auction.minimumBidEth ?? 0).toFixed(4)} ETH`
+                    : `${(auction.buyoutPriceEth ?? 0).toFixed(4)} ETH`}
                 </p>
               </div>
             </div>
           </div>
 
-          <BidForm auction={auction} />
+          <MarketplaceActionPanel
+            listingId={auction.id}
+            type={auction.type}
+            minimumBidEth={auction.minimumBidEth}
+            buyoutPriceEth={auction.buyoutPriceEth}
+          />
 
           <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Settlement</p>
-              <span className="status-pill">{auction.status === "settled" ? "paid" : auction.status}</span>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Contract state</p>
+              <span className="status-pill">{auction.chainLabel}</span>
             </div>
             <p className="mt-3 text-sm leading-7 text-white/62">
-              This page follows the active off-chain auction path, so the auction state is the settlement signal until a dedicated settlement record is added back to this flow.
+              This page now follows the live Thirdweb marketplace contract. Transactions settle directly onchain and the contract address is the source of truth for auction status.
             </p>
             <dl className="mt-4 space-y-2 text-sm text-white/75">
               <div className="flex justify-between gap-4">
-                <dt>Winning bid</dt>
-                <dd>{auction.highestBidSol ? `${auction.highestBidSol.toFixed(2)} SOL` : "No winning bid yet"}</dd>
+                <dt>Asset contract</dt>
+                <dd className="break-all text-right text-xs text-white/78">{auction.assetContractAddress}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt>Winning bid id</dt>
-                <dd className="break-all text-right text-xs text-white/78">{auction.winnerBidId ?? "Pending close"}</dd>
+                <dt>Token id</dt>
+                <dd className="break-all text-right text-xs text-white/78">{auction.tokenId}</dd>
               </div>
             </dl>
-          </div>
-
-          <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Bid ladder</p>
-            <div className="mt-4 space-y-3">
-              {auction.bids.length ? (
-                auction.bids.slice(0, 8).map((bid) => (
-                  <div key={bid.id} className="flex items-center justify-between rounded-[1.2rem] border border-white/8 bg-black/20 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        {`${bid.bidderWallet.slice(0, 4)}...${bid.bidderWallet.slice(-4)}`}
-                      </p>
-                      <p className="text-xs text-white/45">{formatStatus(bid.createdAt)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-white">{bid.amountSol.toFixed(2)} SOL</p>
-                      <p className="text-xs text-white/45">{bid.isWinning ? "Winning" : "Outbid"}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-white/45">No bids on the board yet.</p>
-              )}
-            </div>
           </div>
         </aside>
       </section>

@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isValidSolanaAddress } from "@/lib/solanaAddress";
+import { isValidEvmAddress } from "@/lib/evmAddress";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AuthFormProps = {
@@ -26,8 +26,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
     try {
       if (mode === "signup") {
         const normalizedWallet = walletAddress.trim();
-        if (normalizedWallet && !isValidSolanaAddress(normalizedWallet)) {
-          throw new Error("Enter a valid Solana wallet address or leave it blank for now.");
+        if (normalizedWallet && !isValidEvmAddress(normalizedWallet)) {
+          throw new Error("Enter a valid EVM wallet address or leave it blank for now.");
         }
 
         const { error } = await supabase.auth.signUp({
@@ -42,7 +42,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         if (error) {
           throw error;
         }
-        setMessage("Account created. Check your inbox if email confirmation is enabled, then add your Solana devnet wallet from Seller Hub.");
+        setMessage("Account created. Check your inbox if email confirmation is enabled, then add your Base Sepolia wallet from Seller Hub.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -92,7 +92,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
       {mode === "signup" ? (
         <div>
           <label htmlFor="signup-wallet" className="field-label">
-            Solana wallet address
+            EVM wallet address
           </label>
           <input
             id="signup-wallet"

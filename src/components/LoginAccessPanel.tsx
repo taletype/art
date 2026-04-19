@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getThirdwebClient } from "@/lib/thirdweb";
+import { getMarketplaceChain, getMarketplaceChainLabel } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
 type SessionState = {
@@ -44,7 +45,7 @@ export default function LoginAccessPanel() {
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Quick access</p>
         <h2 className="text-2xl text-white">Use Thirdweb for wallet-first bidding</h2>
         <p className="text-sm leading-7 text-white/65">
-          Connecting a wallet is enough for browsing auctions and placing bids. Seller Hub actions still require an app account so your profile and inventory stay attached to you.
+          Connecting a wallet is enough for browsing auctions and placing bids on {getMarketplaceChainLabel()}. Seller Hub actions still require an app account so your profile and inventory stay attached to you.
         </p>
       </div>
 
@@ -52,6 +53,7 @@ export default function LoginAccessPanel() {
         <ConnectButton
           client={getThirdwebClient()}
           wallets={getThirdwebWalletOptions()}
+          chain={getMarketplaceChain()}
           connectButton={{
             label: activeAccount ? "Wallet connected" : "Connect with Thirdweb",
             className: "!w-full !rounded-full !bg-white !px-5 !py-3 !font-semibold !text-black",

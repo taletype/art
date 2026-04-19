@@ -78,7 +78,7 @@ export type CreatorRecord = {
 export const platformStats = [
   { label: "Human-made lots", value: "42" },
   { label: "Reviewed artist packets", value: "1.9k" },
-  { label: "Devnet settlement target", value: "< 30s" },
+  { label: "Base settlement target", value: "< 30s" },
 ];
 
 export const trustSignals = [
@@ -92,7 +92,7 @@ export const trustSignals = [
   },
   {
     label: "Provenance packets",
-    description: "Artist evidence, condition notes, reviewer attestations, buyer premium, and Solana settlement details stay visible in the catalog path.",
+    description: "Artist evidence, condition notes, reviewer attestations, buyer premium, and onchain settlement details stay visible in the catalog path.",
   },
 ];
 

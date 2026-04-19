@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useActiveAccount, ConnectButton } from "thirdweb/react";
 import { getThirdwebClient } from "@/lib/thirdweb";
+import { getMarketplaceChain } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
 const navItems = [
@@ -38,7 +39,8 @@ export default function Navigation() {
           <ConnectButton
             client={getThirdwebClient()}
             wallets={getThirdwebWalletOptions()}
-            connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Solana wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
+            chain={getMarketplaceChain()}
+            connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
           />
           <Link href="/seller" className="button-secondary px-5 py-2.5 text-sm">
             Seller Hub
@@ -73,7 +75,8 @@ export default function Navigation() {
               <ConnectButton
                 client={getThirdwebClient()}
                 wallets={getThirdwebWalletOptions()}
-                connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Solana wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
+                chain={getMarketplaceChain()}
+                connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-4 !py-3 !text-sm !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
               />
             </div>
             <Link

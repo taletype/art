@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isValidSolanaAddress } from "@/lib/solanaAddress";
+import { isValidEvmAddress } from "@/lib/evmAddress";
 
 export const createSellerArtworkSchema = z.object({
   title: z.string().min(2).max(120),
@@ -8,13 +8,13 @@ export const createSellerArtworkSchema = z.object({
   medium: z.string().max(120).optional(),
   category: z.string().max(120).optional(),
   provenanceText: z.string().max(4000).optional(),
-  reservePriceLamports: z.number().int().nonnegative().optional(),
+  priceEth: z.number().nonnegative().optional(),
 });
 
 export const prepareArtworkSchema = z.object({
   artworkId: z.string().uuid(),
-  sellerWallet: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Enter a valid Solana wallet address.",
+  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
+    message: "Enter a valid wallet address.",
   }).optional(),
 });
 
@@ -22,39 +22,33 @@ export const createSellerAuctionSchema = z.object({
   artworkId: z.string().uuid(),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
-  startPriceLamports: z.number().int().positive(),
-  minIncrementLamports: z.number().int().positive(),
-  sellerWallet: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Enter a valid Solana wallet address.",
+  startPriceEth: z.number().positive(),
+  minBidEth: z.number().positive(),
+  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
+    message: "Enter a valid wallet address.",
   }).optional(),
 });
 
 export const finalizeArtworkMintSchema = z.object({
   artworkId: z.string().uuid(),
   txSignature: z.string().min(32),
-  mintAddress: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Mint address must be a valid Solana address.",
-  }),
-  metadataAddress: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Metadata address must be a valid Solana address.",
-  }),
-  tokenAccountAddress: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Token account address must be a valid Solana address.",
+  mintAddress: z.string().trim().refine(isValidEvmAddress, {
+    message: "Mint contract must be a valid EVM address.",
   }),
   recentBlockhash: z.string().trim().min(20),
   lastValidBlockHeight: z.number().int().positive(),
-  sellerWallet: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Enter a valid Solana wallet address.",
+  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
+    message: "Enter a valid wallet address.",
   }).optional(),
 });
 
 export const finalizeSellerAuctionSchema = createSellerAuctionSchema.extend({
   txSignature: z.string().min(32),
-  listingAddress: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Listing address must be a valid Solana address.",
+  listingAddress: z.string().trim().refine(isValidEvmAddress, {
+    message: "Listing contract must be a valid EVM address.",
   }),
-  mintAddress: z.string().trim().refine(isValidSolanaAddress, {
-    message: "Mint address must be a valid Solana address.",
+  mintAddress: z.string().trim().refine(isValidEvmAddress, {
+    message: "NFT contract must be a valid EVM address.",
   }),
   recentBlockhash: z.string().trim().min(20),
   lastValidBlockHeight: z.number().int().positive(),

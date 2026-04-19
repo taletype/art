@@ -10,7 +10,7 @@ export default function LoginPage() {
           <p className="eyebrow">Collector access</p>
           <h1 className="text-5xl leading-tight">Log in and start bidding.</h1>
           <p className="text-lg leading-8 text-white/68">
-            Use your app account for seller actions, or connect with Thirdweb if you just want wallet-first access for auctions and bidding.
+            Use your app account for seller actions, or connect with Thirdweb if you just want wallet-first access for Base Sepolia listings, bids, and buyouts.
           </p>
           <p className="text-sm text-white/55">
             Need an account? <Link href="/signup" className="text-white underline underline-offset-4">Create one here</Link>.

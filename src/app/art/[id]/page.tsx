@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getArtworkById, getSaleForLot } from "@/lib/site-data";
 
 type ArtPageProps = {
@@ -42,11 +41,11 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
-function formatSol(value: number | null) {
+function formatEth(value: number | null) {
   if (value === null || Number.isNaN(value)) {
     return "Not set";
   }
-  return `${value.toFixed(2)} SOL`;
+  return `${value.toFixed(4)} ETH`;
 }
 
 function normalizeArtwork(record: Record<string, unknown>): NormalizedArtwork {
@@ -56,7 +55,7 @@ function normalizeArtwork(record: Record<string, unknown>): NormalizedArtwork {
     typeof record.reserve_sol === "number"
       ? record.reserve_sol
       : reservePriceLamports !== null
-        ? reservePriceLamports / 1_000_000_000
+        ? reservePriceLamports / 1_000_000_000_000_000_000
         : null;
 
   return {
@@ -183,14 +182,6 @@ export default async function ArtDetailPage({ params }: ArtPageProps) {
 
   const artwork = normalizeArtwork(artworkRecord as Record<string, unknown>);
   const sale = await getSaleForLot(id);
-  const supabase = createSupabaseAdminClient();
-  const { data: linkedAuction } = await supabase
-    .from("offchain_auctions")
-    .select("id,status")
-    .eq("artwork_id", id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
 
   return (
     <main className="min-h-screen bg-black px-4 pb-14 pt-24 text-white sm:px-6">
@@ -252,23 +243,23 @@ export default async function ArtDetailPage({ params }: ArtPageProps) {
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt>Reserve</dt>
-                  <dd>{formatSol(artwork.reserveSol)}</dd>
+                  <dd>{formatEth(artwork.reserveSol ?? artwork.priceSol)}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt>Estimate</dt>
                   <dd>
                     {artwork.estimateLowSol !== null && artwork.estimateHighSol !== null
-                      ? `${artwork.estimateLowSol.toFixed(2)}-${artwork.estimateHighSol.toFixed(2)} SOL`
+                      ? `${artwork.estimateLowSol.toFixed(4)}-${artwork.estimateHighSol.toFixed(4)} ETH`
                       : "Not set"}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt>Current bid</dt>
-                  <dd>{formatSol(artwork.currentBidSol)}</dd>
+                  <dd>{formatEth(artwork.currentBidSol)}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt>Minimum next bid</dt>
-                  <dd>{formatSol(artwork.minimumNextBidSol)}</dd>
+                  <dd>{formatEth(artwork.minimumNextBidSol)}</dd>
                 </div>
                 {artwork.closesAt ? (
                   <div className="flex justify-between gap-4">
@@ -282,19 +273,19 @@ export default async function ArtDetailPage({ params }: ArtPageProps) {
             <section className="rounded-[1.8rem] border border-white/10 bg-[#141414] p-6">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Auction path</p>
               <div className="mt-4 space-y-3 text-sm text-white/72">
-                {linkedAuction ? (
+                {artwork.marketplaceReferenceId ? (
                   <>
-                    <p>This artwork already has a mirrored auction record in the marketplace.</p>
-                    <Link href={`/auctions/${linkedAuction.id}`} className="button-primary w-full text-center">
-                      View auction
+                    <p>This artwork already has a live Thirdweb marketplace listing.</p>
+                    <Link href={`/auctions/${artwork.marketplaceReferenceId}`} className="button-primary w-full text-center">
+                      View listing
                     </Link>
                   </>
                 ) : (
-                  <p>No linked auction is live yet. Open Seller Hub to prepare the Solana devnet launch and open the auction.</p>
+                  <p>No live listing is attached yet. Open Seller Hub to mint this artwork and publish it to the marketplace.</p>
                 )}
                 {artwork.marketplaceReferenceUrl ? (
                   <a href={artwork.marketplaceReferenceUrl} target="_blank" rel="noreferrer" className="button-secondary block w-full text-center">
-                    Open Solana devnet reference
+                    Open marketplace reference
                   </a>
                 ) : null}
                 {artwork.syncStatus ? (

@@ -1,18 +1,21 @@
 import AuctionCard from "@/components/AuctionCard";
 import WalletConnect from "@/components/WalletConnect";
 import { SkeletonCard, SkeletonStats, SkeletonText } from "@/components/SkeletonLoader";
-import { listOffchainAuctionSummaries } from "@/lib/offchainAuctions";
+import { listMarketplaceEntries } from "@/lib/marketplace";
+import { getMarketplaceChainLabel, isMarketplaceConfigured } from "@/lib/thirdweb-config";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 
-function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listOffchainAuctionSummaries>> }) {
+function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listMarketplaceEntries>> }) {
   if (!auctions.length) {
     return (
       <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
         <h3 className="text-2xl">No auctions yet</h3>
         <p className="mt-3 text-sm text-white/60">
-          Create your first auction via the API or seed one in Supabase to light up the off-chain flow.
+          {isMarketplaceConfigured()
+            ? "Create your first Base Sepolia listing from Seller Hub to light up the live marketplace."
+            : "Add your Thirdweb marketplace contract env vars to light up the live marketplace."}
         </p>
       </div>
     );
@@ -28,34 +31,34 @@ function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listOf
 }
 
 async function AuctionsContent() {
-  const auctions = await listOffchainAuctionSummaries(undefined, 20);
-  const live = auctions.filter((auction) => auction.status === "live");
-  const upcoming = auctions.filter((auction) => auction.status === "draft");
-  const settled = auctions.filter((auction) => auction.status === "settled" || auction.status === "ended");
+  const auctions = await listMarketplaceEntries(20);
+  const live = auctions.filter((auction) => auction.status === "ACTIVE");
+  const auctionListings = auctions.filter((auction) => auction.type === "auction");
+  const directListings = auctions.filter((auction) => auction.type === "direct");
 
   return (
     <>
       <div className="space-y-6">
         <div className="space-y-3">
           <p className="eyebrow">Marketplace</p>
-          <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Solana devnet auctions with Supabase as the catalog layer.</h1>
+          <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Thirdweb marketplace on {getMarketplaceChainLabel()}.</h1>
           <p className="max-w-2xl text-lg leading-8 text-white/68">
-            Seller-owned artworks are prepared from Seller Hub with Solana devnet launch references, projected into auction records, and rendered here for collectors and bidders.
+            Listings, bids, and buyouts now come directly from the live marketplace contract. Supabase stays in the loop for editorial artwork records and seller inventory.
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
-            <p className="text-sm text-white/45">Live auctions</p>
+            <p className="text-sm text-white/45">Active listings</p>
             <p className="mt-2 text-3xl font-semibold text-white">{live.length}</p>
           </div>
           <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
-            <p className="text-sm text-white/45">Queued to open</p>
-            <p className="mt-2 text-3xl font-semibold text-white">{upcoming.length}</p>
+            <p className="text-sm text-white/45">Auction listings</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{auctionListings.length}</p>
           </div>
           <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
-            <p className="text-sm text-white/45">Closed or settled</p>
-            <p className="mt-2 text-3xl font-semibold text-white">{settled.length}</p>
+            <p className="text-sm text-white/45">Direct listings</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{directListings.length}</p>
           </div>
         </div>
       </div>
@@ -91,6 +94,6 @@ export default function AuctionsPage() {
 }
 
 async function AuctionsContentWrapper() {
-  const auctions = await listOffchainAuctionSummaries(undefined, 20);
+  const auctions = await listMarketplaceEntries(20);
   return <AuctionsGrid auctions={auctions} />;
 }

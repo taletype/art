@@ -4,10 +4,9 @@ import {
   getAuthenticatedAppUser,
   requireAuthenticatedAppUserResponse,
   requireLinkedWalletResponse,
-  resolveMatchingSellerWallet,
 } from "@/lib/auth";
-import { createSellerArtwork, prepareArtworkMintForSolanaDevnet } from "@/lib/seller";
-import { createSellerArtworkSchema, prepareArtworkSchema } from "@/types/seller";
+import { createSellerArtwork } from "@/lib/seller";
+import { createSellerArtworkSchema } from "@/types/seller";
 
 export async function POST(request: NextRequest) {
   const user = await getAuthenticatedAppUser();
@@ -17,27 +16,6 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-
-    if ("artworkId" in body) {
-      const payload = prepareArtworkSchema.parse(body);
-      const sellerWallet = resolveMatchingSellerWallet({
-        profileWalletAddress: user.walletAddress,
-        requestWalletAddress: payload.sellerWallet,
-      });
-      if (sellerWallet.mismatch) {
-        return NextResponse.json(
-          { ok: false, message: "Connect the same Solana wallet that is saved on your seller profile before signing." },
-          { status: 400 },
-        );
-      }
-      if (!sellerWallet.wallet) {
-        return requireLinkedWalletResponse();
-      }
-
-      const prepared = await prepareArtworkMintForSolanaDevnet(payload.artworkId, user.id, sellerWallet.wallet);
-      return NextResponse.json(prepared);
-    }
-
     if (!user.walletAddress) {
       return requireLinkedWalletResponse();
     }
@@ -52,7 +30,7 @@ export async function POST(request: NextRequest) {
       medium: payload.medium,
       category: payload.category,
       provenanceText: payload.provenanceText,
-      reservePriceLamports: payload.reservePriceLamports,
+      priceEth: payload.priceEth,
     });
 
     return NextResponse.json({ ok: true, artwork }, { status: 201 });

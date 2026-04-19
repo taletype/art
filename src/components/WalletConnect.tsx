@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
-import { isValidSolanaAddress } from "@/lib/solanaAddress";
+import { isValidEvmAddress } from "@/lib/evmAddress";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getThirdwebClient } from "@/lib/thirdweb";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
+import { getMarketplaceChain } from "@/lib/thirdweb-config";
 
 type SessionState = {
   email: string | null;
@@ -17,8 +18,8 @@ export default function WalletConnect() {
   const [session, setSession] = useState<SessionState>(null);
   const [walletAddress, setWalletAddress] = useState("");
   const [message, setMessage] = useState<string | null>(null);
-  const connectedSolanaWallet =
-    activeAccount?.address && isValidSolanaAddress(activeAccount.address) ? activeAccount.address : null;
+  const connectedWallet =
+    activeAccount?.address && isValidEvmAddress(activeAccount.address) ? activeAccount.address : null;
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -51,21 +52,21 @@ export default function WalletConnect() {
   }, []);
 
   useEffect(() => {
-    if (connectedSolanaWallet) {
-      setWalletAddress(connectedSolanaWallet);
+    if (connectedWallet) {
+      setWalletAddress(connectedWallet);
     }
-  }, [connectedSolanaWallet]);
+  }, [connectedWallet]);
 
   async function saveWalletAddress() {
     setMessage(null);
     try {
-      const nextWallet = connectedSolanaWallet ?? walletAddress.trim();
+      const nextWallet = connectedWallet ?? walletAddress.trim();
       if (!nextWallet) {
-        throw new Error("Enter a Solana devnet wallet address before saving.");
+        throw new Error("Enter a Base Sepolia wallet address before saving.");
       }
 
-      if (!isValidSolanaAddress(nextWallet)) {
-        throw new Error("Enter a valid Solana wallet address.");
+      if (!isValidEvmAddress(nextWallet)) {
+        throw new Error("Enter a valid EVM wallet address.");
       }
 
       const supabase = getSupabaseBrowserClient();
@@ -91,7 +92,7 @@ export default function WalletConnect() {
           : current,
       );
       setWalletAddress(nextWallet);
-      setMessage("Saved Solana wallet address to your profile.");
+      setMessage("Saved Base Sepolia wallet address to your profile.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to save wallet address.");
     }
@@ -101,9 +102,9 @@ export default function WalletConnect() {
     <section className="space-y-5 rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-5">
       <div className="space-y-1">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Wallet + profile</p>
-        <h2 className="text-2xl">Connect a Solana wallet, store your bidder profile</h2>
+        <h2 className="text-2xl">Connect an EVM wallet, store your bidder profile</h2>
         <p className="text-sm text-white/65">
-          This app records Solana devnet wallet addresses for bidding, seller ownership, and auction settlement.
+          This app records the Base Sepolia wallet you want attached to bidding, listings, and seller ownership.
         </p>
       </div>
 
@@ -111,30 +112,31 @@ export default function WalletConnect() {
         <ConnectButton
           client={getThirdwebClient()}
           wallets={getThirdwebWalletOptions()}
-          connectButton={{ label: "Connect Solana wallet", className: "!rounded-full !bg-white !text-black !px-5 !py-3 !font-semibold" }}
+          chain={getMarketplaceChain()}
+          connectButton={{ label: "Connect Base wallet", className: "!rounded-full !bg-white !text-black !px-5 !py-3 !font-semibold" }}
         />
       </div>
 
       <div className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
         <div className="space-y-1">
           <p className="text-sm font-medium text-white">{session?.email ?? "Not logged in"}</p>
-          <p className="text-sm text-white/55">Save the Solana devnet wallet you want attached to bids, auction ownership, and settlement records.</p>
+          <p className="text-sm text-white/55">Save the Base Sepolia wallet you want attached to bids, listing ownership, and settlement records.</p>
         </div>
 
         <input
           value={walletAddress}
           onChange={(event) => setWalletAddress(event.target.value)}
           className="field-input"
-          placeholder="Paste a Solana devnet wallet address"
+          placeholder="Paste a Base Sepolia wallet address"
           spellCheck={false}
         />
-        {activeAccount?.address && !connectedSolanaWallet ? (
+        {activeAccount?.address && !connectedWallet ? (
           <p className="text-xs text-white/45">
-            Your connected thirdweb wallet is not exposing a Solana address here, so paste the Solana devnet wallet you want to save.
+            Your connected thirdweb wallet is not exposing an EVM address here, so paste the wallet you want to save.
           </p>
         ) : null}
         <button type="button" onClick={saveWalletAddress} className="button-secondary w-full">
-          {connectedSolanaWallet ? "Save connected Solana wallet" : "Save Solana wallet"}
+          {connectedWallet ? "Save connected wallet" : "Save wallet"}
         </button>
       </div>
 

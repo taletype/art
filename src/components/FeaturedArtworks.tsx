@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { listOffchainAuctionSummaries } from "@/lib/offchainAuctions";
+import { listMarketplaceEntries } from "@/lib/marketplace";
 import { listArtworks } from "@/lib/supabase-db";
 import AuctionCountdown from "@/components/AuctionCountdown";
 
 export default async function FeaturedArtworks() {
   const [liveAuctions, sales] = await Promise.all([
-    listOffchainAuctionSummaries(),
+    listMarketplaceEntries(8),
     listArtworks(),
   ]);
 
@@ -33,8 +33,8 @@ export default async function FeaturedArtworks() {
                   <h3 className="text-sm font-medium text-white line-clamp-1">{auction.title}</h3>
                   <p className="mt-1 text-xs text-white/65 line-clamp-1">{auction.sellerWallet.slice(0, 6)}...{auction.sellerWallet.slice(-4)}</p>
                   <div className="mt-3 flex items-center justify-between text-xs">
-                    <span className="text-white/60 font-medium">{auction.highestBidSol || auction.startPriceSol} SOL</span>
-                    <span className="text-white/60">{auction.bidCount} bids</span>
+                    <span className="text-white/60 font-medium">{(auction.buyoutPriceEth ?? auction.startPriceEth ?? 0).toFixed(4)} ETH</span>
+                    <span className="text-white/60 capitalize">{auction.type.replace("-", " ")}</span>
                   </div>
                 </div>
               </article>

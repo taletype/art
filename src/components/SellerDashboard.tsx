@@ -2,12 +2,24 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useActiveAccount, useActiveWallet } from "thirdweb/react";
+import { useRouter } from "next/navigation";
+import { useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
+import { getAllAuctions, getAllListings, createAuction, createListing } from "thirdweb/extensions/marketplace";
+import { mintTo, nextTokenIdToMint, setApprovalForAll } from "thirdweb/extensions/erc721";
 import { EvidenceUploader } from "@/components/EvidenceUploader";
 import { ReviewPanel } from "@/components/ReviewPanel";
-import { isValidSolanaAddress } from "@/lib/solanaAddress";
-import { executePreparedSolanaTransaction } from "@/lib/solanaWalletExecution";
+import { isValidEvmAddress } from "@/lib/evmAddress";
 import { validateProvenance } from "@/lib/provenance";
+import {
+  getListingRouteId,
+  getMarketplaceChainLabel,
+  getMarketplaceContract,
+  getMarketplaceContractAddress,
+  getNftCollectionAddress,
+  getNftCollectionContract,
+  isMarketplaceConfigured,
+  isNftCollectionConfigured,
+} from "@/lib/thirdweb-config";
 import type { ArtCategory, EvidenceItem, Provenance } from "@/types/provenance";
 
 type SellerArtwork = {
@@ -19,6 +31,9 @@ type SellerArtwork = {
   sync_status: string | null;
   linked_auction_id: string | null;
   thirdweb_listing_id?: string | null;
+  thirdweb_token_id?: string | null;
+  thirdweb_contract_address?: string | null;
+  price_sol?: number | null;
 };
 
 type SellerDashboardProps = {
@@ -27,50 +42,10 @@ type SellerDashboardProps = {
   artworks: SellerArtwork[];
 };
 
-type TxInspection = {
-  operation: "mint_prepare" | "listing_prepare";
-  cluster: "devnet";
-  summary: string;
-  explorerUrls: string[];
-  accounts: Array<{ label: string; address: string }>;
-};
-
-type PreparedMintPayload = {
-  ok: boolean;
-  unsignedTxBase64: string | null;
-  recentBlockhash: string | null;
-  lastValidBlockHeight: number | null;
-  blockingErrors: string[];
-  txInspection: TxInspection | null;
-  mintAddress: string | null;
-  metadataAddress: string | null;
-  tokenAccountAddress: string | null;
-};
-
-type PreparedListingPayload = {
-  ok: boolean;
-  unsignedTxBase64: string | null;
-  recentBlockhash: string | null;
-  lastValidBlockHeight: number | null;
-  blockingErrors: string[];
-  txInspection: TxInspection | null;
-  listingAddress: string | null;
-  mintAddress: string | null;
-};
-
 type ArtworkActionState = {
   pending: boolean;
-  stage:
-    | "idle"
-    | "mint_ready_to_sign"
-    | "mint_submitted"
-    | "prepared"
-    | "listing_ready_to_sign"
-    | "listing_submitted"
-    | "in_auction";
+  stage: "idle" | "minting" | "minted" | "approving" | "listing" | "listed";
   message: string | null;
-  txInspection: TxInspection | null;
-  txSignature: string | null;
 };
 
 function defaultProvenance(): Provenance {
@@ -80,9 +55,9 @@ function defaultProvenance(): Provenance {
     creationMethod: "HUMAN_ORIGINAL",
     attestation: {
       text: "I certify this artwork is human-created, not AI-generated or AI-assisted.",
-      signerWallet: "ArtistWallet1111111111111111111111111111111",
+      signerWallet: "0x0000000000000000000000000000000000000000",
       timestamp: new Date().toISOString(),
-      signatureRef: "sig-ref-dev",
+      signatureRef: "sig-ref-base",
     },
     evidence: [
       { kind: "source_file", hash: "a".repeat(64), label: "Source file" },
@@ -93,32 +68,28 @@ function defaultProvenance(): Provenance {
   };
 }
 
-function solToLamports(value: string) {
-  return Math.round(Number(value || "0") * 1_000_000_000);
-}
-
 function defaultArtworkActionState(): ArtworkActionState {
   return {
     pending: false,
     stage: "idle",
     message: null,
-    txInspection: null,
-    txSignature: null,
   };
 }
 
-function getRpcUrl() {
-  return process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "https://api.devnet.solana.com";
+function toEthValue(value: number | null | undefined) {
+  return value && Number.isFinite(value) ? value : 0.05;
 }
 
 export default function SellerDashboard({ email, walletAddress, artworks }: SellerDashboardProps) {
+  const router = useRouter();
   const activeAccount = useActiveAccount();
-  const activeWallet = useActiveWallet();
+  const sendTransaction = useSendAndConfirmTransaction();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [medium, setMedium] = useState("digital painting");
-  const [priceLamports, setPriceLamports] = useState(1_000_000_000);
+  const [priceEth, setPriceEth] = useState("0.05");
+  const [listingKindByArtworkId, setListingKindByArtworkId] = useState<Record<string, "auction" | "direct">>({});
   const [provenance, setProvenance] = useState<Provenance>(defaultProvenance);
   const [draftState, setDraftState] = useState<{ pending: boolean; message: string | null }>({
     pending: false,
@@ -126,10 +97,10 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   });
   const [launchState, setLaunchState] = useState<Record<string, ArtworkActionState>>({});
   const connectedWalletAddress =
-    activeAccount?.address && isValidSolanaAddress(activeAccount.address) ? activeAccount.address : null;
+    activeAccount?.address && isValidEvmAddress(activeAccount.address) ? activeAccount.address : null;
   const actionWalletAddress = connectedWalletAddress ?? walletAddress;
   const profileWalletMatchesConnected =
-    !connectedWalletAddress || !walletAddress || connectedWalletAddress === walletAddress;
+    !connectedWalletAddress || !walletAddress || connectedWalletAddress.toLowerCase() === walletAddress.toLowerCase();
   const categoryOptions: ArtCategory[] = ["visual", "audio", "video", "writing", "mixed_media"];
 
   const preparedCount = useMemo(
@@ -170,7 +141,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     if (!walletAddress) {
       updateArtworkState(artworkId, {
         pending: false,
-        message: "Add a Solana devnet wallet to your seller profile before signing.",
+        message: "Add a Base Sepolia wallet to your seller profile before minting or listing.",
       });
       return false;
     }
@@ -178,7 +149,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     if (!connectedWalletAddress) {
       updateArtworkState(artworkId, {
         pending: false,
-        message: "Connect your Solana thirdweb wallet before signing Seller Hub transactions.",
+        message: "Connect your Base wallet before signing Seller Hub transactions.",
       });
       return false;
     }
@@ -186,7 +157,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     if (!profileWalletMatchesConnected) {
       updateArtworkState(artworkId, {
         pending: false,
-        message: "Connect the same Solana wallet that is saved on your seller profile before signing.",
+        message: "Connect the same wallet that is saved on your seller profile before continuing.",
       });
       return false;
     }
@@ -206,7 +177,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     if (!title || !description || !imageUrl || !actionWalletAddress) {
       setDraftState({
         pending: false,
-        message: "Add a title, description, image URL, and linked seller wallet first.",
+        message: "Add a title, description, image URL, and linked wallet first.",
       });
       return;
     }
@@ -214,7 +185,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     setDraftState({ pending: true, message: null });
 
     try {
-      const response = await fetch("/api/mint", {
+      const response = await fetch("/api/artworks", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -224,23 +195,23 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
           medium,
           category: sanitizedProvenance.category,
           provenanceText: JSON.stringify({ ...sanitizedProvenance, medium }),
-          reservePriceLamports: priceLamports,
+          priceEth: Number(priceEth),
         }),
       });
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(payload.message || "Unable to create artwork draft.");
+        throw new Error(payload.message || payload.error || "Unable to create artwork draft.");
       }
 
       setTitle("");
       setDescription("");
       setImageUrl("");
       setMedium("digital painting");
-      setPriceLamports(1_000_000_000);
+      setPriceEth("0.05");
       setProvenance(defaultProvenance());
       setDraftState({ pending: false, message: "Artwork draft created in Seller Hub." });
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       setDraftState({
         pending: false,
@@ -249,475 +220,425 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     }
   }
 
-  async function prepareArtwork(artworkId: string) {
-    if (!ensureConnectedSellerWallet(artworkId) || !connectedWalletAddress || !walletAddress) {
+  async function mintArtwork(artwork: SellerArtwork) {
+    if (!ensureConnectedSellerWallet(artwork.id) || !connectedWalletAddress) {
       return;
     }
 
-    updateArtworkState(artworkId, {
+    if (!isNftCollectionConfigured()) {
+      updateArtworkState(artwork.id, {
+        pending: false,
+        message: "Set NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT before minting.",
+      });
+      return;
+    }
+
+    updateArtworkState(artwork.id, {
       pending: true,
-      stage: "idle",
-      message: "Requesting a Solana devnet mint transaction...",
-      txInspection: null,
-      txSignature: null,
+      stage: "minting",
+      message: "Minting the artwork into your Base Sepolia collection...",
     });
 
     try {
-      const response = await fetch("/api/mint", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const collectionContract = getNftCollectionContract();
+      const nextTokenId = await nextTokenIdToMint({ contract: collectionContract });
+      const mintTx = mintTo({
+        contract: collectionContract,
+        to: connectedWalletAddress,
+        nft: {
+          name: artwork.title,
+          description: artwork.description ?? "",
+          image: artwork.image_url ?? "",
+        },
+      });
+
+      await sendTransaction.mutateAsync(mintTx);
+
+      const patchResponse = await fetch("/api/artworks", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          artworkId,
-          sellerWallet: connectedWalletAddress,
+          id: artwork.id,
+          seller_wallet: connectedWalletAddress,
+          artist_wallet: connectedWalletAddress,
+          thirdweb_provider: "thirdweb",
+          thirdweb_chain: "base-sepolia",
+          thirdweb_contract_address: getNftCollectionAddress(),
+          thirdweb_token_id: nextTokenId.toString(),
+          thirdweb_asset_url: artwork.image_url,
+          sync_status: "mint_confirmed",
+          seller_flow_status: "prepared",
         }),
       });
-      const payload = (await response.json()) as PreparedMintPayload & { message?: string };
-      if (!response.ok) {
-        throw new Error(payload.message || "Unable to prepare artwork.");
-      }
-      if (!payload.ok || payload.blockingErrors.length || !payload.unsignedTxBase64 || !payload.recentBlockhash || payload.lastValidBlockHeight === null) {
-        throw new Error(payload.blockingErrors[0] || "Unable to prepare Solana mint transaction.");
-      }
-      if (!payload.mintAddress || !payload.metadataAddress || !payload.tokenAccountAddress) {
-        throw new Error("Mint preparation returned incomplete Solana account metadata.");
+
+      if (!patchResponse.ok) {
+        const payload = await patchResponse.json();
+        throw new Error(payload.error || "Unable to save minted artwork state.");
       }
 
-      updateArtworkState(artworkId, {
-        pending: true,
-        stage: "mint_ready_to_sign",
-        message: "Transaction prepared. Waiting for your wallet signature...",
-        txInspection: payload.txInspection,
-      });
-
-      const execution = await executePreparedSolanaTransaction({
-        walletId: activeWallet?.id,
-        expectedAddress: walletAddress,
-        unsignedTxBase64: payload.unsignedTxBase64,
-        rpcUrl: getRpcUrl(),
-        recentBlockhash: payload.recentBlockhash,
-        lastValidBlockHeight: payload.lastValidBlockHeight,
-      });
-
-      updateArtworkState(artworkId, {
-        pending: true,
-        stage: "mint_submitted",
-        message: `Mint submitted on devnet. Signature: ${execution.signature}`,
-        txSignature: execution.signature,
-      });
-
-      const finalizeResponse = await fetch("/api/mint/finalize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          artworkId,
-          sellerWallet: connectedWalletAddress,
-          txSignature: execution.signature,
-          mintAddress: payload.mintAddress,
-          metadataAddress: payload.metadataAddress,
-          tokenAccountAddress: payload.tokenAccountAddress,
-          recentBlockhash: payload.recentBlockhash,
-          lastValidBlockHeight: payload.lastValidBlockHeight,
-        }),
-      });
-      const finalizePayload = await finalizeResponse.json();
-      if (!finalizeResponse.ok) {
-        throw new Error(finalizePayload.message || "Unable to finalize Solana mint.");
-      }
-
-      updateArtworkState(artworkId, {
+      updateArtworkState(artwork.id, {
         pending: false,
-        stage: "prepared",
-        message: "Artwork minted on Solana devnet and finalized in Seller Hub.",
+        stage: "minted",
+        message: "Artwork minted on Base Sepolia and linked to this draft.",
       });
-      window.location.reload();
+      router.refresh();
     } catch (error) {
-      updateArtworkState(artworkId, {
+      updateArtworkState(artwork.id, {
         pending: false,
-        message: error instanceof Error ? error.message : "Unable to prepare artwork.",
+        message: error instanceof Error ? error.message : "Unable to mint artwork.",
       });
     }
   }
 
-  async function launchAuction(artworkId: string) {
-    if (!ensureConnectedSellerWallet(artworkId) || !connectedWalletAddress || !walletAddress) {
+  async function launchListing(artwork: SellerArtwork) {
+    if (!ensureConnectedSellerWallet(artwork.id) || !connectedWalletAddress) {
       return;
     }
 
-    const startsAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-    const endsAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    const startPriceLamports = solToLamports("1");
-    const minIncrementLamports = solToLamports("0.1");
+    if (!isMarketplaceConfigured()) {
+      updateArtworkState(artwork.id, {
+        pending: false,
+        message: "Set NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT before listing.",
+      });
+      return;
+    }
 
-    updateArtworkState(artworkId, {
-      pending: true,
-      stage: "idle",
-      message: "Requesting a Solana Auction House listing transaction...",
-      txInspection: null,
-      txSignature: null,
-    });
+    const tokenId = artwork.thirdweb_token_id;
+    if (!tokenId) {
+      updateArtworkState(artwork.id, {
+        pending: false,
+        message: "Mint this artwork before creating a listing.",
+      });
+      return;
+    }
 
     try {
-      const response = await fetch("/api/auctions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const marketplaceContract = getMarketplaceContract();
+      const collectionContract = getNftCollectionContract();
+      const marketplaceAddress = getMarketplaceContractAddress();
+      const listingType = listingKindByArtworkId[artwork.id] ?? "auction";
+      const priceValue = toEthValue(artwork.price_sol);
+
+      updateArtworkState(artwork.id, {
+        pending: true,
+        stage: "approving",
+        message: "Approving the marketplace contract to transfer your NFT...",
+      });
+
+      await sendTransaction.mutateAsync(
+        setApprovalForAll({
+          contract: collectionContract,
+          operator: marketplaceAddress as `0x${string}`,
+          approved: true,
+        }),
+      );
+
+      updateArtworkState(artwork.id, {
+        pending: true,
+        stage: "listing",
+        message: listingType === "auction" ? "Creating onchain auction..." : "Creating direct listing...",
+      });
+
+      if (listingType === "auction") {
+        await sendTransaction.mutateAsync(
+          createAuction({
+            contract: marketplaceContract,
+            assetContractAddress: getNftCollectionAddress() as `0x${string}`,
+            tokenId: BigInt(tokenId),
+            minimumBidAmount: priceValue.toFixed(4),
+            buyoutBidAmount: (priceValue * 1.4).toFixed(4),
+            endTimestamp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          }),
+        );
+      } else {
+        await sendTransaction.mutateAsync(
+          createListing({
+            contract: marketplaceContract,
+            assetContractAddress: getNftCollectionAddress() as `0x${string}`,
+            tokenId: BigInt(tokenId),
+            pricePerToken: priceValue.toFixed(4),
+            endTimestamp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          }),
+        );
+      }
+
+      const [auctions, listings] = await Promise.all([
+        getAllAuctions({ contract: marketplaceContract, start: 0, count: 100n }),
+        getAllListings({ contract: marketplaceContract, start: 0, count: 100n }),
+      ]);
+
+      const matched =
+        listingType === "auction"
+          ? auctions
+              .filter((entry) => entry.creatorAddress.toLowerCase() === connectedWalletAddress.toLowerCase() && entry.tokenId.toString() === tokenId)
+              .sort((left, right) => Number(right.id - left.id))[0]
+          : listings
+              .filter((entry) => entry.creatorAddress.toLowerCase() === connectedWalletAddress.toLowerCase() && entry.tokenId.toString() === tokenId)
+              .sort((left, right) => Number(right.id - left.id))[0];
+
+      if (!matched) {
+        throw new Error("Listing transaction confirmed but the marketplace listing could not be located yet.");
+      }
+
+      const routeId = getListingRouteId(listingType, matched.id);
+      const patchResponse = await fetch("/api/artworks", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          artworkId,
-          sellerWallet: connectedWalletAddress,
-          startsAt,
-          endsAt,
-          startPriceLamports,
-          minIncrementLamports,
+          id: artwork.id,
+          seller_wallet: connectedWalletAddress,
+          artist_wallet: connectedWalletAddress,
+          thirdweb_provider: "thirdweb",
+          thirdweb_chain: "base-sepolia",
+          thirdweb_contract_address: getNftCollectionAddress(),
+          thirdweb_token_id: tokenId,
+          thirdweb_listing_id: routeId,
+          thirdweb_listing_url: `/auctions/${routeId}`,
+          sync_status: "listing_confirmed",
+          seller_flow_status: "in_auction",
+          status: "live",
         }),
       });
-      const payload = (await response.json()) as PreparedListingPayload & { message?: string };
-      if (!response.ok) {
-        throw new Error(payload.message || "Unable to launch auction.");
-      }
-      if (!payload.ok || payload.blockingErrors.length || !payload.unsignedTxBase64 || !payload.recentBlockhash || payload.lastValidBlockHeight === null) {
-        throw new Error(payload.blockingErrors[0] || "Unable to prepare Solana listing transaction.");
-      }
-      if (!payload.listingAddress || !payload.mintAddress) {
-        throw new Error("Auction preparation returned incomplete Solana listing metadata.");
+
+      if (!patchResponse.ok) {
+        const payload = await patchResponse.json();
+        throw new Error(payload.error || "Unable to save listing state.");
       }
 
-      updateArtworkState(artworkId, {
-        pending: true,
-        stage: "listing_ready_to_sign",
-        message: "Listing transaction prepared. Waiting for your wallet signature...",
-        txInspection: payload.txInspection,
-      });
-
-      const execution = await executePreparedSolanaTransaction({
-        walletId: activeWallet?.id,
-        expectedAddress: walletAddress,
-        unsignedTxBase64: payload.unsignedTxBase64,
-        rpcUrl: getRpcUrl(),
-        recentBlockhash: payload.recentBlockhash,
-        lastValidBlockHeight: payload.lastValidBlockHeight,
-      });
-
-      updateArtworkState(artworkId, {
-        pending: true,
-        stage: "listing_submitted",
-        message: `Listing submitted on devnet. Signature: ${execution.signature}`,
-        txSignature: execution.signature,
-      });
-
-      const finalizeResponse = await fetch("/api/auctions/finalize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          artworkId,
-          sellerWallet: connectedWalletAddress,
-          startsAt,
-          endsAt,
-          startPriceLamports,
-          minIncrementLamports,
-          txSignature: execution.signature,
-          listingAddress: payload.listingAddress,
-          mintAddress: payload.mintAddress,
-          recentBlockhash: payload.recentBlockhash,
-          lastValidBlockHeight: payload.lastValidBlockHeight,
-        }),
-      });
-      const finalizePayload = await finalizeResponse.json();
-      if (!finalizeResponse.ok) {
-        throw new Error(finalizePayload.message || "Unable to finalize auction.");
-      }
-
-      updateArtworkState(artworkId, {
+      updateArtworkState(artwork.id, {
         pending: false,
-        stage: "in_auction",
-        message: "Auction House listing confirmed and the local auction is now live.",
+        stage: "listed",
+        message: `${listingType === "auction" ? "Auction" : "Direct listing"} confirmed on ${getMarketplaceChainLabel()}.`,
       });
-      window.location.reload();
+      router.refresh();
     } catch (error) {
-      updateArtworkState(artworkId, {
+      updateArtworkState(artwork.id, {
         pending: false,
-        message: error instanceof Error ? error.message : "Unable to launch auction.",
+        message: error instanceof Error ? error.message : "Unable to launch listing.",
       });
     }
   }
 
   return (
-    <main className="pb-20 pt-28">
-      <section className="section-shell space-y-8">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-3">
-            <p className="eyebrow">Seller hub</p>
-            <h1 className="text-5xl leading-tight sm:text-6xl">Start the listing here, then launch from the same hub.</h1>
+    <main className="section-shell pb-24 pt-28">
+      <div className="space-y-10">
+        <section className="grid gap-8 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.03] p-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-5">
+            <p className="eyebrow">Seller Hub</p>
+            <h1 className="text-5xl leading-tight sm:text-6xl">Create the draft here, then mint and list it on {getMarketplaceChainLabel()}.</h1>
             <p className="max-w-3xl text-lg leading-8 text-white/68">
-              Seller Hub now handles the full flow: create the draft, verify the work, mint the asset on Solana devnet, and only then launch the auction.
+              Seller Hub now handles the Base Sepolia flow: create the draft, verify the work, mint it into your NFT collection, then push either an auction or a direct listing to your Thirdweb marketplace.
             </p>
-          </div>
 
-          <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Seller status</p>
-            <dl className="mt-4 space-y-3 text-sm text-white/75">
-              <div className="flex justify-between gap-4">
-                <dt>Account</dt>
-                <dd>{email ?? "Not signed in"}</dd>
+            <dl className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                <dt className="text-sm text-white/45">Seller email</dt>
+                <dd className="mt-2 text-lg font-semibold text-white">{email ?? "Seller account"}</dd>
               </div>
-              <div className="flex justify-between gap-4">
-                <dt>Linked wallet</dt>
-                <dd className="text-right">{actionWalletAddress ?? "Add Solana devnet wallet"}</dd>
+              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                <dt className="text-sm text-white/45">Linked wallet</dt>
+                <dd className="mt-2 break-all text-sm font-semibold text-white">{actionWalletAddress ?? "Add Base wallet"}</dd>
               </div>
-              <div className="flex justify-between gap-4">
-                <dt>Prepared artworks</dt>
-                <dd>{preparedCount}</dd>
+              <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                <dt className="text-sm text-white/45">Ready to list</dt>
+                <dd className="mt-2 text-lg font-semibold text-white">{preparedCount}</dd>
               </div>
             </dl>
-            {connectedWalletAddress ? (
-              <p className="mt-4 text-xs text-white/55">
-                Seller Hub actions are using the currently connected thirdweb wallet.
-              </p>
-            ) : null}
+
             {!profileWalletMatchesConnected ? (
-              <p className="mt-4 text-xs text-[#f3b664]">
-                The connected thirdweb wallet does not match the wallet saved on your seller profile. Prepare and launch actions are blocked until they match.
+              <p className="rounded-[1.2rem] border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm text-amber-50">
+                The connected wallet does not match the wallet saved on your seller profile. Listing actions stay blocked until they match.
               </p>
             ) : null}
-            <p className="mt-4 text-xs text-white/45">
-              Draft creation uses the wallet saved on your seller profile. Connect the same wallet in thirdweb before preparing or launching.
+          </div>
+
+          <div className="space-y-3 rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+            <p className="eyebrow">Contract config</p>
+            <p className="text-sm text-white/65">
+              The live marketplace flow depends on your Thirdweb contract env vars.
+            </p>
+            <p className="text-sm text-white/78">
+              Marketplace:
+              {" "}
+              {getMarketplaceContractAddress() ?? "Missing NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT"}
+            </p>
+            <p className="text-sm text-white/78">
+              NFT collection:
+              {" "}
+              {getNftCollectionAddress() ?? "Missing NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT"}
             </p>
           </div>
-        </div>
+        </section>
 
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
-            <div className="mb-8 space-y-3">
+        <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="space-y-6 rounded-[2rem] border border-[#d4af37]/20 bg-white/[0.03] p-8">
+            <div className="space-y-2">
               <p className="eyebrow">New listing</p>
-              <h2 className="text-3xl sm:text-4xl">List a new artwork</h2>
-              <p className="max-w-2xl text-sm leading-7 text-white/65">
-                Keep the listing flow in Seller Hub so your inventory, provenance, and auction actions stay together.
+              <h2 className="text-3xl">Create artwork draft</h2>
+              <p className="text-sm leading-7 text-white/65">
+                Draft the artwork in Supabase first so your provenance, image, and marketplace metadata stay together.
               </p>
             </div>
 
-            <div className="space-y-5">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label htmlFor="title" className="field-label">Title *</label>
-                <input
-                  id="title"
-                  className="field-input"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Artwork title"
-                  required
-                />
+                <label htmlFor="title" className="field-label">Title</label>
+                <input id="title" value={title} onChange={(event) => setTitle(event.target.value)} className="field-input" />
               </div>
-
               <div>
-                <label htmlFor="description" className="field-label">Description *</label>
-                <textarea
-                  id="description"
-                  className="field-textarea"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the piece, materials, story, or context"
-                  required
-                />
+                <label htmlFor="medium" className="field-label">Medium</label>
+                <input id="medium" value={medium} onChange={(event) => setMedium(event.target.value)} className="field-input" />
               </div>
-
+              <div className="md:col-span-2">
+                <label htmlFor="description" className="field-label">Description</label>
+                <textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} className="field-input min-h-28" />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="image-url" className="field-label">Image URL</label>
+                <input id="image-url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} className="field-input" />
+              </div>
               <div>
-                <label htmlFor="image-url" className="field-label">Image URL *</label>
-                <input
-                  id="image-url"
-                  className="field-input"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/artwork.jpg"
-                  required
-                />
+                <label htmlFor="price-eth" className="field-label">Starting price (ETH)</label>
+                <input id="price-eth" type="number" min="0" step="0.0001" value={priceEth} onChange={(event) => setPriceEth(event.target.value)} className="field-input" />
               </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="medium" className="field-label">Medium</label>
-                  <input
-                    id="medium"
-                    className="field-input"
-                    value={medium}
-                    onChange={(e) => setMedium(e.target.value)}
-                    placeholder="digital painting"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="category" className="field-label">Category</label>
-                  <select
-                    id="category"
-                    className="field-select"
-                    value={provenance.category}
-                    onChange={(e) => setProvenance((prev) => ({ ...prev, category: e.target.value as ArtCategory }))}
-                  >
-                    {categoryOptions.map((category) => (
-                      <option key={category} value={category}>{category.replace(/_/g, " ")}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="reserve" className="field-label">Reserve (lamports)</label>
-                  <input
-                    id="reserve"
-                    type="number"
-                    className="field-input"
-                    value={priceLamports}
-                    onChange={(e) => setPriceLamports(Number(e.target.value))}
-                    placeholder="1000000000"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="wallet" className="field-label">Active seller wallet</label>
-                  <input
-                    id="wallet"
-                    className="field-input"
-                    value={actionWalletAddress ?? ""}
-                    placeholder="Link a Solana devnet wallet in your seller profile"
-                    readOnly
-                  />
-                  <p className="mt-2 text-xs text-white/45">
-                    {connectedWalletAddress
-                      ? "Using the currently connected thirdweb Solana wallet."
-                      : "Using the Solana devnet wallet saved on your seller profile."}
-                  </p>
-                </div>
+              <div>
+                <label htmlFor="wallet" className="field-label">Active seller wallet</label>
+                <input id="wallet" value={actionWalletAddress ?? ""} className="field-input" readOnly placeholder="Link an EVM wallet in your seller profile" />
               </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={createArtworkDraft}
-                disabled={draftState.pending || !actionWalletAddress}
-                className="button-primary disabled:cursor-wait disabled:opacity-70"
-              >
-                {draftState.pending ? "Saving..." : "Create listing draft"}
-              </button>
+            <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {categoryOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setProvenance((prev) => ({ ...prev, category: option }))}
+                  className={`rounded-2xl border px-4 py-3 text-sm capitalize transition ${provenance.category === option ? "border-[#d4af37]/40 bg-[#d4af37]/10 text-[#f0d46e]" : "border-white/10 bg-black/20 text-white/70"}`}
+                >
+                  {option.replace("_", " ")}
+                </button>
+              ))}
             </div>
+
+            <button type="button" onClick={createArtworkDraft} disabled={draftState.pending} className="button-primary w-full disabled:cursor-wait disabled:opacity-60">
+              {draftState.pending ? "Saving..." : "Create listing draft"}
+            </button>
 
             {draftState.message ? (
-              <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">
-                {draftState.message}
-              </div>
+              <p className="rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{draftState.message}</p>
             ) : null}
-          </section>
+          </div>
 
-          <section className="space-y-6">
-            <EvidenceUploader value={provenance.evidence} onChange={handleEvidenceChange} />
-            <ReviewPanel
-              provenance={sanitizedProvenance}
-              reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "mock-admin-wallet"}
-              enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
-              onUpdate={setProvenance}
-            />
-          </section>
-        </div>
+          <ReviewPanel
+            provenance={sanitizedProvenance}
+            onUpdate={setProvenance}
+            reviewerWallet={process.env.NEXT_PUBLIC_ADMIN_REVIEWER_WALLET ?? "0x0000000000000000000000000000000000000000"}
+            enabled={process.env.NEXT_PUBLIC_ENABLE_MOCK_REVIEW === "true"}
+          />
+        </section>
 
-        <section className="space-y-4">
+        <section className="space-y-5">
           <div className="flex items-end justify-between gap-4">
-            <div>
+            <div className="space-y-2">
               <p className="eyebrow">Inventory</p>
-              <h2 className="text-3xl">Your artworks</h2>
+              <h2 className="text-3xl">Drafts and live listings</h2>
             </div>
           </div>
 
-          {artworks.length ? (
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {artworks.map((artwork) => {
-                const state = launchState[artwork.id] ?? defaultArtworkActionState();
-                const linkedAuctionHref = artwork.linked_auction_id
-                  ? `/auctions/${artwork.linked_auction_id}`
-                  : artwork.thirdweb_listing_id
-                    ? `/auctions?focus=${artwork.thirdweb_listing_id}`
-                    : null;
-                const displayStatus = state.stage !== "idle" ? state.stage : artwork.seller_flow_status ?? "draft";
+          <div className="grid gap-6 xl:grid-cols-2">
+            {artworks.map((artwork) => {
+              const state = launchState[artwork.id] ?? defaultArtworkActionState();
+              const listingType = listingKindByArtworkId[artwork.id] ?? "auction";
+              const listingHref = artwork.thirdweb_listing_id ? `/auctions/${artwork.thirdweb_listing_id}` : null;
 
-                return (
-                  <article key={artwork.id} className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-5">
-                    <div
-                      className="aspect-[4/3] rounded-[1.3rem] border border-white/10 bg-cover bg-center"
-                      style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.45)), url(${artwork.image_url ?? ""})` }}
-                    />
-                    <div className="mt-4 space-y-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <h3 className="text-2xl">{artwork.title}</h3>
-                        <span className="status-pill">{displayStatus}</span>
-                      </div>
-                      <p className="line-clamp-3 text-sm leading-6 text-white/65">{artwork.description}</p>
-                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white/55">
-                        Sync status: {artwork.sync_status ?? "pending"}
-                      </div>
-                      {state.txInspection ? (
-                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white/70">
-                          <p className="font-semibold uppercase tracking-[0.18em] text-white/45">Transaction preview</p>
-                          <p className="mt-2 leading-6">{state.txInspection.summary}</p>
-                          <div className="mt-3 space-y-1">
-                            {state.txInspection.accounts.map((account) => (
-                              <p key={`${artwork.id}-${account.label}`}>
-                                {account.label}: <span className="font-mono text-[11px]">{account.address}</span>
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                      <div className="grid gap-3">
+              return (
+                <article key={artwork.id} className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="eyebrow">Artwork</p>
+                      <h3 className="mt-2 text-2xl">{artwork.title}</h3>
+                      <p className="mt-2 text-sm text-white/60">{artwork.description ?? "No description yet."}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {artwork.seller_flow_status ? <span className="status-pill">{artwork.seller_flow_status}</span> : null}
+                      {artwork.thirdweb_token_id ? <span className="status-pill">token #{artwork.thirdweb_token_id}</span> : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-4">
+                      <p className="text-sm text-white/45">List type</p>
+                      <div className="mt-3 flex gap-2">
                         <button
                           type="button"
-                          onClick={() => prepareArtwork(artwork.id)}
-                          disabled={state.pending || !connectedWalletAddress || !profileWalletMatchesConnected}
-                          className="button-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={() => setListingKindByArtworkId((current) => ({ ...current, [artwork.id]: "auction" }))}
+                          className={`rounded-full px-4 py-2 text-sm ${listingType === "auction" ? "bg-white text-black" : "bg-white/5 text-white/70"}`}
                         >
-                          {state.pending && state.stage.startsWith("mint") ? "Minting..." : "Prepare and mint on devnet"}
+                          Auction
                         </button>
                         <button
                           type="button"
-                          onClick={() => launchAuction(artwork.id)}
-                          disabled={
-                            state.pending ||
-                            !connectedWalletAddress ||
-                            !profileWalletMatchesConnected ||
-                            artwork.seller_flow_status !== "prepared"
-                          }
-                          className="button-primary disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={() => setListingKindByArtworkId((current) => ({ ...current, [artwork.id]: "direct" }))}
+                          className={`rounded-full px-4 py-2 text-sm ${listingType === "direct" ? "bg-white text-black" : "bg-white/5 text-white/70"}`}
                         >
-                          {state.pending && state.stage.startsWith("listing") ? "Launching..." : "Launch auction"}
+                          Direct
                         </button>
-                        {state.txSignature ? (
-                          <a
-                            href={`https://explorer.solana.com/tx/${state.txSignature}?cluster=devnet`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sm text-[#e8c547] underline underline-offset-4"
-                          >
-                            View submitted devnet transaction
-                          </a>
-                        ) : null}
-                        {linkedAuctionHref ? (
-                          <Link href={linkedAuctionHref} className="text-sm text-[#e8c547] underline underline-offset-4">
-                            View linked auction
-                          </Link>
-                        ) : null}
-                        {state.message ? (
-                          <p className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">{state.message}</p>
-                        ) : null}
                       </div>
                     </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
+                    <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-4">
+                      <p className="text-sm text-white/45">Price</p>
+                      <p className="mt-3 text-xl font-semibold text-white">{toEthValue(artwork.price_sol).toFixed(4)} ETH</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void mintArtwork(artwork)}
+                      disabled={state.pending || Boolean(artwork.thirdweb_token_id)}
+                      className="button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {artwork.thirdweb_token_id ? "Minted" : state.pending && state.stage === "minting" ? "Minting..." : "Mint to collection"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void launchListing(artwork)}
+                      disabled={state.pending || !artwork.thirdweb_token_id}
+                      className="button-primary disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {state.pending && (state.stage === "approving" || state.stage === "listing")
+                        ? "Listing..."
+                        : listingType === "auction"
+                          ? "Launch auction"
+                          : "Create direct listing"}
+                    </button>
+                    {listingHref ? (
+                      <Link href={listingHref} className="button-secondary">
+                        View live listing
+                      </Link>
+                    ) : null}
+                  </div>
+
+                  {state.message ? (
+                    <p className="mt-4 rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80">
+                      {state.message}
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+
+          {!artworks.length ? (
             <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
-              <h3 className="text-2xl">No artworks yet</h3>
-              <p className="mt-3 text-sm text-white/60">Start your first listing above, then mint it and launch the auction from this hub.</p>
+              <h3 className="text-2xl">No drafts yet</h3>
+              <p className="mt-3 text-sm text-white/60">Start your first listing above, then mint it and push it to the marketplace from this hub.</p>
             </div>
-          )}
+          ) : null}
         </section>
-      </section>
+      </div>
     </main>
   );
 }
