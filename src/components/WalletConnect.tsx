@@ -138,7 +138,7 @@ export default function WalletConnect() {
             {sessionLoaded ? session?.email ?? "No app profile signed in" : "Checking app profile..."}
           </p>
           <p className="text-sm text-white/55">
-            Bidding can use your connected wallet. Saving a wallet for listings, ownership, and settlement records requires an app profile.
+            Bidding, Seller Hub, and marketplace actions can use either your connected wallet or your saved app profile wallet.
           </p>
         </div>
 
@@ -154,24 +154,24 @@ export default function WalletConnect() {
             Your connected thirdweb wallet is not exposing an EVM address here, so paste the wallet you want to save.
           </p>
         ) : null}
-        {!canSaveToProfile ? (
+        {canSaveToProfile ? (
+          <button type="button" onClick={saveWalletAddress} className="button-secondary w-full">
+            {connectedWallet ? "Save connected wallet to profile" : "Save wallet to profile"}
+          </button>
+        ) : connectedWallet ? (
+          <Link href="/seller" className="button-secondary w-full text-center">
+            Continue with wallet
+          </Link>
+        ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             <Link href="/login" className="button-secondary text-center">
-              Log in to save
+              Log in
             </Link>
             <Link href="/signup" className="button-secondary text-center">
               Create profile
             </Link>
           </div>
-        ) : null}
-        <button
-          type="button"
-          onClick={saveWalletAddress}
-          className="button-secondary w-full disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={!canSaveToProfile}
-        >
-          {connectedWallet ? "Save connected wallet" : "Save wallet"}
-        </button>
+        )}
       </div>
 
       {message ? (

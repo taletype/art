@@ -1,7 +1,7 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export type SellerArtworkInput = {
-  ownerUserId: string;
+  ownerUserId: string | null;
   sellerWallet: string;
   title: string;
   description: string;

@@ -43,7 +43,7 @@ async function AuctionsContent() {
           <p className="eyebrow">Marketplace</p>
           <h1 className="max-w-3xl text-5xl leading-tight sm:text-6xl">Thirdweb marketplace on {getMarketplaceChainLabel()}.</h1>
           <p className="max-w-2xl text-lg leading-8 text-white/68">
-            Listings, bids, and buyouts now come directly from the live marketplace contract. Supabase stays in the loop for editorial artwork records and seller inventory.
+            Listings, bids, and buyouts come directly from the live marketplace contract. Use either a connected wallet or an app profile.
           </p>
         </div>
 

@@ -9,7 +9,7 @@ export default function SignupPage() {
           <p className="eyebrow">Seller + bidder onboarding</p>
           <h1 className="text-5xl leading-tight">Create a profile for auctions.</h1>
           <p className="text-lg leading-8 text-white/68">
-            Supabase handles the account. Your seller hub stores the Base Sepolia wallet that listings, auctions, and bids should use.
+            Create an optional app profile, or use a connected Thirdweb wallet directly. Seller Hub accepts either path for listings, auctions, and bids.
           </p>
           <p className="text-sm text-white/55">
             Already set up? <Link href="/login" className="text-white underline underline-offset-4">Log in instead</Link>.

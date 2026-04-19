@@ -45,7 +45,7 @@ export default function LoginAccessPanel() {
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">Quick access</p>
         <h2 className="text-2xl text-white">Use Thirdweb for wallet-first bidding</h2>
         <p className="text-sm leading-7 text-white/65">
-          Connecting a wallet is enough for browsing auctions and placing bids on {getMarketplaceChainLabel()}. Seller Hub actions still require an app account so your profile and inventory stay attached to you.
+          Connecting a wallet is enough for auctions, buyouts, and Seller Hub actions on {getMarketplaceChainLabel()}. App accounts are optional when you want email/password access too.
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export default function LoginAccessPanel() {
               Go to auctions
             </Link>
             <Link href="/signup" className="button-secondary text-center">
-              Create seller account
+              Create app profile
             </Link>
           </div>
         </div>

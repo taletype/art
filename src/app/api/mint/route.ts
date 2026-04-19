@@ -1,29 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
-import {
-  getAuthenticatedAppUser,
-  requireAuthenticatedAppUserResponse,
-  requireLinkedWalletResponse,
-} from "@/lib/auth";
+import { getAuthenticatedAppUser } from "@/lib/auth";
+import { isValidEvmAddress } from "@/lib/evmAddress";
 import { createSellerArtwork } from "@/lib/seller";
 import { createSellerArtworkSchema } from "@/types/seller";
 
 export async function POST(request: NextRequest) {
   const user = await getAuthenticatedAppUser();
-  if (!user) {
-    return requireAuthenticatedAppUserResponse();
-  }
 
   try {
     const body = await request.json();
-    if (!user.walletAddress) {
-      return requireLinkedWalletResponse();
+    const payload = createSellerArtworkSchema.parse(body);
+    const sellerWallet = user?.walletAddress ?? payload.sellerWallet ?? null;
+    if (!sellerWallet || !isValidEvmAddress(sellerWallet)) {
+      return NextResponse.json(
+        { ok: false, message: "Connect a Thirdweb wallet or sign in with a profile wallet before minting." },
+        { status: 401 },
+      );
     }
 
-    const payload = createSellerArtworkSchema.parse(body);
     const artwork = await createSellerArtwork({
-      ownerUserId: user.id,
-      sellerWallet: user.walletAddress,
+      ownerUserId: user?.id ?? null,
+      sellerWallet,
       title: payload.title,
       description: payload.description,
       imageUrl: payload.imageUrl,

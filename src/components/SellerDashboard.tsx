@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConnectButton, useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
 import { getAllAuctions, getAllListings, createAuction, createListing } from "thirdweb/extensions/marketplace";
@@ -136,14 +136,14 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     setSellerArtworks(artworks);
   }, [artworks]);
 
-  async function loadWalletArtworks(wallet: string) {
+  const loadWalletArtworks = useCallback(async (wallet: string) => {
     const response = await fetch(`/api/artworks?sellerWallet=${encodeURIComponent(wallet)}&limit=50`);
     const payload = await response.json();
     if (!response.ok) {
       throw new Error(payload.error || "Unable to load wallet inventory.");
     }
     setSellerArtworks(payload);
-  }
+  }, []);
 
   useEffect(() => {
     if (!connectedWalletAddress || walletAddress) {
@@ -156,7 +156,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
         message: error instanceof Error ? error.message : "Unable to load wallet inventory.",
       }));
     });
-  }, [connectedWalletAddress, walletAddress]);
+  }, [connectedWalletAddress, loadWalletArtworks, walletAddress]);
 
   function updateArtworkState(artworkId: string, next: Partial<ArtworkActionState>) {
     setLaunchState((current) => ({
