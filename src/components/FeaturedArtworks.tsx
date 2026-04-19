@@ -1,13 +1,9 @@
 import Link from "next/link";
 import { listMarketplaceEntries } from "@/lib/marketplace";
-import { listArtworks } from "@/lib/supabase-db";
 import AuctionCountdown from "@/components/AuctionCountdown";
 
 export default async function FeaturedArtworks() {
-  const [liveAuctions, sales] = await Promise.all([
-    listMarketplaceEntries(8),
-    listArtworks(),
-  ]);
+  const liveAuctions = await listMarketplaceEntries(8);
 
   return (
     <div className="min-h-screen px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
@@ -35,30 +31,6 @@ export default async function FeaturedArtworks() {
                   <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs">
                     <span className="text-white/60 font-medium">{(auction.buyoutPriceEth ?? auction.startPriceEth ?? 0).toFixed(4)} ETH</span>
                     <span className="text-white/60 capitalize">{auction.type.replace("-", " ")}</span>
-                  </div>
-                </div>
-              </article>
-            </Link>
-          ))}
-          {sales.map((artwork) => (
-            <Link key={artwork.id} href={`/art/${artwork.id}`} className="group block">
-              <article className="overflow-hidden rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] transition-all duration-300 hover:border-[#d4af37]/40 hover:shadow-xl hover:shadow-[#d4af37]/10 backdrop-blur-xl active:scale-[0.98]">
-                <div className="aspect-square bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: artwork.background }} />
-                <div className="p-3 sm:p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${artwork.status === 'live' ? 'border-[#f0d46e]/50 bg-[#f0d46e]/15 text-[#f0d46e]' : 'border-white/12 bg-white/5 text-white/60'}`}>
-                      {artwork.status === 'live' && <span className="h-1 w-1 rounded-full bg-[#f0d46e] animate-pulse" />}
-                      {artwork.status}
-                    </span>
-                    {artwork.closes_at && artwork.status === 'live' && (
-                      <AuctionCountdown endsAt={artwork.closes_at} className="text-[10px] sm:text-xs text-white/70" />
-                    )}
-                  </div>
-                  <h3 className="text-xs sm:text-sm font-medium text-white line-clamp-1">{artwork.title}</h3>
-                  <p className="mt-1 text-[10px] sm:text-xs text-white/65 line-clamp-1">{artwork.artistName}</p>
-                  <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs">
-                    <span className="text-white/60">{artwork.category}</span>
-                    <span className="text-white/60 font-medium">{artwork.priceSol} SOL</span>
                   </div>
                 </div>
               </article>

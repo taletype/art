@@ -10,7 +10,6 @@ import { privateKeyToAccount } from "thirdweb/wallets";
 import { sendAndConfirmTransaction } from "thirdweb";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { prepareContractCall, readContract } from "thirdweb";
-import { ethers } from "ethers";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT;
