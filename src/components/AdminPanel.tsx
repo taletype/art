@@ -8,7 +8,8 @@ import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
 type AdminPanelProps = {
   adminWallet: string | null;
-  deployUrl: string;
+  marketplaceDeployUrl: string;
+  collectionDeployUrl: string;
   envStatus: Array<{
     label: string;
     configured: boolean;
@@ -24,7 +25,12 @@ function shortWallet(value: string | null) {
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
 }
 
-export default function AdminPanel({ adminWallet, deployUrl, envStatus }: AdminPanelProps) {
+export default function AdminPanel({
+  adminWallet,
+  marketplaceDeployUrl,
+  collectionDeployUrl,
+  envStatus,
+}: AdminPanelProps) {
   const activeAccount = useActiveAccount();
   const connectedWallet = activeAccount?.address ?? null;
   const isAdmin =
@@ -39,9 +45,9 @@ export default function AdminPanel({ adminWallet, deployUrl, envStatus }: AdminP
         <div className="space-y-6">
           <div className="space-y-3">
             <p className="eyebrow">Admin</p>
-            <h1 className="max-w-4xl text-5xl leading-tight sm:text-6xl">Deployment control panel</h1>
+            <h1 className="max-w-4xl text-5xl leading-tight sm:text-6xl">Contract control panel</h1>
             <p className="max-w-2xl text-lg leading-8 text-white/68">
-              Connect the admin wallet, confirm the Base Sepolia configuration, then open the Vercel deployment flow.
+              Connect the admin wallet, deploy the default thirdweb contracts, then paste the deployed addresses into the app env.
             </p>
           </div>
 
@@ -96,21 +102,31 @@ export default function AdminPanel({ adminWallet, deployUrl, envStatus }: AdminP
       <section className="mt-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-5 rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
           <div className="space-y-2">
-            <p className="eyebrow">One-click deploy</p>
-            <h2 className="text-3xl">Vercel launch</h2>
+            <p className="eyebrow">One-click setup</p>
+            <h2 className="text-3xl">Default thirdweb contracts</h2>
             <p className="text-sm leading-7 text-white/62">
-              Use this when the env checklist is complete. Configure NEXT_PUBLIC_ONE_CLICK_DEPLOY_URL with the repository clone URL flow for a project-specific button.
+              Deploy a Marketplace contract and an NFT Collection on Base Sepolia using thirdweb&apos;s dashboard. The connected admin wallet should deploy and own both contracts.
             </p>
           </div>
 
           <a
-            href={deployUrl}
+            href={marketplaceDeployUrl}
             target="_blank"
             rel="noreferrer"
             aria-disabled={!isAdmin}
             className={`button-primary w-full ${isAdmin ? "" : "pointer-events-none opacity-50"}`}
           >
-            Deploy to Vercel
+            Deploy Marketplace
+          </a>
+
+          <a
+            href={collectionDeployUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-disabled={!isAdmin}
+            className={`button-secondary w-full ${isAdmin ? "" : "pointer-events-none opacity-50"}`}
+          >
+            Deploy NFT Collection
           </a>
 
           <div className="flex flex-wrap gap-3">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
+import { ConnectButton, useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
 import { getAllAuctions, getAllListings, createAuction, createListing } from "thirdweb/extensions/marketplace";
 import { mintTo, nextTokenIdToMint, setApprovalForAll } from "thirdweb/extensions/erc721";
 import { EvidenceUploader } from "@/components/EvidenceUploader";
@@ -12,6 +12,7 @@ import { isValidEvmAddress } from "@/lib/evmAddress";
 import { validateProvenance } from "@/lib/provenance";
 import {
   getListingRouteId,
+  getMarketplaceChain,
   getMarketplaceChainLabel,
   getMarketplaceContract,
   getMarketplaceContractAddress,
@@ -20,6 +21,8 @@ import {
   isMarketplaceConfigured,
   isNftCollectionConfigured,
 } from "@/lib/thirdweb-config";
+import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 import type { ArtCategory, EvidenceItem, Provenance } from "@/types/provenance";
 
 type SellerArtwork = {
@@ -84,6 +87,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   const router = useRouter();
   const activeAccount = useActiveAccount();
   const sendTransaction = useSendAndConfirmTransaction();
+  const [sellerArtworks, setSellerArtworks] = useState<SellerArtwork[]>(artworks);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -101,11 +105,12 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   const actionWalletAddress = connectedWalletAddress ?? walletAddress;
   const profileWalletMatchesConnected =
     !connectedWalletAddress || !walletAddress || connectedWalletAddress.toLowerCase() === walletAddress.toLowerCase();
+  const sellerIdentityLabel = email ?? (connectedWalletAddress ? "Thirdweb wallet" : "Connect wallet");
   const categoryOptions: ArtCategory[] = ["visual", "audio", "video", "writing", "mixed_media"];
 
   const preparedCount = useMemo(
-    () => artworks.filter((artwork) => artwork.seller_flow_status === "prepared").length,
-    [artworks],
+    () => sellerArtworks.filter((artwork) => artwork.seller_flow_status === "prepared").length,
+    [sellerArtworks],
   );
 
   const sanitizedProvenance = useMemo(() => {
@@ -127,6 +132,32 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     }));
   }, [actionWalletAddress]);
 
+  useEffect(() => {
+    setSellerArtworks(artworks);
+  }, [artworks]);
+
+  async function loadWalletArtworks(wallet: string) {
+    const response = await fetch(`/api/artworks?sellerWallet=${encodeURIComponent(wallet)}&limit=50`);
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || "Unable to load wallet inventory.");
+    }
+    setSellerArtworks(payload);
+  }
+
+  useEffect(() => {
+    if (!connectedWalletAddress || walletAddress) {
+      return;
+    }
+
+    void loadWalletArtworks(connectedWalletAddress).catch((error) => {
+      setDraftState((current) => ({
+        ...current,
+        message: error instanceof Error ? error.message : "Unable to load wallet inventory.",
+      }));
+    });
+  }, [connectedWalletAddress, walletAddress]);
+
   function updateArtworkState(artworkId: string, next: Partial<ArtworkActionState>) {
     setLaunchState((current) => ({
       ...current,
@@ -138,14 +169,6 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   }
 
   function ensureConnectedSellerWallet(artworkId: string) {
-    if (!walletAddress) {
-      updateArtworkState(artworkId, {
-        pending: false,
-        message: "Add a Base Sepolia wallet to your seller profile before minting or listing.",
-      });
-      return false;
-    }
-
     if (!connectedWalletAddress) {
       updateArtworkState(artworkId, {
         pending: false,
@@ -196,6 +219,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
           category: sanitizedProvenance.category,
           provenanceText: JSON.stringify({ ...sanitizedProvenance, medium }),
           priceEth: Number(priceEth),
+          sellerWallet: actionWalletAddress,
         }),
       });
       const payload = await response.json();
@@ -211,7 +235,11 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
       setPriceEth("0.05");
       setProvenance(defaultProvenance());
       setDraftState({ pending: false, message: "Artwork draft created in Seller Hub." });
-      router.refresh();
+      if (connectedWalletAddress && !walletAddress) {
+        await loadWalletArtworks(connectedWalletAddress);
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       setDraftState({
         pending: false,
@@ -259,6 +287,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           id: artwork.id,
+          sellerWallet: connectedWalletAddress,
           seller_wallet: connectedWalletAddress,
           artist_wallet: connectedWalletAddress,
           thirdweb_provider: "thirdweb",
@@ -281,7 +310,11 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
         stage: "minted",
         message: "Artwork minted on Base Sepolia and linked to this draft.",
       });
-      router.refresh();
+      if (connectedWalletAddress && !walletAddress) {
+        await loadWalletArtworks(connectedWalletAddress);
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       updateArtworkState(artwork.id, {
         pending: false,
@@ -386,6 +419,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           id: artwork.id,
+          sellerWallet: connectedWalletAddress,
           seller_wallet: connectedWalletAddress,
           artist_wallet: connectedWalletAddress,
           thirdweb_provider: "thirdweb",
@@ -410,7 +444,11 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
         stage: "listed",
         message: `${listingType === "auction" ? "Auction" : "Direct listing"} confirmed on ${getMarketplaceChainLabel()}.`,
       });
-      router.refresh();
+      if (connectedWalletAddress && !walletAddress) {
+        await loadWalletArtworks(connectedWalletAddress);
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       updateArtworkState(artwork.id, {
         pending: false,
@@ -432,8 +470,8 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
 
             <dl className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-                <dt className="text-sm text-white/45">Seller email</dt>
-                <dd className="mt-2 text-lg font-semibold text-white">{email ?? "Seller account"}</dd>
+                <dt className="text-sm text-white/45">Seller identity</dt>
+                <dd className="mt-2 text-lg font-semibold text-white">{sellerIdentityLabel}</dd>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
                 <dt className="text-sm text-white/45">Linked wallet</dt>
@@ -450,9 +488,23 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
                 The connected wallet does not match the wallet saved on your seller profile. Listing actions stay blocked until they match.
               </p>
             ) : null}
+            {!email && connectedWalletAddress ? (
+              <p className="rounded-[1.2rem] border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-3 text-sm text-[#f0d46e]">
+                Wallet mode active. You can create drafts, mint, and list with this Thirdweb wallet without Supabase login.
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-3 rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+            <ConnectButton
+              client={getThirdwebClient()}
+              wallets={getThirdwebWalletOptions()}
+              chain={getMarketplaceChain()}
+              connectButton={{
+                label: connectedWalletAddress ? "Wallet connected" : "Connect seller wallet",
+                className: "!w-full !rounded-full !bg-white !px-5 !py-3 !font-semibold !text-black",
+              }}
+            />
             <p className="eyebrow">Contract config</p>
             <p className="text-sm text-white/65">
               The live marketplace flow depends on your Thirdweb contract env vars.
@@ -476,7 +528,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
               <p className="eyebrow">New listing</p>
               <h2 className="text-3xl">Create artwork draft</h2>
               <p className="text-sm leading-7 text-white/65">
-                Draft the artwork in Supabase first so your provenance, image, and marketplace metadata stay together.
+                Draft the artwork record first so your provenance, image, and marketplace metadata stay together.
               </p>
             </div>
 
@@ -548,7 +600,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
           </div>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            {artworks.map((artwork) => {
+            {sellerArtworks.map((artwork) => {
               const state = launchState[artwork.id] ?? defaultArtworkActionState();
               const listingType = listingKindByArtworkId[artwork.id] ?? "auction";
               const listingHref = artwork.thirdweb_listing_id ? `/auctions/${artwork.thirdweb_listing_id}` : null;
@@ -631,7 +683,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
             })}
           </div>
 
-          {!artworks.length ? (
+          {!sellerArtworks.length ? (
             <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-8 text-center">
               <h3 className="text-2xl">No drafts yet</h3>
               <p className="mt-3 text-sm text-white/60">Start your first listing above, then mint it and push it to the marketplace from this hub.</p>

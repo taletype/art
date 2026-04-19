@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { isValidEvmAddress } from "@/lib/evmAddress";
@@ -16,10 +17,12 @@ type SessionState = {
 export default function WalletConnect() {
   const activeAccount = useActiveAccount();
   const [session, setSession] = useState<SessionState>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const connectedWallet =
     activeAccount?.address && isValidEvmAddress(activeAccount.address) ? activeAccount.address : null;
+  const canSaveToProfile = sessionLoaded && Boolean(session);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -29,6 +32,7 @@ export default function WalletConnect() {
       const user = data.user;
       if (!user) {
         setSession(null);
+        setSessionLoaded(true);
         return;
       }
 
@@ -41,6 +45,7 @@ export default function WalletConnect() {
         walletAddress: savedWallet,
       });
       setWalletAddress(savedWallet ?? "");
+      setSessionLoaded(true);
     }
 
     void hydrate();
@@ -61,6 +66,10 @@ export default function WalletConnect() {
     setMessage(null);
     try {
       const nextWallet = connectedWallet ?? walletAddress.trim();
+      if (!session) {
+        throw new Error("Log in or create an app profile before saving this wallet to your profile.");
+      }
+
       if (!nextWallet) {
         throw new Error("Enter a Base Sepolia wallet address before saving.");
       }
@@ -119,8 +128,18 @@ export default function WalletConnect() {
 
       <div className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-white">{session?.email ?? "Not logged in"}</p>
-          <p className="text-sm text-white/55">Save the Base Sepolia wallet you want attached to bids, listing ownership, and settlement records.</p>
+          <p className="text-sm font-medium text-white">
+            {connectedWallet ? "Wallet connected" : "Wallet not connected"}
+          </p>
+          {connectedWallet ? (
+            <p className="break-all text-xs text-white/55">{connectedWallet}</p>
+          ) : null}
+          <p className="text-sm font-medium text-white">
+            {sessionLoaded ? session?.email ?? "No app profile signed in" : "Checking app profile..."}
+          </p>
+          <p className="text-sm text-white/55">
+            Bidding can use your connected wallet. Saving a wallet for listings, ownership, and settlement records requires an app profile.
+          </p>
         </div>
 
         <input
@@ -135,7 +154,22 @@ export default function WalletConnect() {
             Your connected thirdweb wallet is not exposing an EVM address here, so paste the wallet you want to save.
           </p>
         ) : null}
-        <button type="button" onClick={saveWalletAddress} className="button-secondary w-full">
+        {!canSaveToProfile ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link href="/login" className="button-secondary text-center">
+              Log in to save
+            </Link>
+            <Link href="/signup" className="button-secondary text-center">
+              Create profile
+            </Link>
+          </div>
+        ) : null}
+        <button
+          type="button"
+          onClick={saveWalletAddress}
+          className="button-secondary w-full disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!canSaveToProfile}
+        >
           {connectedWallet ? "Save connected wallet" : "Save wallet"}
         </button>
       </div>

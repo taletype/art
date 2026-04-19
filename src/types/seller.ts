@@ -9,6 +9,9 @@ export const createSellerArtworkSchema = z.object({
   category: z.string().max(120).optional(),
   provenanceText: z.string().max(4000).optional(),
   priceEth: z.number().nonnegative().optional(),
+  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
+    message: "Enter a valid wallet address.",
+  }).optional(),
 });
 
 export const prepareArtworkSchema = z.object({

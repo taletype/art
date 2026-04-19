@@ -20,14 +20,20 @@ export default function AdminPage() {
     readEnv("NEXT_PUBLIC_ADMIN_WALLET") ||
     readEnv("NEXT_PUBLIC_ADMIN_REVIEWER_WALLET") ||
     null;
-  const deployUrl = readEnv("NEXT_PUBLIC_ONE_CLICK_DEPLOY_URL") || "https://vercel.com/new";
+  const marketplaceDeployUrl =
+    readEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_DEPLOY_URL") ||
+    "https://thirdweb.com/thirdweb.eth/MarketplaceV3";
+  const collectionDeployUrl =
+    readEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_DEPLOY_URL") ||
+    "https://thirdweb.com/thirdweb.eth/TokenERC721";
   const marketplaceAddress = getMarketplaceContractAddress();
   const collectionAddress = getNftCollectionAddress();
 
   return (
     <AdminPanel
       adminWallet={adminWallet}
-      deployUrl={deployUrl}
+      marketplaceDeployUrl={marketplaceDeployUrl}
+      collectionDeployUrl={collectionDeployUrl}
       envStatus={[
         {
           label: "Admin wallet",
@@ -55,9 +61,14 @@ export default function AdminPage() {
           value: configuredValue(collectionAddress ?? ""),
         },
         {
-          label: "Deploy URL",
-          configured: Boolean(deployUrl),
-          value: deployUrl,
+          label: "Marketplace deploy",
+          configured: Boolean(marketplaceDeployUrl),
+          value: marketplaceDeployUrl,
+        },
+        {
+          label: "Collection deploy",
+          configured: Boolean(collectionDeployUrl),
+          value: collectionDeployUrl,
         },
       ]}
     />

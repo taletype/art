@@ -1,18 +1,16 @@
-import { redirect } from "next/navigation";
 import SellerDashboard from "@/components/SellerDashboard";
 import { getAuthenticatedAppUser } from "@/lib/auth";
-import { listSellerArtworks } from "@/lib/seller";
+import { listSellerArtworks, listSellerArtworksByWallet } from "@/lib/seller";
 
 export const dynamic = "force-dynamic";
 
 export default async function SellerPage() {
   const user = await getAuthenticatedAppUser();
+  const ownerArtworks = user ? await listSellerArtworks(user.id) : [];
+  const walletArtworks = user?.walletAddress ? await listSellerArtworksByWallet(user.walletAddress) : [];
+  const artworks = Array.from(
+    new Map([...ownerArtworks, ...walletArtworks].map((artwork) => [artwork.id, artwork])).values(),
+  );
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  const artworks = await listSellerArtworks(user.id);
-
-  return <SellerDashboard email={user.email} walletAddress={user.walletAddress} artworks={artworks} />;
+  return <SellerDashboard email={user?.email ?? null} walletAddress={user?.walletAddress ?? null} artworks={artworks} />;
 }

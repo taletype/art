@@ -30,6 +30,24 @@ export async function listSellerArtworks(ownerUserId: string) {
   }));
 }
 
+export async function listSellerArtworksByWallet(sellerWallet: string) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("artworks")
+    .select("*")
+    .eq("seller_wallet", sellerWallet)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((artwork) => ({
+    ...artwork,
+    linked_auction_id: typeof artwork.thirdweb_listing_id === "string" ? artwork.thirdweb_listing_id : null,
+  }));
+}
+
 export async function createSellerArtwork(input: SellerArtworkInput) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
