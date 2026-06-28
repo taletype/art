@@ -23,6 +23,7 @@ describe("thirdweb-config route ids", () => {
   it("returns null for malformed route ids", () => {
     expect(parseListingRouteId("bad-value")).toBeNull();
     expect(parseListingRouteId("auction-nope")).toBeNull();
+    expect(parseListingRouteId("auction-42-extra")).toBeNull();
   });
 });
 
