@@ -113,7 +113,7 @@ Notes:
 
 ## Readiness V2 artifact bundle
 
-This repo includes a local readiness runner at [scripts/readiness-v2-run.mjs](/Users/ricky/Desktop/art/scripts/readiness-v2-run.mjs).
+This repo includes a local readiness runner at [scripts/readiness-v2-run.mjs](scripts/readiness-v2-run.mjs).
 
 It produces an artifact bundle in `artifacts/readiness-v2` unless `READINESS_ARTIFACT_DIR` is overridden.
 
