@@ -47,7 +47,7 @@ export default function AuctionCard({ auction }: { auction: MarketplaceEntry }) 
         </dl>
 
         <Link href={`/auctions/${auction.id}`} className="button-secondary w-full text-sm sm:text-base py-3 sm:py-3 active:scale-[0.98]">
-          View auction
+          {auction.type === "auction" ? "View auction" : "View listing"}
         </Link>
       </div>
     </article>
