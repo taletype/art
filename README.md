@@ -80,7 +80,7 @@ npm run dev
 ```
 
 Notes:
-- `npm test` runs the Vitest suite in `src/lib/__tests__`.
+- `npm test` runs Vitest tests named `*.test.ts` / `*.test.tsx` under `src`.
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
 - `npm run seed:mock-auctions` still seeds legacy Supabase auction rows, but the live marketplace UI now reads from the configured Thirdweb contracts.
