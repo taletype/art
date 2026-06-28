@@ -6,8 +6,8 @@ import ThirdwebProviderWrapper from "@/components/ThirdwebProviderWrapper";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RealArt Auctions",
-  description: "Simple digital art auction site with live sales, lot pages, and artist listings.",
+  title: "HUMAN_ Arts",
+  description: "Premium digital auction house for verified human-made artwork and curated sale catalogs.",
 };
 
 export const viewport: Viewport = {
