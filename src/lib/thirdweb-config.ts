@@ -73,10 +73,11 @@ export function getListingRouteId(type: "auction" | "direct", id: bigint | strin
 }
 
 export function parseListingRouteId(value: string) {
-  const [kind, rawId] = value.split("-", 2);
-  if ((kind !== "auction" && kind !== "direct") || !rawId || !/^\d+$/.test(rawId)) {
+  if (!/^(auction|direct)-\d+$/.test(value)) {
     return null;
   }
+
+  const [kind, rawId] = value.split("-");
 
   return {
     kind,
