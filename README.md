@@ -72,7 +72,7 @@ Purchase-state persistence now prefers Supabase through `purchase_states` and fa
 ## Local development
 
 ```bash
-npm install
+npm ci
 cp .env.example .env.local
 npm run typecheck
 npm test
@@ -80,6 +80,8 @@ npm run dev
 ```
 
 Notes:
+- Use Node.js 22 for local development to match CI.
+- `npm ci` installs the locked dependency graph used by CI.
 - `npm test` runs Vitest tests named `*.test.ts` / `*.test.tsx` under `src`.
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
