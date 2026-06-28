@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   typecheck:
-    name: Typecheck
+    name: Typecheck and test
     runs-on: ubuntu-latest
 
     steps:
@@ -29,3 +29,6 @@ jobs:
 
       - name: Run TypeScript check
         run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm test
