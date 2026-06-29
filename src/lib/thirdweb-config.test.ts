@@ -4,6 +4,7 @@ import {
   getMarketplaceChain,
   getMarketplaceChainLabel,
   getMarketplaceExplorerUrl,
+  isMarketplaceConfigured,
   parseListingRouteId,
 } from "@/lib/thirdweb-config";
 import { isValidEvmAddress } from "@/lib/evmAddress";
@@ -83,5 +84,25 @@ describe("thirdweb-config Base Sepolia chain", () => {
     vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "8453");
 
     expect(getMarketplaceExplorerUrl("tx", "0xabc")).toBe("https://basescan.org/tx/0xabc");
+  });
+});
+
+describe("thirdweb-config marketplace readiness", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("does not treat .env.example placeholders as marketplace-ready", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "your_thirdweb_client_id");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+
+    expect(isMarketplaceConfigured()).toBe(false);
+  });
+
+  it("detects marketplace readiness when client and contract env vars are present", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+
+    expect(isMarketplaceConfigured()).toBe(true);
   });
 });
