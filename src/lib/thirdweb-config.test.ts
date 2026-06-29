@@ -46,6 +46,13 @@ describe("thirdweb-config Base Sepolia chain", () => {
     expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
   });
 
+  it("accepts the Base Sepolia chain id", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "84532");
+
+    expect(getMarketplaceChain().id).toBe(84532);
+    expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
+  });
+
   it("uses Base mainnet only when configured", () => {
     vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "base");
 
