@@ -57,10 +57,18 @@ export async function listMarketplaceEntries(limit = 24): Promise<MarketplaceEnt
   }
 
   const contract = getMarketplaceContract();
-  const [auctions, listings] = await Promise.all([
-    getAllAuctions({ contract, start: 0, count: BigInt(limit) }),
-    getAllValidListings({ contract, start: 0, count: BigInt(limit) }),
-  ]);
+  let auctions: Awaited<ReturnType<typeof getAllAuctions>>;
+  let listings: Awaited<ReturnType<typeof getAllValidListings>>;
+
+  try {
+    [auctions, listings] = await Promise.all([
+      getAllAuctions({ contract, start: 0, count: BigInt(limit) }),
+      getAllValidListings({ contract, start: 0, count: BigInt(limit) }),
+    ]);
+  } catch (error) {
+    console.warn("Unable to load marketplace entries.", error);
+    return [];
+  }
 
   const auctionEntries: MarketplaceEntry[] = auctions.map((auction) => ({
     id: getListingRouteId("auction", auction.id),
