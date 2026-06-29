@@ -1,11 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
-const supabaseAdmin = createSupabaseAdminClient();
 
 // Artworks
 export async function listArtworks(limit = 20) {
