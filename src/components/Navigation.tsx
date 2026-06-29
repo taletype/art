@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useActiveAccount, ConnectButton } from "thirdweb/react";
-import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { getMarketplaceChain } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
@@ -17,6 +17,7 @@ const navItems = [
 export default function Navigation() {
   const [open, setOpen] = useState(false);
   const activeAccount = useActiveAccount();
+  const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl">
@@ -37,12 +38,18 @@ export default function Navigation() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <ConnectButton
-            client={getThirdwebClient()}
-            wallets={getThirdwebWalletOptions()}
-            chain={getMarketplaceChain()}
-            connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
-          />
+          {thirdwebClient ? (
+            <ConnectButton
+              client={thirdwebClient}
+              wallets={getThirdwebWalletOptions()}
+              chain={getMarketplaceChain()}
+              connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-full !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-2.5 !text-sm !font-semibold hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300" }}
+            />
+          ) : (
+            <span className="rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 px-5 py-2.5 text-sm font-semibold text-[#f0d46e]">
+              Wallet setup needed
+            </span>
+          )}
           <Link href="/seller" className="button-secondary px-5 py-2.5 text-sm">
             Seller Hub
           </Link>
@@ -73,12 +80,18 @@ export default function Navigation() {
               </Link>
             ))}
             <div className="mt-4 pt-4 border-t border-[#d4af37]/20">
-              <ConnectButton
-                client={getThirdwebClient()}
-                wallets={getThirdwebWalletOptions()}
-                chain={getMarketplaceChain()}
-                connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-4 !text-base !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300 active:scale-[0.98]" }}
-              />
+              {thirdwebClient ? (
+                <ConnectButton
+                  client={thirdwebClient}
+                  wallets={getThirdwebWalletOptions()}
+                  chain={getMarketplaceChain()}
+                  connectButton={{ label: activeAccount ? "Wallet connected" : "Connect Base wallet", className: "!rounded-2xl !bg-gradient-to-r !from-[#d4af37] !via-[#e8c547] !to-[#d4af37] !text-black !px-5 !py-4 !text-base !font-semibold w-full hover:!shadow-lg hover:!shadow-[#d4af37]/25 transition-all duration-300 active:scale-[0.98]" }}
+                />
+              ) : (
+                <span className="flex w-full items-center justify-center rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 px-5 py-4 text-base font-semibold text-[#f0d46e]">
+                  Wallet setup needed
+                </span>
+              )}
             </div>
             <Link
               href="/seller"
