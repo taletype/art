@@ -1,6 +1,6 @@
 import { getContract } from "thirdweb";
 import { base, baseSepolia } from "thirdweb/chains";
-import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 
 function readEnv(name: string) {
@@ -44,7 +44,7 @@ export function getNftCollectionAddress() {
 }
 
 export function isMarketplaceConfigured() {
-  return Boolean(getMarketplaceContractAddress());
+  return Boolean(getMarketplaceContractAddress() && isThirdwebClientConfigured());
 }
 
 export function isNftCollectionConfigured() {
