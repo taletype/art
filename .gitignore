@@ -5,4 +5,5 @@ out/
 !.env.example
 tsconfig.tsbuildinfo
 .data/
+artifacts/readiness-v2/
 .DS_Store
