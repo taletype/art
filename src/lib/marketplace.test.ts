@@ -40,6 +40,99 @@ describe("listMarketplaceEntries", () => {
     expect(mockGetAllValidListings).not.toHaveBeenCalled();
   });
 
+  it("maps auction and direct listings into marketplace entries", async () => {
+    mockGetAllAuctions.mockResolvedValue([
+      {
+        id: 7n,
+        asset: {
+          metadata: {
+            name: "Auction Work",
+            description: "Auction description",
+            image: "ipfs://auction-image",
+          },
+        },
+        creatorAddress: "0xauctioncreator",
+        status: "ACTIVE",
+        minimumBidAmount: 1_500_000_000_000_000_000n,
+        buyoutBidAmount: 3_000_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_000n,
+        endTimeInSeconds: 1_700_003_600n,
+      },
+    ] as Awaited<ReturnType<typeof getAllAuctions>>);
+    mockGetAllValidListings.mockResolvedValue([
+      {
+        id: 11n,
+        asset: {
+          metadata: {
+            name: "Direct Work",
+            description: "Direct description",
+            image: "ipfs://direct-image",
+          },
+        },
+        creatorAddress: "0xdirectcreator",
+        status: "ACTIVE",
+        pricePerToken: 2_000_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_300n,
+        endTimeInSeconds: 1_700_004_000n,
+      },
+    ] as Awaited<ReturnType<typeof getAllValidListings>>);
+
+    await expect(listMarketplaceEntries(12)).resolves.toEqual([
+      {
+        id: "direct-11",
+        numericId: 11n,
+        type: "direct",
+        title: "Direct Work",
+        description: "Direct description",
+        assetUrl: "ipfs://direct-image",
+        sellerWallet: "0xdirectcreator",
+        status: "ACTIVE",
+        startPriceEth: 2,
+        highestBidEth: null,
+        buyoutPriceEth: 2,
+        minimumBidEth: null,
+        bidCount: null,
+        endsAt: "2023-11-14T23:20:00.000Z",
+        startsAt: "2023-11-14T22:18:20.000Z",
+        marketplaceAddress: "0x1234567890abcdef1234567890abcdef12345678",
+        chainLabel: "Base Sepolia",
+      },
+      {
+        id: "auction-7",
+        numericId: 7n,
+        type: "auction",
+        title: "Auction Work",
+        description: "Auction description",
+        assetUrl: "ipfs://auction-image",
+        sellerWallet: "0xauctioncreator",
+        status: "ACTIVE",
+        startPriceEth: 1.5,
+        highestBidEth: null,
+        buyoutPriceEth: 3,
+        minimumBidEth: 1.5,
+        bidCount: null,
+        endsAt: "2023-11-14T23:13:20.000Z",
+        startsAt: "2023-11-14T22:13:20.000Z",
+        marketplaceAddress: "0x1234567890abcdef1234567890abcdef12345678",
+        chainLabel: "Base Sepolia",
+      },
+    ]);
+    expect(mockGetAllAuctions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        start: 0,
+        count: 12n,
+        contract: expect.objectContaining({ address: "0x1234567890abcdef1234567890abcdef12345678" }),
+      }),
+    );
+    expect(mockGetAllValidListings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        start: 0,
+        count: 12n,
+        contract: expect.objectContaining({ address: "0x1234567890abcdef1234567890abcdef12345678" }),
+      }),
+    );
+  });
+
   it("falls back to an empty list when Thirdweb listing reads fail", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     mockGetAllAuctions.mockRejectedValue(new Error("RPC unavailable"));
