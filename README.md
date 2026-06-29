@@ -51,8 +51,11 @@ Purchase-state persistence now prefers Supabase through `purchase_states` and fa
 - `NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT`
 - `NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT`
 
-### Required for Thirdweb webhooks
+### Legacy Thirdweb webhooks (currently inactive)
+The existing `/api/webhooks/thirdweb` route returns `501` and does not process webhook payloads. These values are only needed if webhook handling is restored or replaced.
+
 - `THIRDWEB_WEBHOOK_SECRET`
+- `THIRDWEB_WEBHOOK_TOLERANCE_SECONDS`
 
 ### Optional storage adapter
 - `STORAGE_WRITE_ENDPOINT`
