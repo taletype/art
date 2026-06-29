@@ -8,7 +8,7 @@ export default async function FeaturedArtworks() {
   const marketplaceConfigured = isMarketplaceConfigured();
 
   return (
-    <div className="min-h-screen px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen px-4 pb-6 pt-20 sm:px-6 sm:pb-8 sm:pt-24 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-semibold text-white">Human-made artworks</h1>
