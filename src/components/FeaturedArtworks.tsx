@@ -42,7 +42,19 @@ export default async function FeaturedArtworks() {
             {liveAuctions.map((auction) => (
               <Link key={auction.id} href={`/auctions/${auction.id}`} className="group block">
                 <article className="overflow-hidden rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] transition-all duration-300 hover:border-[#d4af37]/40 hover:shadow-xl hover:shadow-[#d4af37]/10 backdrop-blur-xl active:scale-[0.98]">
-                  <div className="aspect-square bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${auction.assetUrl})` }} />
+                  <div className="aspect-square overflow-hidden bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
+                    {auction.assetUrl ? (
+                      <img
+                        src={auction.assetUrl}
+                        alt={`${auction.title} artwork`}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div aria-hidden="true" className="h-full w-full bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]" />
+                    )}
+                  </div>
                   <div className="p-3 sm:p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f0d46e]/50 bg-[#f0d46e]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#f0d46e]">
