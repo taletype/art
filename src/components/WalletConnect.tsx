@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 import { getMarketplaceChain } from "@/lib/thirdweb-config";
 
@@ -23,6 +23,7 @@ export default function WalletConnect() {
   const connectedWallet =
     activeAccount?.address && isValidEvmAddress(activeAccount.address) ? activeAccount.address : null;
   const canSaveToProfile = sessionLoaded && Boolean(session);
+  const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -118,12 +119,18 @@ export default function WalletConnect() {
       </div>
 
       <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-        <ConnectButton
-          client={getThirdwebClient()}
-          wallets={getThirdwebWalletOptions()}
-          chain={getMarketplaceChain()}
-          connectButton={{ label: "Connect Base wallet", className: "!rounded-full !bg-white !text-black !px-5 !py-3 !font-semibold" }}
-        />
+        {thirdwebClient ? (
+          <ConnectButton
+            client={thirdwebClient}
+            wallets={getThirdwebWalletOptions()}
+            chain={getMarketplaceChain()}
+            connectButton={{ label: "Connect Base wallet", className: "!rounded-full !bg-white !text-black !px-5 !py-3 !font-semibold" }}
+          />
+        ) : (
+          <div className="rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 px-4 py-3 text-sm font-semibold text-[#f0d46e]">
+            Wallet setup needed
+          </div>
+        )}
       </div>
 
       <div className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
