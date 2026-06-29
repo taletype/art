@@ -30,6 +30,11 @@ export function getMarketplaceChainLabel() {
   return getMarketplaceChain().id === base.id ? "Base" : "Base Sepolia";
 }
 
+export function getMarketplaceExplorerUrl(path: "address" | "tx", value: string) {
+  const baseUrl = getMarketplaceChain().id === base.id ? "https://basescan.org" : "https://sepolia.basescan.org";
+  return `${baseUrl}/${path}/${value}`;
+}
+
 export function getMarketplaceContractAddress() {
   return readAddress("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT");
 }

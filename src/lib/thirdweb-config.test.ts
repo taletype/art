@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getListingRouteId, getMarketplaceChain, getMarketplaceChainLabel, parseListingRouteId } from "@/lib/thirdweb-config";
+import {
+  getListingRouteId,
+  getMarketplaceChain,
+  getMarketplaceChainLabel,
+  getMarketplaceExplorerUrl,
+  parseListingRouteId,
+} from "@/lib/thirdweb-config";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 
 describe("evmAddress", () => {
@@ -53,6 +59,12 @@ describe("thirdweb-config Base Sepolia chain", () => {
     expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
   });
 
+  it("uses the Base Sepolia explorer by default", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "");
+
+    expect(getMarketplaceExplorerUrl("address", "0x123")).toBe("https://sepolia.basescan.org/address/0x123");
+  });
+
   it("uses Base mainnet only when configured", () => {
     vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "base");
 
@@ -65,5 +77,11 @@ describe("thirdweb-config Base Sepolia chain", () => {
 
     expect(getMarketplaceChain().id).toBe(8453);
     expect(getMarketplaceChainLabel()).toBe("Base");
+  });
+
+  it("uses the Base mainnet explorer when configured", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "8453");
+
+    expect(getMarketplaceExplorerUrl("tx", "0xabc")).toBe("https://basescan.org/tx/0xabc");
   });
 });

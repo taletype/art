@@ -1,10 +1,10 @@
 import { getAllAuctions, getAllValidListings, getAuction, getListing } from "thirdweb/extensions/marketplace";
 import {
   getListingRouteId,
-  getMarketplaceChain,
   getMarketplaceChainLabel,
   getMarketplaceContract,
   getMarketplaceContractAddress,
+  getMarketplaceExplorerUrl as getConfiguredMarketplaceExplorerUrl,
   isMarketplaceConfigured,
   parseListingRouteId,
 } from "@/lib/thirdweb-config";
@@ -177,7 +177,5 @@ export async function getMarketplaceDetail(routeId: string): Promise<Marketplace
 }
 
 export function getMarketplaceExplorerUrl(path: "address" | "tx", value: string) {
-  const chain = getMarketplaceChain();
-  const suffix = chain.id === 8453 ? "" : "?network=base-sepolia";
-  return `https://basescan.org/${path}/${value}${suffix}`;
+  return getConfiguredMarketplaceExplorerUrl(path, value);
 }
