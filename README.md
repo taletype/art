@@ -89,8 +89,7 @@ Notes:
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
 - `npm run seed:base-sepolia-auctions` mints sample NFTs on Base Sepolia, uploads images to Supabase Storage, records artwork rows, and creates marketplace auctions. It requires a funded `PRIVATE_KEY` plus the Thirdweb and Supabase env vars in `.env.local`.
-- Apply `supabase/migrations/001_purchase_states.sql` before relying on Supabase-backed purchase recovery in shared environments.
-- Apply `supabase/migrations/002_curated_auction_house.sql` before relying on Supabase-backed auction artists, sales, lots, collectors, bids, or watchlists.
+- Apply `supabase/migrations/001_auction_house_schema.sql` before relying on Supabase-backed purchase recovery, auction artists, sales, lots, collectors, bids, or watchlists in shared environments.
 - Legacy off-chain auction migrations can remain in the database for historical data, but the live marketplace flow no longer depends on `/api/auctions*` as the bidding source of truth.
 
 ## Primary user flow
