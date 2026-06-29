@@ -15,7 +15,7 @@ function readAddress(name: string) {
 export function getMarketplaceChain() {
   const key = readEnv("NEXT_PUBLIC_THIRDWEB_CHAIN").toLowerCase();
 
-  if (key === "base") {
+  if (key === "base" || key === "base-mainnet" || key === "8453") {
     return base;
   }
 
