@@ -19,6 +19,10 @@ export function getMarketplaceChain() {
     return base;
   }
 
+  if (!key || key === "base-sepolia" || key === "base-sepolia-testnet" || key === "84532") {
+    return baseSepolia;
+  }
+
   return baseSepolia;
 }
 
