@@ -5,6 +5,7 @@ import {
   getMarketplaceChainLabel,
   getMarketplaceExplorerUrl,
   isMarketplaceConfigured,
+  isNftCollectionConfigured,
   parseListingRouteId,
 } from "@/lib/thirdweb-config";
 import { isValidEvmAddress } from "@/lib/evmAddress";
@@ -104,5 +105,19 @@ describe("thirdweb-config marketplace readiness", () => {
     vi.stubEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
 
     expect(isMarketplaceConfigured()).toBe(true);
+  });
+
+  it("does not treat the NFT collection as ready without a real client id", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "your_thirdweb_client_id");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+
+    expect(isNftCollectionConfigured()).toBe(false);
+  });
+
+  it("detects NFT collection readiness when client and contract env vars are present", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+
+    expect(isNftCollectionConfigured()).toBe(true);
   });
 });
