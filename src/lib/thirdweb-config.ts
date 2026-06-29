@@ -48,7 +48,7 @@ export function isMarketplaceConfigured() {
 }
 
 export function isNftCollectionConfigured() {
-  return Boolean(getNftCollectionAddress());
+  return Boolean(getNftCollectionAddress() && isThirdwebClientConfigured());
 }
 
 export function getMarketplaceContract() {
