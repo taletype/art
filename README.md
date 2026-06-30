@@ -75,6 +75,7 @@ The existing `/api/webhooks/thirdweb` route returns `501` and does not process w
 ## Local development
 
 ```bash
+nvm use
 npm ci
 cp .env.example .env.local
 npm run typecheck
@@ -83,7 +84,7 @@ npm run dev
 ```
 
 Notes:
-- Use Node.js 22 for local development to match CI.
+- `nvm use` reads the committed `.nvmrc`, which pins Node.js 22 to match CI.
 - `npm ci` installs the locked dependency graph used by CI.
 - `npm test` runs Vitest tests named `*.test.ts` / `*.test.tsx` under `src`.
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
