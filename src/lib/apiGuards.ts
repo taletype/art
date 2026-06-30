@@ -40,7 +40,8 @@ export function optionalBearerAuth(request: Request, envVarName: string) {
   }
 
   const header = request.headers.get("authorization");
-  if (!header?.startsWith("Bearer ")) {
+  const bearerMatch = header?.match(/^Bearer\s+(.+)$/i);
+  if (!bearerMatch) {
     return NextResponse.json(
       {
         ok: false,
@@ -53,7 +54,7 @@ export function optionalBearerAuth(request: Request, envVarName: string) {
     );
   }
 
-  const token = header.slice("Bearer ".length).trim();
+  const token = bearerMatch[1].trim();
   if (token !== configured) {
     return NextResponse.json(
       { ok: false, message: `Invalid bearer token for protected route (${envVarName})` },
