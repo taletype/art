@@ -111,7 +111,7 @@ Notes:
 
 ## Non-production notes
 
-- Durable store is file-backed local state, not multi-instance safe.
+- Supabase-backed purchase state is the durable path for shared environments; the local file fallback is single-instance only and not multi-instance safe.
 - Admin/reviewer auth remains mock.
 - Operational hardening (queues/retries/observability/abuse controls) is still pending.
 
