@@ -110,9 +110,9 @@ export async function listMarketplaceEntries(limit = 24): Promise<MarketplaceEnt
     chainLabel: getMarketplaceChainLabel(),
   }));
 
-  return [...auctionEntries, ...directEntries].sort(
-    (left, right) => new Date(right.endsAt).getTime() - new Date(left.endsAt).getTime(),
-  );
+  return [...auctionEntries, ...directEntries]
+    .sort((left, right) => new Date(right.endsAt).getTime() - new Date(left.endsAt).getTime())
+    .slice(0, limit);
 }
 
 export async function getMarketplaceDetail(routeId: string): Promise<MarketplaceDetail | null> {
