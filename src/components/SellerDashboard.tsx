@@ -136,7 +136,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   const draftReady = Boolean(title && description && imageUrl && actionWalletAddress);
   const mintedCount = sellerArtworks.filter((artwork) => Boolean(artwork.thirdweb_token_id)).length;
   const listedCount = sellerArtworks.filter((artwork) => Boolean(artwork.thirdweb_listing_id)).length;
-  const contractReady = Boolean(marketplaceAddress && collectionAddress);
+  const contractReady = isMarketplaceConfigured() && isNftCollectionConfigured();
   const workflowSteps = [
     { label: "Wallet", value: connectedWalletAddress ? "Connected" : "Connect", ready: Boolean(connectedWalletAddress) },
     { label: "Contracts", value: contractReady ? "Ready" : "Missing", ready: contractReady },
