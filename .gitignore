@@ -6,4 +6,5 @@ out/
 tsconfig.tsbuildinfo
 .data/
 artifacts/readiness-v2/
+supabase/.temp/
 .DS_Store
