@@ -20,7 +20,7 @@ import {
   isMarketplaceConfigured,
   isNftCollectionConfigured,
 } from "@/lib/thirdweb-config";
-import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 import type { ArtCategory, EvidenceItem, Provenance } from "@/types/provenance";
 
@@ -110,6 +110,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   const router = useRouter();
   const activeAccount = useActiveAccount();
   const sendTransaction = useSendAndConfirmTransaction();
+  const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
   const [sellerArtworks, setSellerArtworks] = useState<SellerArtwork[]>(artworks);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -539,15 +540,21 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
             </div>
 
             <aside className="space-y-4 sm:space-y-5 rounded-[1.5rem] border border-white/10 bg-black/35 p-4 sm:p-5 backdrop-blur">
-              <ConnectButton
-                client={getThirdwebClient()}
-                wallets={getThirdwebWalletOptions()}
-                chain={getMarketplaceChain()}
-                connectButton={{
-                  label: connectedWalletAddress ? "Wallet connected" : "Connect seller wallet",
-                  className: "!w-full !rounded-full !bg-white !px-4 sm:!px-5 !py-3 !font-semibold !text-black text-sm sm:text-base",
-                }}
-              />
+              {thirdwebClient ? (
+                <ConnectButton
+                  client={thirdwebClient}
+                  wallets={getThirdwebWalletOptions()}
+                  chain={getMarketplaceChain()}
+                  connectButton={{
+                    label: connectedWalletAddress ? "Wallet connected" : "Connect seller wallet",
+                    className: "!w-full !rounded-full !bg-white !px-4 sm:!px-5 !py-3 !font-semibold !text-black text-sm sm:text-base",
+                  }}
+                />
+              ) : (
+                <div className="rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 px-4 py-3 text-sm font-semibold text-[#f0d46e]">
+                  Wallet setup needed
+                </div>
+              )}
 
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center justify-between gap-3 sm:gap-4">
