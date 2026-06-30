@@ -72,7 +72,7 @@ export function resolveMatchingSellerWallet(options: {
     return { wallet: null, mismatch: false };
   }
 
-  if (requestWallet !== profileWallet) {
+  if (requestWallet.toLowerCase() !== profileWallet.toLowerCase()) {
     return { wallet: null, mismatch: true };
   }
 
