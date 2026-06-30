@@ -20,7 +20,10 @@ function readPositiveInt(value: string | undefined, fallback: number) {
 export function getRequestIp(request: Request) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() || "unknown";
+    return forwardedFor
+      .split(",")
+      .map((value) => value.trim())
+      .find(Boolean) ?? "unknown";
   }
 
   return request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip") ?? "unknown";
