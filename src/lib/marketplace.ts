@@ -43,8 +43,18 @@ function fromWei(value: bigint | null | undefined) {
   return Number(value) / 1_000_000_000_000_000_000;
 }
 
+function normalizeAssetUrl(value: string | null | undefined) {
+  const assetUrl = value?.trim() || "";
+  if (!assetUrl.startsWith("ipfs://")) {
+    return assetUrl;
+  }
+
+  const ipfsPath = assetUrl.slice("ipfs://".length).replace(/^ipfs\//, "");
+  return ipfsPath ? `https://ipfs.io/ipfs/${ipfsPath}` : "";
+}
+
 function readAssetImage(asset: { metadata?: { image?: string | null } } | undefined) {
-  return asset?.metadata?.image || "";
+  return normalizeAssetUrl(asset?.metadata?.image);
 }
 
 function readAssetDescription(asset: { metadata?: { description?: string | null } } | undefined) {
