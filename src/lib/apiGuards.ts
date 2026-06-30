@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 const RATE_LIMIT_BUCKETS = new Map<string, { count: number; resetAt: number }>();
@@ -15,6 +16,14 @@ if (!globalThis.__realArtWorksRateLimitBuckets) {
 function readPositiveInt(value: string | undefined, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+function hashToken(value: string) {
+  return createHash("sha256").update(value).digest();
+}
+
+function tokensMatch(received: string, configured: string) {
+  return timingSafeEqual(hashToken(received), hashToken(configured));
 }
 
 export function getRequestIp(request: Request) {
@@ -55,7 +64,7 @@ export function optionalBearerAuth(request: Request, envVarName: string) {
   }
 
   const token = bearerMatch[1].trim();
-  if (token !== configured) {
+  if (!tokensMatch(token, configured)) {
     return NextResponse.json(
       { ok: false, message: `Invalid bearer token for protected route (${envVarName})` },
       {
