@@ -3,9 +3,11 @@ import WalletConnect from "@/components/WalletConnect";
 import { SkeletonCard, SkeletonStats, SkeletonText } from "@/components/SkeletonLoader";
 import { listMarketplaceEntries } from "@/lib/marketplace";
 import { getMarketplaceChainLabel, isMarketplaceConfigured } from "@/lib/thirdweb-config";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 export const dynamic = "force-dynamic";
+
+const getMarketplaceEntries = cache(() => listMarketplaceEntries(20));
 
 function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listMarketplaceEntries>> }) {
   if (!auctions.length) {
@@ -31,7 +33,7 @@ function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listMa
 }
 
 async function AuctionsContent() {
-  const auctions = await listMarketplaceEntries(20);
+  const auctions = await getMarketplaceEntries();
   const live = auctions.filter((auction) => auction.status === "ACTIVE");
   const auctionListings = auctions.filter((auction) => auction.type === "auction");
   const directListings = auctions.filter((auction) => auction.type === "direct");
@@ -94,6 +96,6 @@ export default function AuctionsPage() {
 }
 
 async function AuctionsContentWrapper() {
-  const auctions = await listMarketplaceEntries(20);
+  const auctions = await getMarketplaceEntries();
   return <AuctionsGrid auctions={auctions} />;
 }
