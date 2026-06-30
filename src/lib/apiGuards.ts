@@ -27,7 +27,7 @@ export function getRequestIp(request: Request) {
 }
 
 export function optionalBearerAuth(request: Request, envVarName: string) {
-  const configured = process.env[envVarName];
+  const configured = process.env[envVarName]?.trim();
   if (!configured) {
     return null;
   }
