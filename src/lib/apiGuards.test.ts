@@ -12,6 +12,12 @@ describe("apiGuards request IP resolution", () => {
     expect(getRequestIp(request)).toBe("203.0.113.10");
   });
 
+  it("skips empty x-forwarded-for entries", () => {
+    const request = makeRequest({ "x-forwarded-for": " , 203.0.113.10, 198.51.100.20" });
+
+    expect(getRequestIp(request)).toBe("203.0.113.10");
+  });
+
   it("falls back through proxy headers before unknown", () => {
     expect(getRequestIp(makeRequest({ "cf-connecting-ip": "203.0.113.30" }))).toBe("203.0.113.30");
     expect(getRequestIp(makeRequest({ "x-real-ip": "203.0.113.40" }))).toBe("203.0.113.40");
