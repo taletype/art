@@ -47,6 +47,19 @@ describe("supabase browser client", () => {
     });
   });
 
+  it("skips a publishable key placeholder before falling back to the browser anon key", () => {
+    clearBrowserSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_your_project_key");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon_public");
+
+    expect(getSupabaseBrowserClient()).toEqual({
+      key: "anon_public",
+      url: "https://example.supabase.co",
+    });
+    expect(createBrowserClient).toHaveBeenCalledWith("https://example.supabase.co", "anon_public");
+  });
+
   it("does not treat .env.example placeholders as browser Supabase configuration", () => {
     clearBrowserSupabaseEnv();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://your-project-ref.supabase.co");
