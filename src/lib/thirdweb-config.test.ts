@@ -23,9 +23,13 @@ describe("evmAddress", () => {
 
 describe("thirdweb-config route ids", () => {
   it("builds and parses marketplace route ids", () => {
-    const routeId = getListingRouteId("auction", 42n);
-    expect(routeId).toBe("auction-42");
-    expect(parseListingRouteId(routeId)).toEqual({ kind: "auction", id: 42n });
+    const auctionRouteId = getListingRouteId("auction", 42n);
+    const directRouteId = getListingRouteId("direct", "99");
+
+    expect(auctionRouteId).toBe("auction-42");
+    expect(parseListingRouteId(auctionRouteId)).toEqual({ kind: "auction", id: 42n });
+    expect(directRouteId).toBe("direct-99");
+    expect(parseListingRouteId(directRouteId)).toEqual({ kind: "direct", id: 99n });
   });
 
   it("returns null for malformed route ids", () => {
