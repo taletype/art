@@ -13,7 +13,7 @@ function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listMa
   if (!auctions.length) {
     return (
       <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-6 sm:p-8 text-center">
-        <h3 className="text-xl sm:text-2xl">No auctions yet</h3>
+        <h3 className="text-xl sm:text-2xl">No marketplace listings yet</h3>
         <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/60">
           {isMarketplaceConfigured()
             ? "Create your first Base Sepolia listing from Seller Hub to light up the live marketplace."
@@ -83,7 +83,7 @@ export default function AuctionsPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <p className="eyebrow">Marketplace</p>
-            <h2 className="text-2xl sm:text-3xl">Current auctions</h2>
+            <h2 className="text-2xl sm:text-3xl">Current marketplace listings</h2>
           </div>
         </div>
 
