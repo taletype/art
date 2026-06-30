@@ -20,8 +20,8 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
     return (
       <main className="section-shell pb-20 pt-32">
         <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-8">
-          <h1 className="text-3xl">Auction not found</h1>
-          <p className="mt-3 text-white/60">The requested auction either does not exist or is not visible yet.</p>
+          <h1 className="text-3xl">Listing not found</h1>
+          <p className="mt-3 text-white/60">The requested listing either does not exist or is not visible yet.</p>
         </div>
       </main>
     );
@@ -64,7 +64,7 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
 
         <aside className="space-y-5">
           <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.03] p-6">
-            <p className="eyebrow">Auction state</p>
+            <p className="eyebrow">Listing state</p>
             <div className="mt-4 grid gap-4">
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
                 <p className="text-sm text-white/45">Status</p>
@@ -94,7 +94,7 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
               <span className="status-pill">{auction.chainLabel}</span>
             </div>
             <p className="mt-3 text-sm leading-7 text-white/62">
-              This page now follows the live Thirdweb marketplace contract. Transactions settle directly onchain and the contract address is the source of truth for auction status.
+              This page now follows the live Thirdweb marketplace contract. Transactions settle directly onchain and the contract address is the source of truth for listing status.
             </p>
             <dl className="mt-4 space-y-2 text-sm text-white/75">
               <div className="flex justify-between gap-4">
