@@ -56,6 +56,14 @@ describe("apiGuards optionalBearerAuth", () => {
     ).toBeNull();
   });
 
+  it("accepts the bearer auth scheme case-insensitively", () => {
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", "test-token");
+
+    expect(
+      optionalBearerAuth(makeRequest({ authorization: "bearer   test-token" }), "API_WRITE_BEARER_TOKEN"),
+    ).toBeNull();
+  });
+
   it("trims the configured bearer token", () => {
     vi.stubEnv("API_WRITE_BEARER_TOKEN", " test-token ");
 
