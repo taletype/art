@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  return NextResponse.json({ 
-    ok: false, 
-    message: "Thirdweb webhook deprecated - purchase state removed" 
-  }, { status: 501 });
+export async function POST() {
+  return NextResponse.json(
+    {
+      ok: false,
+      message:
+        "Thirdweb webhook handling is inactive; purchase state is handled by live marketplace flows.",
+    },
+    { status: 501 },
+  );
 }
