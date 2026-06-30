@@ -41,6 +41,14 @@ describe("supabase config", () => {
     expect(getSupabaseUrl()).toBe("https://server.supabase.co");
   });
 
+  it("skips .env.example Supabase URL placeholders before falling back", () => {
+    clearSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://your-project-ref.supabase.co");
+    vi.stubEnv("SUPABASE_URL", "https://server.supabase.co");
+
+    expect(getSupabaseUrl()).toBe("https://server.supabase.co");
+  });
+
   it("requires a Supabase URL", () => {
     clearSupabaseEnv();
 
@@ -55,9 +63,27 @@ describe("supabase config", () => {
     expect(getSupabasePublishableKey()).toBe("sb_publishable_server");
   });
 
+  it("skips .env.example Supabase key placeholders before falling back", () => {
+    clearSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_your_project_key");
+    vi.stubEnv("SUPABASE_ANON_KEY", "anon_server");
+
+    expect(getSupabasePublishableKey()).toBe("anon_server");
+  });
+
   it("requires a publishable or anon Supabase key", () => {
     clearSupabaseEnv();
 
+    expect(() => getSupabasePublishableKey()).toThrow("Supabase is not configured");
+  });
+
+  it("does not treat .env.example placeholders as Supabase configuration", () => {
+    clearSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://your-project-ref.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_your_project_key");
+
+    expect(isSupabaseConfigured()).toBe(false);
+    expect(() => getSupabaseUrl()).toThrow("Supabase is not configured");
     expect(() => getSupabasePublishableKey()).toThrow("Supabase is not configured");
   });
 
@@ -82,6 +108,12 @@ describe("supabase config", () => {
     expect(getSupabaseServiceRoleKey()).toBe("service-role-key");
   });
 
+  it("requires a real service role key for admin access", () => {
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "your_service_role_key");
+
+    expect(() => getSupabaseServiceRoleKey()).toThrow("SUPABASE_SERVICE_ROLE_KEY is required");
+  });
+
   it("requires the service role key for admin access", () => {
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
 
@@ -94,6 +126,14 @@ describe("supabase config", () => {
     vi.stubEnv("POSTGRES_URL", "postgres://direct");
 
     expect(getDatabaseUrl()).toBe("postgres://prisma");
+  });
+
+  it("skips .env.example database URL placeholders before falling back", () => {
+    vi.stubEnv("DATABASE_URL", "postgres://postgres:password@host:6543/postgres?sslmode=require");
+    vi.stubEnv("POSTGRES_PRISMA_URL", "postgres://postgres:password@host:6543/postgres?sslmode=require&pgbouncer=true");
+    vi.stubEnv("POSTGRES_URL", "postgres://direct");
+
+    expect(getDatabaseUrl()).toBe("postgres://direct");
   });
 
   it("requires a database URL", () => {
