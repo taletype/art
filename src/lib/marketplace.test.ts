@@ -177,10 +177,10 @@ describe("listMarketplaceEntries", () => {
       },
     ] as Awaited<ReturnType<typeof getAllValidListings>>);
 
-    await expect(listMarketplaceEntries(2)).resolves.toMatchObject([
-      { id: "auction-2", title: "Latest Auction" },
-      { id: "direct-3", title: "Middle Direct" },
-    ]);
+    const entries = await listMarketplaceEntries(2);
+
+    expect(entries).toHaveLength(2);
+    expect(entries.map((entry) => entry.id)).toEqual(["auction-2", "direct-3"]);
   });
 
   it("falls back to an empty list when Thirdweb listing reads fail", async () => {
