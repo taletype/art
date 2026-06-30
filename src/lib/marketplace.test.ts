@@ -133,6 +133,56 @@ describe("listMarketplaceEntries", () => {
     );
   });
 
+  it("applies the overall limit after combining and sorting marketplace entries", async () => {
+    mockGetAllAuctions.mockResolvedValue([
+      {
+        id: 1n,
+        asset: { metadata: { name: "Earlier Auction" } },
+        creatorAddress: "0xauctionone",
+        status: "ACTIVE",
+        minimumBidAmount: 1_000_000_000_000_000_000n,
+        buyoutBidAmount: 2_000_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_000n,
+        endTimeInSeconds: 1_700_002_000n,
+      },
+      {
+        id: 2n,
+        asset: { metadata: { name: "Latest Auction" } },
+        creatorAddress: "0xauctiontwo",
+        status: "ACTIVE",
+        minimumBidAmount: 1_000_000_000_000_000_000n,
+        buyoutBidAmount: 2_000_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_000n,
+        endTimeInSeconds: 1_700_005_000n,
+      },
+    ] as Awaited<ReturnType<typeof getAllAuctions>>);
+    mockGetAllValidListings.mockResolvedValue([
+      {
+        id: 3n,
+        asset: { metadata: { name: "Middle Direct" } },
+        creatorAddress: "0xdirectone",
+        status: "ACTIVE",
+        pricePerToken: 1_500_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_000n,
+        endTimeInSeconds: 1_700_004_000n,
+      },
+      {
+        id: 4n,
+        asset: { metadata: { name: "Older Direct" } },
+        creatorAddress: "0xdirecttwo",
+        status: "ACTIVE",
+        pricePerToken: 1_500_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_000n,
+        endTimeInSeconds: 1_700_003_000n,
+      },
+    ] as Awaited<ReturnType<typeof getAllValidListings>>);
+
+    await expect(listMarketplaceEntries(2)).resolves.toMatchObject([
+      { id: "auction-2", title: "Latest Auction" },
+      { id: "direct-3", title: "Middle Direct" },
+    ]);
+  });
+
   it("falls back to an empty list when Thirdweb listing reads fail", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     mockGetAllAuctions.mockRejectedValue(new Error("RPC unavailable"));
