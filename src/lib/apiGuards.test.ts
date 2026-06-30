@@ -30,8 +30,22 @@ describe("apiGuards optionalBearerAuth", () => {
     expect(optionalBearerAuth(makeRequest(), "API_WRITE_BEARER_TOKEN")).toBeNull();
   });
 
+  it("does not require auth when the route token is whitespace only", () => {
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", "   ");
+
+    expect(optionalBearerAuth(makeRequest(), "API_WRITE_BEARER_TOKEN")).toBeNull();
+  });
+
   it("accepts the configured bearer token", () => {
     vi.stubEnv("API_WRITE_BEARER_TOKEN", "test-token");
+
+    expect(
+      optionalBearerAuth(makeRequest({ authorization: "Bearer test-token" }), "API_WRITE_BEARER_TOKEN"),
+    ).toBeNull();
+  });
+
+  it("trims the configured bearer token", () => {
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", " test-token ");
 
     expect(
       optionalBearerAuth(makeRequest({ authorization: "Bearer test-token" }), "API_WRITE_BEARER_TOKEN"),
