@@ -15,6 +15,8 @@ const evidenceKindOptions: EvidenceKind[] = [
   "supporting_doc",
 ];
 
+const sha256HexPattern = /^[a-f0-9]{64}$/i;
+
 interface EvidenceUploaderProps {
   value: EvidenceItem[];
   onChange: (items: EvidenceItem[]) => void;
@@ -34,14 +36,15 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
   const [hash, setHash] = useState("");
 
   const evidenceHashes = useMemo(() => value.map((item) => item.hash), [value]);
-  const canAdd = label.trim().length > 0 && hash.trim().length >= 32;
+  const normalizedHash = hash.trim();
+  const canAdd = label.trim().length > 0 && sha256HexPattern.test(normalizedHash);
 
   function addEvidence() {
     if (!canAdd) {
       return;
     }
 
-    onChange([...value, { kind, label: label.trim(), hash: hash.trim() }]);
+    onChange([...value, { kind, label: label.trim(), hash: normalizedHash.toLowerCase() }]);
     setLabel("");
     setHash("");
   }
@@ -107,8 +110,8 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
             value={hash}
             onChange={(event) => setHash(event.target.value)}
           />
-          {hash.length > 0 && hash.length < 64 && (
-            <p className="mt-2 text-[10px] sm:text-xs text-white/45">Hash must be 64 characters</p>
+          {hash.length > 0 && !sha256HexPattern.test(normalizedHash) && (
+            <p className="mt-2 text-[10px] sm:text-xs text-white/45">Enter a 64-character hexadecimal SHA-256 hash</p>
           )}
         </div>
 
@@ -160,7 +163,7 @@ export function EvidenceUploader({ value, onChange }: EvidenceUploaderProps) {
           <div className="rounded-[1.6rem] border border-dashed border-white/10 bg-white/[0.02] p-6 sm:p-8 text-center">
             <div className="mx-auto mb-3 sm:mb-4 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-white/10 bg-white/5">
               <svg className="h-5 w-5 sm:h-6 sm:w-6 text-white/35" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
             <p className="text-xs sm:text-sm font-medium text-white/70">No evidence attached yet</p>
