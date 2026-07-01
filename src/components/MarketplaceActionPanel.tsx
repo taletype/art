@@ -36,6 +36,11 @@ export default function MarketplaceActionPanel({
   }, [listingId]);
 
   async function handleBid() {
+    if (!activeAccount?.address) {
+      setMessage("Connect your wallet before placing a bid.");
+      return;
+    }
+
     setMessage(null);
     setPendingAction("bid");
 
@@ -57,6 +62,11 @@ export default function MarketplaceActionPanel({
   }
 
   async function handleBuyoutAuction() {
+    if (!activeAccount?.address) {
+      setMessage("Connect your wallet before buying out this auction.");
+      return;
+    }
+
     setMessage(null);
     setPendingAction("buyout");
 
