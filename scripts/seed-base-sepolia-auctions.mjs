@@ -11,6 +11,8 @@ import { sendAndConfirmTransaction } from "thirdweb";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { prepareContractCall, readContract } from "thirdweb";
 
+const evmAddressPattern = /^0x[a-fA-F0-9]{40}$/;
+const thirdwebClientIdPlaceholderValues = new Set(["your_thirdweb_client_id"]);
 const supabaseUrlPlaceholderValues = new Set(["https://your-project-ref.supabase.co"]);
 const supabaseServiceRoleKeyPlaceholderValues = new Set(["your_service_role_key"]);
 
@@ -21,6 +23,11 @@ function readEnv(name) {
 function readConfiguredEnv(name, placeholderValues = new Set()) {
   const value = readEnv(name);
   return value && !placeholderValues.has(value.toLowerCase()) ? value : "";
+}
+
+function readConfiguredAddress(name) {
+  const value = readEnv(name);
+  return evmAddressPattern.test(value) ? value : "";
 }
 
 function readFirstConfiguredEnv(names, placeholderValues = new Set()) {
@@ -35,9 +42,9 @@ function readFirstConfiguredEnv(names, placeholderValues = new Set()) {
 }
 
 const PRIVATE_KEY = readEnv("PRIVATE_KEY");
-const MARKETPLACE_ADDRESS = readEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT");
-const COLLECTION_ADDRESS = readEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT");
-const CLIENT_ID = readEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID");
+const MARKETPLACE_ADDRESS = readConfiguredAddress("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT");
+const COLLECTION_ADDRESS = readConfiguredAddress("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT");
+const CLIENT_ID = readConfiguredEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", thirdwebClientIdPlaceholderValues);
 const SUPABASE_URL = readFirstConfiguredEnv(
   ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL"],
   supabaseUrlPlaceholderValues,
@@ -53,17 +60,17 @@ if (!PRIVATE_KEY) {
 }
 
 if (!MARKETPLACE_ADDRESS) {
-  console.error("Missing NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT environment variable");
+  console.error("Missing NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT environment variable with a valid EVM address");
   process.exit(1);
 }
 
 if (!COLLECTION_ADDRESS) {
-  console.error("Missing NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT environment variable");
+  console.error("Missing NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT environment variable with a valid EVM address");
   process.exit(1);
 }
 
 if (!CLIENT_ID) {
-  console.error("Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID environment variable");
+  console.error("Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID environment variable with a real client ID");
   process.exit(1);
 }
 
