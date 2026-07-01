@@ -32,6 +32,10 @@ function getSupabaseBrowserPublishableKey() {
   );
 }
 
+export function isSupabaseBrowserConfigured() {
+  return Boolean(getSupabaseBrowserUrl() && getSupabaseBrowserPublishableKey());
+}
+
 export function getSupabaseBrowserClient() {
   const supabaseUrl = getSupabaseBrowserUrl();
   const supabasePublishableKey = getSupabaseBrowserPublishableKey();
