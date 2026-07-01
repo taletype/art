@@ -91,6 +91,7 @@ describe("apiGuards optionalBearerAuth", () => {
 describe("apiGuards route rate limiting", () => {
   afterEach(() => {
     globalThis.__realArtWorksRateLimitBuckets?.clear();
+    vi.unstubAllEnvs();
     vi.useRealTimers();
   });
 
@@ -124,6 +125,37 @@ describe("apiGuards route rate limiting", () => {
       limit: 2,
       remaining: 1,
     });
+  });
+
+  it("uses positive environment defaults for route rate limits", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-03T00:00:00.000Z"));
+    vi.stubEnv("API_RATE_LIMIT_MAX", "2");
+    vi.stubEnv("API_RATE_LIMIT_WINDOW_MS", "1000");
+
+    const scope = `env-scope-${Math.random()}`;
+    const request = makeRequest({ "x-forwarded-for": "203.0.113.70" });
+
+    expect(enforceRouteRateLimit(request, scope)).toMatchObject({ ok: true, limit: 2, remaining: 1 });
+    expect(enforceRouteRateLimit(request, scope)).toMatchObject({ ok: true, limit: 2, remaining: 0 });
+
+    const limited = enforceRouteRateLimit(request, scope);
+    expect(limited.ok).toBe(false);
+
+    if (!limited.ok) {
+      expect(limited.response.status).toBe(429);
+      expect(limited.response.headers.get("Retry-After")).toBe("1");
+      expect(limited.response.headers.get("X-RateLimit-Limit")).toBe("2");
+    }
+  });
+
+  it("falls back to safe defaults for invalid environment rate limit values", () => {
+    vi.stubEnv("API_RATE_LIMIT_MAX", "0");
+    vi.stubEnv("API_RATE_LIMIT_WINDOW_MS", "-1");
+
+    expect(
+      enforceRouteRateLimit(makeRequest({ "x-forwarded-for": "203.0.113.71" }), `invalid-env-scope-${Math.random()}`),
+    ).toMatchObject({ ok: true, limit: 30, remaining: 29 });
   });
 
   it("prunes expired buckets when evaluating later requests", () => {
