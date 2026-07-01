@@ -7,8 +7,8 @@ export default function Footer() {
         <p>© 2026 HUMAN_ Arts</p>
         <div className="flex flex-wrap gap-3 sm:gap-4">
           <Link href="/" className="hover:text-white">Home</Link>
-          <Link href="/sales/contemporary-digital-asia" className="hover:text-white">Sales</Link>
-          <Link href="/submit" className="hover:text-white">List</Link>
+          <Link href="/auctions" className="hover:text-white">Auctions</Link>
+          <Link href="/seller" className="hover:text-white">Seller Hub</Link>
         </div>
       </div>
     </footer>
