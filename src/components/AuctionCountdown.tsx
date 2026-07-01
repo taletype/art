@@ -71,7 +71,7 @@ export default function AuctionCountdown({ endsAt, className = "" }: AuctionCoun
   if (totalSeconds <= 0) {
     return (
       <div className={`flex items-center gap-2 text-xs sm:text-sm ${className}`}>
-        <span className="text-white/60">Auction ended</span>
+        <span className="text-white/60">Listing ended</span>
       </div>
     );
   }
