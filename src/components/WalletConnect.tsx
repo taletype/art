@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { isValidEvmAddress } from "@/lib/evmAddress";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/browser";
 import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 import { getMarketplaceChain } from "@/lib/thirdweb-config";
@@ -22,10 +22,18 @@ export default function WalletConnect() {
   const [message, setMessage] = useState<string | null>(null);
   const connectedWallet =
     activeAccount?.address && isValidEvmAddress(activeAccount.address) ? activeAccount.address : null;
-  const canSaveToProfile = sessionLoaded && Boolean(session);
+  const supabaseConfigured = isSupabaseBrowserConfigured();
+  const canSaveToProfile = supabaseConfigured && sessionLoaded && Boolean(session);
   const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
 
   useEffect(() => {
+    if (!supabaseConfigured) {
+      setSession(null);
+      setSessionLoaded(true);
+      setMessage("App profile storage is not configured. You can still connect a wallet directly.");
+      return;
+    }
+
     const supabase = getSupabaseBrowserClient();
 
     async function hydrate() {
@@ -55,7 +63,7 @@ export default function WalletConnect() {
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [supabaseConfigured]);
 
   useEffect(() => {
     if (connectedWallet) {
@@ -67,6 +75,10 @@ export default function WalletConnect() {
     setMessage(null);
     try {
       const nextWallet = connectedWallet ?? walletAddress.trim();
+      if (!supabaseConfigured) {
+        throw new Error("App profile storage is not configured. Connect a wallet directly instead.");
+      }
+
       if (!session) {
         throw new Error("Log in or create an app profile before saving this wallet to your profile.");
       }
@@ -142,7 +154,11 @@ export default function WalletConnect() {
             <p className="break-all text-xs text-white/55">{connectedWallet}</p>
           ) : null}
           <p className="text-sm font-medium text-white">
-            {sessionLoaded ? session?.email ?? "No app profile signed in" : "Checking app profile..."}
+            {sessionLoaded
+              ? supabaseConfigured
+                ? session?.email ?? "No app profile signed in"
+                : "App profile storage not configured"
+              : "Checking app profile..."}
           </p>
           <p className="text-sm text-white/55">
             Bidding, Seller Hub, and marketplace actions can use either your connected wallet or your saved app profile wallet.
@@ -169,6 +185,10 @@ export default function WalletConnect() {
           <Link href="/seller" className="button-secondary w-full text-center">
             Continue with wallet
           </Link>
+        ) : !supabaseConfigured ? (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center text-sm text-white/65">
+            App profile login needs Supabase setup. Connect a wallet above to continue without a profile.
+          </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             <Link href="/login" className="button-secondary text-center">
