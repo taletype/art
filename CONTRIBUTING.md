@@ -4,9 +4,10 @@ Thanks for helping improve HUMAN_ Arts. This project is a Next.js, Thirdweb, Sup
 
 ## Local setup
 
-Use Node.js 22 to match CI.
+Use Node.js 22 to match CI. If you use `nvm`, the committed `.nvmrc` selects the right runtime.
 
 ```bash
+nvm use
 npm ci
 cp .env.example .env.local
 npm run typecheck
@@ -22,6 +23,7 @@ Run the checks that match your change:
 
 - `npm run typecheck` for TypeScript and Next.js type safety.
 - `npm test` for unit coverage under `src`.
+- `npm run build` for production build, routing, server component, or deployment-sensitive changes.
 - `npm run readiness:v2:run` when changing readiness evidence, deployment smoke checks, or artifact bundle logic.
 - Manual wallet and marketplace smoke checks when changing Seller Hub, auctions, direct listings, minting, bidding, or buyout flows.
 
