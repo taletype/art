@@ -76,10 +76,10 @@ These values are optional. When set, protected routes require matching bearer to
 - `PURCHASE_STATE_TABLE` (defaults to `purchase_states`)
 
 ### Supabase / Postgres
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` for server admin flows
-- `DATABASE_URL` or `POSTGRES_URL` for direct database access
+- `NEXT_PUBLIC_SUPABASE_URL` for browser/client flows; server helpers can also read `SUPABASE_URL`.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` for browser/client flows; server helpers can also read `SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`.
+- `SUPABASE_SERVICE_ROLE_KEY` for server admin flows.
+- `DATABASE_URL`, `POSTGRES_PRISMA_URL`, or `POSTGRES_URL` for direct database access.
 
 ## Local development
 
