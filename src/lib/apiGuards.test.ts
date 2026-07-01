@@ -90,6 +90,7 @@ describe("apiGuards optionalBearerAuth", () => {
 
 describe("apiGuards route rate limiting", () => {
   afterEach(() => {
+    globalThis.__realArtWorksRateLimitBuckets?.clear();
     vi.useRealTimers();
   });
 
