@@ -58,13 +58,12 @@ The existing `/api/webhooks/thirdweb` route returns `501` and does not process w
 - `THIRDWEB_WEBHOOK_TOLERANCE_SECONDS`
 
 ### Optional API hardening
-These values are optional. When set, protected routes require matching bearer tokens and rate-limited routes use the configured limits.
+These values are optional. When set, protected routes require matching bearer tokens and guarded routes use the configured global rate limits.
 
 - `API_WRITE_BEARER_TOKEN` protects write-style API routes that opt into bearer-token checks.
 - `API_READ_BEARER_TOKEN` protects read-style API routes that opt into bearer-token checks.
 - `API_RATE_LIMIT_MAX` sets the default per-window request limit for guarded routes (defaults to `30`).
 - `API_RATE_LIMIT_WINDOW_MS` sets the default rate-limit window in milliseconds (defaults to `60000`).
-- `API_READ_RATE_LIMIT_MAX`, `API_AUCTIONS_RATE_LIMIT_MAX`, and `API_AUCTION_BID_RATE_LIMIT_MAX` are route-specific overrides for flows that opt into them.
 
 ### Optional storage adapter
 - `STORAGE_WRITE_ENDPOINT`
