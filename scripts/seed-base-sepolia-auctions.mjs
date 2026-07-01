@@ -11,12 +11,41 @@ import { sendAndConfirmTransaction } from "thirdweb";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { prepareContractCall, readContract } from "thirdweb";
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT;
-const COLLECTION_ADDRESS = process.env.NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT;
-const CLIENT_ID = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrlPlaceholderValues = new Set(["https://your-project-ref.supabase.co"]);
+const supabaseServiceRoleKeyPlaceholderValues = new Set(["your_service_role_key"]);
+
+function readEnv(name) {
+  return process.env[name]?.trim() || "";
+}
+
+function readConfiguredEnv(name, placeholderValues = new Set()) {
+  const value = readEnv(name);
+  return value && !placeholderValues.has(value.toLowerCase()) ? value : "";
+}
+
+function readFirstConfiguredEnv(names, placeholderValues = new Set()) {
+  for (const name of names) {
+    const value = readConfiguredEnv(name, placeholderValues);
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+const PRIVATE_KEY = readEnv("PRIVATE_KEY");
+const MARKETPLACE_ADDRESS = readEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT");
+const COLLECTION_ADDRESS = readEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT");
+const CLIENT_ID = readEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID");
+const SUPABASE_URL = readFirstConfiguredEnv(
+  ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL"],
+  supabaseUrlPlaceholderValues,
+);
+const SUPABASE_SERVICE_ROLE_KEY = readConfiguredEnv(
+  "SUPABASE_SERVICE_ROLE_KEY",
+  supabaseServiceRoleKeyPlaceholderValues,
+);
 
 if (!PRIVATE_KEY) {
   console.error("Missing PRIVATE_KEY environment variable");
@@ -39,12 +68,12 @@ if (!CLIENT_ID) {
 }
 
 if (!SUPABASE_URL) {
-  console.error("Missing SUPABASE_URL environment variable");
+  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL environment variable");
   process.exit(1);
 }
 
 if (!SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+  console.error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable with a real service role key");
   process.exit(1);
 }
 
