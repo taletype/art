@@ -18,7 +18,37 @@ const CLIENT_ID = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Initialize Supabase client
+if (!PRIVATE_KEY) {
+  console.error("Missing PRIVATE_KEY environment variable");
+  process.exit(1);
+}
+
+if (!MARKETPLACE_ADDRESS) {
+  console.error("Missing NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT environment variable");
+  process.exit(1);
+}
+
+if (!COLLECTION_ADDRESS) {
+  console.error("Missing NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT environment variable");
+  process.exit(1);
+}
+
+if (!CLIENT_ID) {
+  console.error("Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID environment variable");
+  process.exit(1);
+}
+
+if (!SUPABASE_URL) {
+  console.error("Missing SUPABASE_URL environment variable");
+  process.exit(1);
+}
+
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
+  process.exit(1);
+}
+
+// Initialize Supabase client after required env vars are validated.
 const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Function to download image from URL
@@ -95,26 +125,6 @@ async function insertArtworkToDatabase(artwork, imageUrl) {
   }
 
   return data;
-}
-
-if (!PRIVATE_KEY) {
-  console.error("Missing PRIVATE_KEY or THIRDWEB_SECRET_KEY environment variable");
-  process.exit(1);
-}
-
-if (!MARKETPLACE_ADDRESS) {
-  console.error("Missing NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT environment variable");
-  process.exit(1);
-}
-
-if (!COLLECTION_ADDRESS) {
-  console.error("Missing NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT environment variable");
-  process.exit(1);
-}
-
-if (!CLIENT_ID) {
-  console.error("Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID environment variable");
-  process.exit(1);
 }
 
 // Create client and account
