@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createBrowserClient } from "@supabase/ssr";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/browser";
 
 vi.mock("@supabase/ssr", () => ({
   createBrowserClient: vi.fn((url: string, key: string) => ({ key, url })),
@@ -29,6 +29,7 @@ describe("supabase browser client", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", " https://example.supabase.co ");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", " sb_publishable_real_key ");
 
+    expect(isSupabaseBrowserConfigured()).toBe(true);
     expect(getSupabaseBrowserClient()).toEqual({
       key: "sb_publishable_real_key",
       url: "https://example.supabase.co",
@@ -41,6 +42,7 @@ describe("supabase browser client", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon_public");
 
+    expect(isSupabaseBrowserConfigured()).toBe(true);
     expect(getSupabaseBrowserClient()).toEqual({
       key: "anon_public",
       url: "https://example.supabase.co",
@@ -53,6 +55,7 @@ describe("supabase browser client", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_your_project_key");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon_public");
 
+    expect(isSupabaseBrowserConfigured()).toBe(true);
     expect(getSupabaseBrowserClient()).toEqual({
       key: "anon_public",
       url: "https://example.supabase.co",
@@ -66,6 +69,16 @@ describe("supabase browser client", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_your_project_key");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "legacy_anon_key_if_needed");
 
+    expect(isSupabaseBrowserConfigured()).toBe(false);
+    expect(() => getSupabaseBrowserClient()).toThrow("Supabase is not configured");
+    expect(createBrowserClient).not.toHaveBeenCalled();
+  });
+
+  it("requires both a browser Supabase URL and key", () => {
+    clearBrowserSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+
+    expect(isSupabaseBrowserConfigured()).toBe(false);
     expect(() => getSupabaseBrowserClient()).toThrow("Supabase is not configured");
     expect(createBrowserClient).not.toHaveBeenCalled();
   });
