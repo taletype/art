@@ -4,11 +4,10 @@ import { getAuthenticatedAppUser } from "@/lib/auth";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 import { createSellerArtworkSchema } from "@/types/seller";
 
-const adminClient = createSupabaseAdminClient();
-
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
+  const adminClient = createSupabaseAdminClient();
 
   if (id) {
     const { data: artwork, error } = await adminClient
@@ -50,6 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const adminClient = createSupabaseAdminClient();
     const { data, error } = await adminClient
       .from("artworks")
       .insert({
@@ -109,6 +109,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    const adminClient = createSupabaseAdminClient();
     let query = adminClient
       .from("artworks")
       .update(updates)
