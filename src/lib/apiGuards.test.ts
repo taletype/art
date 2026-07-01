@@ -124,4 +124,27 @@ describe("apiGuards route rate limiting", () => {
       remaining: 1,
     });
   });
+
+  it("prunes expired buckets when evaluating later requests", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-02T00:00:00.000Z"));
+
+    const staleScope = `stale-scope-${Math.random()}`;
+    const freshScope = `fresh-scope-${Math.random()}`;
+    const staleRequest = makeRequest({ "x-forwarded-for": "203.0.113.60" });
+    const freshRequest = makeRequest({ "x-forwarded-for": "203.0.113.61" });
+    const staleBucketKey = `${staleScope}:203.0.113.60`;
+
+    enforceRouteRateLimit(staleRequest, staleScope, { max: 1, windowMs: 1000 });
+    expect(globalThis.__realArtWorksRateLimitBuckets?.has(staleBucketKey)).toBe(true);
+
+    vi.advanceTimersByTime(1001);
+
+    expect(enforceRouteRateLimit(freshRequest, freshScope, { max: 1, windowMs: 1000 })).toMatchObject({
+      ok: true,
+      limit: 1,
+      remaining: 0,
+    });
+    expect(globalThis.__realArtWorksRateLimitBuckets?.has(staleBucketKey)).toBe(false);
+  });
 });
