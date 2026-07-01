@@ -1,10 +1,32 @@
 import { createClient } from "@supabase/supabase-js";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config";
 
-const supabase = createClient(getSupabaseUrl(), getSupabasePublishableKey());
+let supabaseClient: ReturnType<typeof createClient> | null = null;
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    supabaseClient = createClient(getSupabaseUrl(), getSupabasePublishableKey());
+  }
+
+  return supabaseClient;
+}
+
+function getSupabaseReadClient(action: string) {
+  try {
+    return getSupabaseClient();
+  } catch (error) {
+    console.error(`Error ${action}:`, error);
+    return null;
+  }
+}
 
 // Artworks
 export async function listArtworks(limit = 20) {
+  const supabase = getSupabaseReadClient("fetching artworks");
+  if (!supabase) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("artworks")
     .select("*")
@@ -19,6 +41,11 @@ export async function listArtworks(limit = 20) {
 }
 
 export async function getArtworkById(id: string) {
+  const supabase = getSupabaseReadClient("fetching artwork");
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("artworks")
     .select("*")
@@ -33,6 +60,7 @@ export async function getArtworkById(id: string) {
 }
 
 export async function createArtwork(artwork: Record<string, any>) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("artworks")
     .insert(artwork)
@@ -47,6 +75,7 @@ export async function createArtwork(artwork: Record<string, any>) {
 }
 
 export async function updateArtwork(id: string, updates: Record<string, any>) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("artworks")
     .update(updates)
@@ -63,6 +92,11 @@ export async function updateArtwork(id: string, updates: Record<string, any>) {
 
 // Sales
 export async function listSales(limit = 20) {
+  const supabase = getSupabaseReadClient("fetching sales");
+  if (!supabase) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("auction_sales")
     .select("*")
@@ -77,6 +111,11 @@ export async function listSales(limit = 20) {
 }
 
 export async function getSaleById(id: string) {
+  const supabase = getSupabaseReadClient("fetching sale");
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("auction_sales")
     .select("*")
@@ -91,6 +130,7 @@ export async function getSaleById(id: string) {
 }
 
 export async function createSale(sale: Record<string, any>) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("auction_sales")
     .insert(sale)
@@ -105,6 +145,7 @@ export async function createSale(sale: Record<string, any>) {
 }
 
 export async function updateSale(id: string, updates: Record<string, any>) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("auction_sales")
     .update(updates)
@@ -121,6 +162,11 @@ export async function updateSale(id: string, updates: Record<string, any>) {
 
 // Creators
 export async function listCreators(limit = 20) {
+  const supabase = getSupabaseReadClient("fetching creators");
+  if (!supabase) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("creators")
     .select("*")
@@ -135,6 +181,11 @@ export async function listCreators(limit = 20) {
 }
 
 export async function getCreatorByWallet(wallet: string) {
+  const supabase = getSupabaseReadClient("fetching creator");
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("creators")
     .select("*")
@@ -149,6 +200,7 @@ export async function getCreatorByWallet(wallet: string) {
 }
 
 export async function createCreator(creator: Record<string, any>) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("creators")
     .insert(creator)
@@ -163,6 +215,7 @@ export async function createCreator(creator: Record<string, any>) {
 }
 
 export async function updateCreator(wallet: string, updates: Record<string, any>) {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("creators")
     .update(updates)
