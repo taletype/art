@@ -26,6 +26,14 @@ function tokensMatch(received: string, configured: string) {
   return timingSafeEqual(hashToken(received), hashToken(configured));
 }
 
+function pruneExpiredRateLimitBuckets(now: number) {
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt <= now) {
+      buckets.delete(key);
+    }
+  }
+}
+
 export function getRequestIp(request: Request) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
@@ -97,6 +105,9 @@ export function enforceRouteRateLimit(
   const ip = getRequestIp(request);
   const bucketKey = `${scope}:${ip}`;
   const now = Date.now();
+
+  pruneExpiredRateLimitBuckets(now);
+
   const existing = buckets.get(bucketKey);
 
   if (!existing || existing.resetAt <= now) {
