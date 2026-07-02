@@ -4,6 +4,24 @@ import { getAuthenticatedAppUser } from "@/lib/auth";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 import { createSellerArtworkSchema } from "@/types/seller";
 
+const protectedArtworkUpdateFields = [
+  "id",
+  "ownerUserId",
+  "owner_user_id",
+  "sellerWallet",
+  "seller_wallet",
+  "artistWallet",
+  "artist_wallet",
+];
+
+function removeProtectedArtworkUpdateFields(updates: Record<string, unknown>) {
+  for (const field of protectedArtworkUpdateFields) {
+    delete updates[field];
+  }
+
+  return updates;
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
@@ -89,8 +107,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const user = await getAuthenticatedAppUser();
     const body = await request.json();
-    const { id, ...updates } = body;
-    delete updates.sellerWallet;
+    const { id, ...rawUpdates } = body;
+    const updates = removeProtectedArtworkUpdateFields(rawUpdates);
     if (!id) {
       return NextResponse.json({ error: "Artwork ID is required" }, { status: 400 });
     }
