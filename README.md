@@ -34,7 +34,7 @@ Supabase is now wired into local project configuration through `.env.local` and 
 What is still not migrated:
 - Human-made provenance verification is still mock-driven.
 
-Purchase-state persistence now prefers Supabase through `purchase_states` and falls back to the local file store if Supabase is not configured or unavailable.
+Legacy purchase-state persistence has been retired with `/api/purchase`; live purchases now use the Thirdweb SDK and marketplace contract directly.
 
 ## What works end-to-end on Base Sepolia
 
@@ -69,11 +69,13 @@ These values are optional. When set, protected routes require matching bearer to
 - `STORAGE_WRITE_ENDPOINT`
 - `STORAGE_BEARER_TOKEN`
 
-### Optional durable store overrides
-- `PURCHASE_STATE_FILE` (defaults to `.data/purchase-state.json`)
-- `PURCHASE_STATE_RETENTION_MS` (defaults to one week)
-- `PURCHASE_STATE_BACKEND` (`supabase` by default, set `file` to force local file mode)
-- `PURCHASE_STATE_TABLE` (defaults to `purchase_states`)
+### Legacy purchase-state overrides (inactive)
+The current `/api/purchase` route returns `410 Gone`; these values are retained only for historical local recovery work if that flow is restored.
+
+- `PURCHASE_STATE_FILE` (legacy default: `.data/purchase-state.json`)
+- `PURCHASE_STATE_RETENTION_MS` (legacy default: one week)
+- `PURCHASE_STATE_BACKEND` (legacy default: `supabase`, with `file` for local mode)
+- `PURCHASE_STATE_TABLE` (legacy default: `purchase_states`)
 
 ### Supabase / Postgres
 - `NEXT_PUBLIC_SUPABASE_URL` for browser/client flows; server helpers can also read `SUPABASE_URL`.
@@ -101,7 +103,7 @@ Notes:
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
 - `npm run seed:base-sepolia-auctions` mints sample NFTs on Base Sepolia, uploads images to Supabase Storage, records artwork rows, and creates marketplace auctions. It requires a funded `PRIVATE_KEY` plus the Thirdweb and Supabase env vars in `.env.local`.
-- Apply `supabase/migrations/001_auction_house_schema.sql` before relying on Supabase-backed purchase recovery, auction artists, sales, lots, collectors, bids, or watchlists in shared environments.
+- Apply `supabase/migrations/001_auction_house_schema.sql` before relying on Supabase-backed auction artists, sales, lots, collectors, bids, or watchlists in shared environments.
 - Legacy off-chain auction migrations can remain in the database for historical data, but the live marketplace flow no longer depends on `/api/auctions*` as the bidding source of truth.
 
 ## Primary user flow
@@ -123,7 +125,7 @@ Notes:
 
 ## Non-production notes
 
-- Supabase-backed purchase state is the durable path for shared environments; the local file fallback is single-instance only and not multi-instance safe.
+- Legacy purchase-state file recovery is not part of the active purchase flow; if restored, the local file fallback remains single-instance only and not multi-instance safe.
 - Admin/reviewer auth remains mock.
 - Operational hardening (queues/retries/observability/abuse controls) is still pending.
 
