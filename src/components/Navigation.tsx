@@ -10,7 +10,6 @@ import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/auctions", label: "Auctions" },
-  { href: "/seller", label: "Seller Hub" },
   { href: "/admin", label: "Admin" },
 ];
 
