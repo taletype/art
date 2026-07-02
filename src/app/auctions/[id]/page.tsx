@@ -12,6 +12,10 @@ function formatStatus(date: string) {
   }).format(new Date(date));
 }
 
+function formatListingStatus(status: string) {
+  return status.toLowerCase().replace(/_/g, " ");
+}
+
 export default async function AuctionDetailPage({ params }: AuctionDetailPageProps) {
   const { id } = await params;
   const auction = await getMarketplaceDetail(id);
@@ -75,7 +79,7 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
             <div className="mt-4 grid gap-4">
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
                 <p className="text-sm text-white/45">Status</p>
-                <p className="mt-2 text-2xl font-semibold capitalize text-white">{auction.type === "auction" ? "Auction listing" : "Direct listing"}</p>
+                <p className="mt-2 text-2xl font-semibold capitalize text-white">{formatListingStatus(auction.status)}</p>
               </div>
               <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
                 <p className="text-sm text-white/45">{auction.type === "auction" ? "Minimum bid" : "List price"}</p>
