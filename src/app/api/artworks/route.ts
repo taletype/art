@@ -130,8 +130,8 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await getAuthenticatedAppUser();
     const body = await request.json();
+    const user = await getAuthenticatedAppUser();
     const { id, ...rawUpdates } = body;
     const updates = removeProtectedArtworkUpdateFields(rawUpdates);
     if (!id) {
