@@ -89,6 +89,7 @@ npm ci
 cp .env.example .env.local
 npm run typecheck
 npm test
+npm run build
 npm run dev
 ```
 
@@ -96,6 +97,7 @@ Notes:
 - `nvm use` reads the committed `.nvmrc`, which pins Node.js 22 to match CI.
 - `npm ci` installs the locked dependency graph used by CI.
 - `npm test` runs Vitest tests named `*.test.ts` / `*.test.tsx` under `src`.
+- `npm run build` verifies the same production build step enforced by CI.
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
 - `npm run seed:base-sepolia-auctions` mints sample NFTs on Base Sepolia, uploads images to Supabase Storage, records artwork rows, and creates marketplace auctions. It requires a funded `PRIVATE_KEY` plus the Thirdweb and Supabase env vars in `.env.local`.
