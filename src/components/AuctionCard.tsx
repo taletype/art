@@ -5,11 +5,20 @@ import AuctionCountdown from "@/components/AuctionCountdown";
 export default function AuctionCard({ auction }: { auction: MarketplaceEntry }) {
   return (
     <article className={`auction-card overflow-hidden rounded-[2rem] border border-[#d4af37]/25 bg-white/[0.03] backdrop-blur-xl ${auction.status === "ACTIVE" ? "animate-pulse-gold" : ""}`}>
-      <Link href={`/auctions/${auction.id}`} className="block">
-        <div
-          className="aspect-[4/3] w-full bg-cover bg-center transition-transform duration-500 hover:scale-105"
-          style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.4)), url(${auction.assetUrl})` }}
-        />
+      <Link href={`/auctions/${auction.id}`} className="group block">
+        <div className="aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
+          {auction.assetUrl ? (
+            <img
+              src={auction.assetUrl}
+              alt={`${auction.title} artwork`}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div aria-hidden="true" className="h-full w-full bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]" />
+          )}
+        </div>
       </Link>
       <div className="space-y-4 p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3 sm:gap-4">
