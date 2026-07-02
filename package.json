@@ -14,6 +14,7 @@
     "lint": "echo 'lint not configured'",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "check": "npm run typecheck && npm test && npm run build",
     "readiness:v2:run": "node scripts/readiness-v2-run.mjs",
     "seed:base-sepolia-auctions": "node scripts/seed-base-sepolia-auctions.mjs"
   },
