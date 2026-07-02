@@ -10,6 +10,7 @@ const supabaseServiceRoleKeyPlaceholderValues = new Set(["your_service_role_key"
 const databaseUrlPlaceholderValues = new Set([
   "postgres://postgres:password@host:6543/postgres?sslmode=require",
   "postgres://postgres:password@host:6543/postgres?sslmode=require&pgbouncer=true",
+  "postgres://postgres:password@host:5432/postgres?sslmode=require",
 ]);
 
 function readString(value: string | undefined) {
@@ -78,12 +79,17 @@ export function getSupabaseServiceRoleKey() {
 
 export function getDatabaseUrl() {
   const value = readFirstConfiguredString(
-    [process.env.DATABASE_URL, process.env.POSTGRES_PRISMA_URL, process.env.POSTGRES_URL],
+    [
+      process.env.DATABASE_URL,
+      process.env.POSTGRES_PRISMA_URL,
+      process.env.POSTGRES_URL,
+      process.env.POSTGRES_URL_NON_POOLING,
+    ],
     databaseUrlPlaceholderValues,
   );
 
   if (!value) {
-    throw new Error("DATABASE_URL, POSTGRES_PRISMA_URL, or POSTGRES_URL must be configured.");
+    throw new Error("DATABASE_URL, POSTGRES_PRISMA_URL, POSTGRES_URL, or POSTGRES_URL_NON_POOLING must be configured.");
   }
 
   return value;
