@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getAuthenticatedAppUser();
     const body = createSellerArtworkSchema.parse(await request.json());
+    const user = await getAuthenticatedAppUser();
     const sellerWallet = user?.walletAddress ?? body.sellerWallet ?? null;
     if (!sellerWallet || !isValidEvmAddress(sellerWallet)) {
       return NextResponse.json(
