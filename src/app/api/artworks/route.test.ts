@@ -72,6 +72,21 @@ describe("artworks API PATCH", () => {
     mockGetAuthenticatedAppUser.mockResolvedValue(null);
   });
 
+  it("rejects requests that only contain protected identity fields", async () => {
+    const response = await PATCH(
+      makePatchRequest({
+        id: "artwork-id",
+        sellerWallet: "0x1234567890abcdef1234567890abcdef12345678",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "No mutable artwork fields provided" });
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("uses wallet identity fields for authorization without allowing clients to mutate them", async () => {
     const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
 
