@@ -21,6 +21,7 @@ Fill `.env.local` with project-specific values before testing wallet, marketplac
 
 Run the checks that match your change:
 
+- `npm run check` for the full CI-equivalent typecheck, unit test, and production build sequence.
 - `npm run typecheck` for TypeScript and Next.js type safety.
 - `npm test` for unit coverage under `src`.
 - `npm run build` for production build, routing, server component, or deployment-sensitive changes.
