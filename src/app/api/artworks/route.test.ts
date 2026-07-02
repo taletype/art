@@ -97,4 +97,4 @@ describe("artworks API PATCH", () => {
     expect(eq).toHaveBeenNthCalledWith(1, "id", "artwork-id");
     expect(eq).toHaveBeenNthCalledWith(2, "seller_wallet", sellerWallet);
   });
-});
+}
