@@ -29,7 +29,7 @@ Supabase is now wired into local project configuration through `.env.local` and 
 - Browser-safe access should use the publishable key via `getSupabaseBrowserClient()`.
 - Server-side RLS-aware access can use `createSupabaseServerClient()`.
 - Admin-only operations should use `createSupabaseAdminClient()` and stay on the server.
-- Postgres connection strings are exposed through `DATABASE_URL`, `POSTGRES_PRISMA_URL`, and `POSTGRES_URL`.
+- Postgres connection strings are exposed through `DATABASE_URL`, `POSTGRES_PRISMA_URL`, `POSTGRES_URL`, and `POSTGRES_URL_NON_POOLING`.
 
 What is still not migrated:
 - Human-made provenance verification is still mock-driven.
@@ -81,7 +81,7 @@ The current `/api/purchase` route returns `410 Gone`; these values are retained 
 - `NEXT_PUBLIC_SUPABASE_URL` for browser/client flows; server helpers can also read `SUPABASE_URL`.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` for browser/client flows; server helpers can also read `SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`.
 - `SUPABASE_SERVICE_ROLE_KEY` for server admin flows.
-- `DATABASE_URL`, `POSTGRES_PRISMA_URL`, or `POSTGRES_URL` for direct database access.
+- `DATABASE_URL`, `POSTGRES_PRISMA_URL`, `POSTGRES_URL`, or `POSTGRES_URL_NON_POOLING` for direct database access.
 
 ## Local development
 
