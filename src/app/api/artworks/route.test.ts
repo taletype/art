@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAuthenticatedAppUser } from "@/lib/auth";
-import { PATCH } from "./route";
+import { PATCH, POST } from "./route";
 
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: vi.fn(),
@@ -22,6 +22,31 @@ function makePatchRequest(body: Record<string, unknown>) {
     body: JSON.stringify(body),
   });
 }
+
+function makePostRequest(body: Record<string, unknown>) {
+  return new NextRequest("https://example.test/api/artworks", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+describe("artworks API POST", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetAuthenticatedAppUser.mockResolvedValue(null);
+  });
+
+  it("returns validation errors without opening an admin client", async () => {
+    const response = await POST(makePostRequest({ title: "A" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toMatchObject({ error: "Invalid artwork payload" });
+    expect(body.issues.length).toBeGreaterThan(0);
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+});
 
 describe("artworks API PATCH", () => {
   const from = vi.fn();
