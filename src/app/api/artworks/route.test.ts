@@ -31,6 +31,14 @@ function makePostRequest(body: Record<string, unknown>) {
   });
 }
 
+function makeRawArtworkRequest(method: "PATCH" | "POST", body: string) {
+  return new NextRequest("https://example.test/api/artworks", {
+    method,
+    headers: { "content-type": "application/json" },
+    body,
+  });
+}
+
 describe("artworks API POST", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,6 +52,16 @@ describe("artworks API POST", () => {
     expect(response.status).toBe(400);
     expect(body).toMatchObject({ error: "Invalid artwork payload" });
     expect(body.issues.length).toBeGreaterThan(0);
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
+  it("returns bad request for malformed JSON without opening auth or admin clients", async () => {
+    const response = await POST(makeRawArtworkRequest("POST", "{"));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Invalid JSON payload" });
     expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
@@ -70,6 +88,17 @@ describe("artworks API PATCH", () => {
 
     mockCreateSupabaseAdminClient.mockReturnValue({ from } as unknown as ReturnType<typeof createSupabaseAdminClient>);
     mockGetAuthenticatedAppUser.mockResolvedValue(null);
+  });
+
+  it("returns bad request for malformed JSON without opening auth or admin clients", async () => {
+    const response = await PATCH(makeRawArtworkRequest("PATCH", "{"));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Invalid JSON payload" });
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("rejects requests that only contain protected identity fields", async () => {
