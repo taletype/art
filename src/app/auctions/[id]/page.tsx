@@ -31,10 +31,17 @@ export default async function AuctionDetailPage({ params }: AuctionDetailPagePro
     <main className="pb-20 pt-28">
       <section className="section-shell grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
-          <div
-            className="aspect-[4/3] rounded-[2rem] border border-white/10 bg-cover bg-center"
-            style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.55)), url(${auction.assetUrl})` }}
-          />
+          <div className="aspect-[4/3] overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
+            {auction.assetUrl ? (
+              <img
+                src={auction.assetUrl}
+                alt={`${auction.title} artwork`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div aria-hidden="true" className="h-full w-full bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]" />
+            )}
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
