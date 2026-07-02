@@ -32,6 +32,10 @@ function readArtworkListLimit(value: string | null) {
   return Math.min(Math.floor(parsed), 100);
 }
 
+function invalidJsonResponse() {
+  return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
@@ -105,6 +109,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return invalidJsonResponse();
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Invalid artwork payload", issues: error.issues },
@@ -169,6 +177,10 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return invalidJsonResponse();
+    }
+
     console.error("Error updating artwork:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to update artwork" },
