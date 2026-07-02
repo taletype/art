@@ -31,13 +31,14 @@ Run the checks that match your change:
 
 ## Supabase and migrations
 
-The app supports Supabase-backed purchase state and curated auction-house data. Apply the migrations documented in `README.md` before relying on those tables in a shared environment.
+The app uses Supabase for artwork drafts and curated auction-house data. Apply the migrations documented in `README.md` before relying on those tables in a shared environment.
+
+The legacy `/api/purchase` route is retired and returns `410 Gone`; live purchases use the Thirdweb SDK and marketplace contract directly. Do not reintroduce purchase-state persistence, local purchase-state files, or webhook-driven purchase recovery unless a task explicitly restores that retired flow.
 
 When changing database-backed flows:
 
 - Keep browser usage on publishable or anon keys.
 - Keep service-role operations on the server.
-- Preserve the local file fallback for purchase state unless you are intentionally changing that behavior.
 - Avoid committing generated readiness artifacts or local `.data` files unless a task explicitly asks for them.
 
 ## Change style
