@@ -128,6 +128,15 @@ describe("supabase config", () => {
     expect(getDatabaseUrl()).toBe("postgres://prisma");
   });
 
+  it("falls back to the non-pooling database URL", () => {
+    vi.stubEnv("DATABASE_URL", "");
+    vi.stubEnv("POSTGRES_PRISMA_URL", "");
+    vi.stubEnv("POSTGRES_URL", "");
+    vi.stubEnv("POSTGRES_URL_NON_POOLING", " postgres://non-pooling ");
+
+    expect(getDatabaseUrl()).toBe("postgres://non-pooling");
+  });
+
   it("skips .env.example database URL placeholders before falling back", () => {
     vi.stubEnv("DATABASE_URL", "postgres://postgres:password@host:6543/postgres?sslmode=require");
     vi.stubEnv("POSTGRES_PRISMA_URL", "postgres://postgres:password@host:6543/postgres?sslmode=require&pgbouncer=true");
@@ -140,7 +149,8 @@ describe("supabase config", () => {
     vi.stubEnv("DATABASE_URL", "");
     vi.stubEnv("POSTGRES_PRISMA_URL", "");
     vi.stubEnv("POSTGRES_URL", "");
+    vi.stubEnv("POSTGRES_URL_NON_POOLING", "");
 
-    expect(() => getDatabaseUrl()).toThrow("DATABASE_URL, POSTGRES_PRISMA_URL, or POSTGRES_URL");
+    expect(() => getDatabaseUrl()).toThrow("DATABASE_URL, POSTGRES_PRISMA_URL, POSTGRES_URL, or POSTGRES_URL_NON_POOLING");
   });
 });
