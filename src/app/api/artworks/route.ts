@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAuthenticatedAppUser } from "@/lib/auth";
 import { isValidEvmAddress } from "@/lib/evmAddress";
@@ -95,6 +96,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Invalid artwork payload", issues: error.issues },
+        { status: 400 },
+      );
+    }
+
     console.error("Error creating artwork:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to create artwork" },
