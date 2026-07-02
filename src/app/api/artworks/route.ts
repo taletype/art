@@ -129,6 +129,9 @@ export async function PATCH(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "Artwork ID is required" }, { status: 400 });
     }
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "No mutable artwork fields provided" }, { status: 400 });
+    }
 
     const requestedSellerWallet =
       typeof body.seller_wallet === "string" && isValidEvmAddress(body.seller_wallet)
