@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createThirdwebClient } from "thirdweb";
 
-vi.mock("thirdweb", () => ({
+const thirdwebMocks = vi.hoisted(() => ({
   createThirdwebClient: vi.fn((options: { clientId: string }) => ({
     clientId: options.clientId,
   })),
+}));
+
+vi.mock("thirdweb", () => ({
+  createThirdwebClient: thirdwebMocks.createThirdwebClient,
 }));
 
 async function loadThirdwebModule() {
@@ -24,7 +27,7 @@ describe("thirdweb client", () => {
 
     expect(isThirdwebClientConfigured()).toBe(false);
     expect(() => getThirdwebClient()).toThrow("NEXT_PUBLIC_THIRDWEB_CLIENT_ID is required");
-    expect(createThirdwebClient).not.toHaveBeenCalled();
+    expect(thirdwebMocks.createThirdwebClient).not.toHaveBeenCalled();
   });
 
   it("does not treat .env.example placeholders as configured", async () => {
@@ -33,7 +36,7 @@ describe("thirdweb client", () => {
 
     expect(isThirdwebClientConfigured()).toBe(false);
     expect(() => getThirdwebClient()).toThrow("NEXT_PUBLIC_THIRDWEB_CLIENT_ID is required");
-    expect(createThirdwebClient).not.toHaveBeenCalled();
+    expect(thirdwebMocks.createThirdwebClient).not.toHaveBeenCalled();
   });
 
   it("trims real client ids and caches the Thirdweb client", async () => {
@@ -46,7 +49,7 @@ describe("thirdweb client", () => {
 
     expect(client).toEqual({ clientId: "test-thirdweb-client" });
     expect(getThirdwebClient()).toBe(client);
-    expect(createThirdwebClient).toHaveBeenCalledTimes(1);
-    expect(createThirdwebClient).toHaveBeenCalledWith({ clientId: "test-thirdweb-client" });
+    expect(thirdwebMocks.createThirdwebClient).toHaveBeenCalledTimes(1);
+    expect(thirdwebMocks.createThirdwebClient).toHaveBeenCalledWith({ clientId: "test-thirdweb-client" });
   });
 });
