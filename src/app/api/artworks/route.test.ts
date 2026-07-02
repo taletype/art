@@ -37,13 +37,14 @@ describe("artworks API POST", () => {
     mockGetAuthenticatedAppUser.mockResolvedValue(null);
   });
 
-  it("returns validation errors without opening an admin client", async () => {
+  it("returns validation errors without opening auth or admin clients", async () => {
     const response = await POST(makePostRequest({ title: "A" }));
     const body = await response.json();
 
     expect(response.status).toBe(400);
     expect(body).toMatchObject({ error: "Invalid artwork payload" });
     expect(body.issues.length).toBeGreaterThan(0);
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
 });
