@@ -23,6 +23,15 @@ function removeProtectedArtworkUpdateFields(updates: Record<string, unknown>) {
   return updates;
 }
 
+function readArtworkListLimit(value: string | null) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 20;
+  }
+
+  return Math.min(Math.floor(parsed), 100);
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
@@ -49,7 +58,7 @@ export async function GET(request: NextRequest) {
   if (sellerWallet && isValidEvmAddress(sellerWallet)) {
     query = query.eq("seller_wallet", sellerWallet);
   }
-  const { data: artworks, error } = await query.limit(searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : 20);
+  const { data: artworks, error } = await query.limit(readArtworkListLimit(searchParams.get("limit")));
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
