@@ -10,12 +10,13 @@ Use Node.js 22 to match CI. If you use `nvm`, the committed `.nvmrc` selects the
 nvm use
 npm ci
 cp .env.example .env.local
-npm run typecheck
-npm test
+npm run check
 npm run dev
 ```
 
 Fill `.env.local` with project-specific values before testing wallet, marketplace, Supabase, webhook, or storage flows. Never commit real secrets, service-role keys, bearer tokens, private connection strings, or generated local state.
+
+`npm run check` is the same full typecheck, unit test, and production build sequence that CI runs.
 
 ## Verification before committing
 
