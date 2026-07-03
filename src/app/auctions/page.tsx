@@ -11,12 +11,14 @@ const getMarketplaceEntries = cache(() => listMarketplaceEntries(20));
 
 function AuctionsGrid({ auctions }: { auctions: Awaited<ReturnType<typeof listMarketplaceEntries>> }) {
   if (!auctions.length) {
+    const chainLabel = getMarketplaceChainLabel();
+
     return (
       <div className="rounded-[1.8rem] border border-dashed border-white/15 bg-white/[0.02] p-6 sm:p-8 text-center">
         <h3 className="text-xl sm:text-2xl">No marketplace listings yet</h3>
         <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/60">
           {isMarketplaceConfigured()
-            ? "Create your first Base Sepolia listing from Seller Hub to light up the live marketplace."
+            ? `Create your first ${chainLabel} listing from Seller Hub to light up the live marketplace.`
             : "Add your Thirdweb marketplace contract env vars to light up the live marketplace."}
         </p>
       </div>
