@@ -22,8 +22,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setPending(true);
     setMessage(null);
 
-    const supabase = getSupabaseBrowserClient();
     try {
+      const supabase = getSupabaseBrowserClient();
+
       if (mode === "signup") {
         const normalizedWallet = walletAddress.trim();
         if (normalizedWallet && !isValidEvmAddress(normalizedWallet)) {
