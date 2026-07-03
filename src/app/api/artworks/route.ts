@@ -67,12 +67,12 @@ export async function GET(request: NextRequest) {
   }
 
   const owner = searchParams.get("owner");
-  const sellerWallet = searchParams.get("sellerWallet");
+  const sellerWallet = normalizeEvmAddress(searchParams.get("sellerWallet"));
   let query = adminClient.from("artworks").select("*").order("created_at", { ascending: false });
   if (owner) {
     query = query.eq("owner_user_id", owner);
   }
-  if (sellerWallet && isValidEvmAddress(sellerWallet)) {
+  if (sellerWallet) {
     query = query.eq("seller_wallet", sellerWallet);
   }
   const { data: artworks, error } = await query.limit(readArtworkListLimit(searchParams.get("limit")));
