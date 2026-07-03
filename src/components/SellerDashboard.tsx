@@ -133,6 +133,9 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
   const categoryOptions: ArtCategory[] = ["visual", "audio", "video", "writing", "mixed_media"];
   const marketplaceAddress = getMarketplaceContractAddress();
   const collectionAddress = getNftCollectionAddress();
+  const marketplaceChain = getMarketplaceChain();
+  const marketplaceChainLabel = getMarketplaceChainLabel();
+  const marketplaceChainSlug = marketplaceChain.id === 8453 ? "base" : "base-sepolia";
   const draftReady = Boolean(title && description && imageUrl && actionWalletAddress);
   const mintedCount = sellerArtworks.filter((artwork) => Boolean(artwork.thirdweb_token_id)).length;
   const listedCount = sellerArtworks.filter((artwork) => Boolean(artwork.thirdweb_listing_id)).length;
@@ -300,7 +303,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
     updateArtworkState(artwork.id, {
       pending: true,
       stage: "minting",
-      message: "Minting the artwork into your Base Sepolia collection...",
+      message: `Minting the artwork into your ${marketplaceChainLabel} collection...`,
     });
 
     try {
@@ -327,7 +330,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
           seller_wallet: connectedWalletAddress,
           artist_wallet: connectedWalletAddress,
           thirdweb_provider: "thirdweb",
-          thirdweb_chain: "base-sepolia",
+          thirdweb_chain: marketplaceChainSlug,
           thirdweb_contract_address: getNftCollectionAddress(),
           thirdweb_token_id: nextTokenId.toString(),
           thirdweb_asset_url: artwork.image_url,
@@ -344,7 +347,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
       updateArtworkState(artwork.id, {
         pending: false,
         stage: "minted",
-        message: "Artwork minted on Base Sepolia and linked to this draft.",
+        message: `Artwork minted on ${marketplaceChainLabel} and linked to this draft.`,
       });
       if (connectedWalletAddress && !walletAddress) {
         await loadWalletArtworks(connectedWalletAddress);
@@ -459,7 +462,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
           seller_wallet: connectedWalletAddress,
           artist_wallet: connectedWalletAddress,
           thirdweb_provider: "thirdweb",
-          thirdweb_chain: "base-sepolia",
+          thirdweb_chain: marketplaceChainSlug,
           thirdweb_contract_address: getNftCollectionAddress(),
           thirdweb_token_id: tokenId,
           thirdweb_listing_id: routeId,
@@ -478,7 +481,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
       updateArtworkState(artwork.id, {
         pending: false,
         stage: "listed",
-        message: `${listingType === "auction" ? "Auction" : "Direct listing"} confirmed on ${getMarketplaceChainLabel()}.`,
+        message: `${listingType === "auction" ? "Auction" : "Direct listing"} confirmed on ${marketplaceChainLabel}.`,
       });
       if (connectedWalletAddress && !walletAddress) {
         await loadWalletArtworks(connectedWalletAddress);
@@ -509,7 +512,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
               <div className="space-y-3 sm:space-y-4">
                 <p className="eyebrow text-[#f0d46e]">Seller Hub</p>
                 <h1 className="max-w-4xl text-3xl leading-tight sm:text-4xl lg:text-5xl xl:text-6xl">
-                  Mint, list, and manage auctions on {getMarketplaceChainLabel()}.
+                  Mint, list, and manage auctions on {marketplaceChainLabel}.
                 </h1>
                 <p className="max-w-2xl text-sm leading-6 sm:text-base sm:leading-8 text-white/70">
                   A focused workspace for turning a verified artwork record into a live Thirdweb auction or direct listing.
@@ -544,7 +547,7 @@ export default function SellerDashboard({ email, walletAddress, artworks }: Sell
                 <ConnectButton
                   client={thirdwebClient}
                   wallets={getThirdwebWalletOptions()}
-                  chain={getMarketplaceChain()}
+                  chain={marketplaceChain}
                   connectButton={{
                     label: connectedWalletAddress ? "Wallet connected" : "Connect seller wallet",
                     className: "!w-full !rounded-full !bg-white !px-4 sm:!px-5 !py-3 !font-semibold !text-black text-sm sm:text-base",
