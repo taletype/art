@@ -49,6 +49,15 @@ function readRequestedSellerWallet(body: Record<string, unknown>) {
   return normalizeEvmAddress(body.seller_wallet) ?? normalizeEvmAddress(body.sellerWallet);
 }
 
+function readArtworkId(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+  return trimmedValue || null;
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
@@ -149,8 +158,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { id, ...rawUpdates } = body as Record<string, unknown>;
+    const artworkId = readArtworkId(id);
     const updates = removeProtectedArtworkUpdateFields(rawUpdates);
-    if (!id) {
+    if (!artworkId) {
       return NextResponse.json({ error: "Artwork ID is required" }, { status: 400 });
     }
     if (Object.keys(updates).length === 0) {
@@ -171,7 +181,7 @@ export async function PATCH(request: NextRequest) {
     let query = adminClient
       .from("artworks")
       .update(updates)
-      .eq("id", id);
+      .eq("id", artworkId);
 
     if (user && actorWallet) {
       query = query.or(`owner_user_id.eq.${user.id},seller_wallet.eq.${actorWallet}`);
