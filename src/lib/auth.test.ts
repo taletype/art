@@ -1,12 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getAuthenticatedAppUser, resolveMatchingSellerWallet } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+vi.mock("@/lib/supabase/config", () => ({
+  isSupabaseConfigured: vi.fn(() => true),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: vi.fn(),
 }));
 
 const mixedCaseWallet = "0x1234567890ABCDEF1234567890aBcDeF12345678";
+const mockIsSupabaseConfigured = vi.mocked(isSupabaseConfigured);
 const mockCreateSupabaseServerClient = vi.mocked(createSupabaseServerClient);
 
 function mockSupabaseUser(result: {
@@ -29,6 +35,14 @@ function mockSupabaseUser(result: {
 describe("getAuthenticatedAppUser", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    mockIsSupabaseConfigured.mockReturnValue(true);
+  });
+
+  it("returns null without creating a Supabase client when Supabase is not configured", async () => {
+    mockIsSupabaseConfigured.mockReturnValue(false);
+
+    await expect(getAuthenticatedAppUser()).resolves.toBeNull();
+    expect(mockCreateSupabaseServerClient).not.toHaveBeenCalled();
   });
 
   it("trims a valid wallet address from user metadata", async () => {
