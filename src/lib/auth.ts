@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isValidEvmAddress } from "@/lib/evmAddress";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type AuthenticatedAppUser = {
@@ -9,6 +10,10 @@ export type AuthenticatedAppUser = {
 };
 
 export async function getAuthenticatedAppUser(): Promise<AuthenticatedAppUser | null> {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.getUser();
 
