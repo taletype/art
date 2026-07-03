@@ -36,6 +36,19 @@ function invalidJsonResponse() {
   return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
 }
 
+function normalizeEvmAddress(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+  return isValidEvmAddress(trimmedValue) ? trimmedValue : null;
+}
+
+function readRequestedSellerWallet(body: Record<string, unknown>) {
+  return normalizeEvmAddress(body.seller_wallet) ?? normalizeEvmAddress(body.sellerWallet);
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
@@ -141,12 +154,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "No mutable artwork fields provided" }, { status: 400 });
     }
 
-    const requestedSellerWallet =
-      typeof body.seller_wallet === "string" && isValidEvmAddress(body.seller_wallet)
-        ? body.seller_wallet
-        : typeof body.sellerWallet === "string" && isValidEvmAddress(body.sellerWallet)
-          ? body.sellerWallet
-          : null;
+    const requestedSellerWallet = readRequestedSellerWallet(body);
     const actorWallet = user?.walletAddress ?? requestedSellerWallet;
     if (!user && !actorWallet) {
       return NextResponse.json(
