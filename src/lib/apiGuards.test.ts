@@ -25,8 +25,10 @@ describe("apiGuards request IP resolution", () => {
   });
 
   it("falls back through proxy headers before unknown", () => {
-    expect(getRequestIp(makeRequest({ "cf-connecting-ip": "203.0.113.30" }))).toBe("203.0.113.30");
-    expect(getRequestIp(makeRequest({ "x-real-ip": "203.0.113.40" }))).toBe("203.0.113.40");
+    expect(getRequestIp(makeRequest({ "cf-connecting-ip": " 203.0.113.30 " }))).toBe("203.0.113.30");
+    expect(
+      getRequestIp(makeRequest({ "cf-connecting-ip": "   ", "x-real-ip": " 203.0.113.40 " })),
+    ).toBe("203.0.113.40");
     expect(getRequestIp(makeRequest())).toBe("unknown");
   });
 });
