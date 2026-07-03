@@ -131,16 +131,18 @@ Notes:
 
 ## Readiness V2 artifact bundle
 
-This repo includes a local readiness runner at [scripts/readiness-v2-run.mjs](scripts/readiness-v2-run.mjs).
+This repo includes a local readiness bundle validator at [scripts/readiness-v2-run.mjs](scripts/readiness-v2-run.mjs).
 
-It produces an artifact bundle in `artifacts/readiness-v2` unless `READINESS_ARTIFACT_DIR` is overridden.
+It checks an existing artifact bundle in `artifacts/readiness-v2` unless `READINESS_ARTIFACT_DIR` is overridden. The command expects readiness evidence files to already exist, then writes completion markers for the validated run.
 
-The bundle includes:
+The expected input bundle includes:
 - `funded-binary-proof-summary.json`
 - `funded-multi-proof-summary.json`
 - `deploy-candidate-smoke-evidence.json`
 - `deploy-candidate-smoke-evidence.md`
 - `readiness-verdict.json`
 - `readiness-verdict.md`
+
+On success, the runner writes:
 - `readiness-run-summary.json`
 - `bundle-complete.json`
