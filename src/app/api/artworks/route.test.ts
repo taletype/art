@@ -87,6 +87,20 @@ describe("artworks API GET", () => {
     expect(eq).toHaveBeenCalledWith("owner_user_id", "user-1");
     expect(limit).toHaveBeenCalledWith(100);
   });
+
+  it("normalizes valid seller wallet filters", async () => {
+    const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
+    const response = await GET(
+      new NextRequest(`https://example.test/api/artworks?sellerWallet=%20${sellerWallet}%20&limit=10`),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual([{ id: "artwork-id" }]);
+    expect(eq).toHaveBeenCalledTimes(1);
+    expect(eq).toHaveBeenCalledWith("seller_wallet", sellerWallet);
+    expect(limit).toHaveBeenCalledWith(10);
+  });
 });
 
 describe("artworks API POST", () => {
