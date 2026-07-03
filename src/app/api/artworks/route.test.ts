@@ -166,15 +166,14 @@ describe("artworks API PATCH", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
-  it("uses wallet identity fields for authorization without allowing clients to mutate them", async () => {
+  it("uses normalized wallet identity fields for authorization without allowing clients to mutate them", async () => {
     const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
 
     const response = await PATCH(
       makePatchRequest({
         id: "artwork-id",
         owner_user_id: "other-user",
-        sellerWallet,
-        seller_wallet: sellerWallet,
+        sellerWallet: ` ${sellerWallet} `,
         artist_wallet: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
         status: "live",
         sync_status: "listing_confirmed",
