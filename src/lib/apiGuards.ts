@@ -26,6 +26,10 @@ function tokensMatch(received: string, configured: string) {
   return timingSafeEqual(hashToken(received), hashToken(configured));
 }
 
+function readHeaderAddress(request: Request, name: string) {
+  return request.headers.get(name)?.trim() || null;
+}
+
 function pruneExpiredRateLimitBuckets(now: number) {
   for (const [key, bucket] of buckets) {
     if (bucket.resetAt <= now) {
@@ -47,7 +51,7 @@ export function getRequestIp(request: Request) {
     }
   }
 
-  return request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip") ?? "unknown";
+  return readHeaderAddress(request, "cf-connecting-ip") ?? readHeaderAddress(request, "x-real-ip") ?? "unknown";
 }
 
 export function optionalBearerAuth(request: Request, envVarName: string) {
