@@ -18,7 +18,7 @@ export async function getAuthenticatedAppUser(): Promise<AuthenticatedAppUser | 
 
   const walletAddress =
     typeof data.user.user_metadata?.wallet_address === "string"
-      ? data.user.user_metadata.wallet_address
+      ? data.user.user_metadata.wallet_address.trim()
       : null;
 
   return {
