@@ -144,7 +144,11 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, ...rawUpdates } = body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Invalid artwork payload" }, { status: 400 });
+    }
+
+    const { id, ...rawUpdates } = body as Record<string, unknown>;
     const updates = removeProtectedArtworkUpdateFields(rawUpdates);
     if (!id) {
       return NextResponse.json({ error: "Artwork ID is required" }, { status: 400 });
