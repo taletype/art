@@ -144,7 +144,6 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const user = await getAuthenticatedAppUser();
     const { id, ...rawUpdates } = body;
     const updates = removeProtectedArtworkUpdateFields(rawUpdates);
     if (!id) {
@@ -155,6 +154,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const requestedSellerWallet = readRequestedSellerWallet(body);
+    const user = await getAuthenticatedAppUser();
     const actorWallet = user?.walletAddress ?? requestedSellerWallet;
     if (!user && !actorWallet) {
       return NextResponse.json(
