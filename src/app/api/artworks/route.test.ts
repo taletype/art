@@ -165,6 +165,17 @@ describe("artworks API PATCH", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("rejects non-object JSON payloads without opening auth or admin clients", async () => {
+    const response = await PATCH(makeRawArtworkRequest("PATCH", "null"));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Invalid artwork payload" });
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("rejects missing artwork ids without opening auth or admin clients", async () => {
     const response = await PATCH(makePatchRequest({ status: "live" }));
     const body = await response.json();
