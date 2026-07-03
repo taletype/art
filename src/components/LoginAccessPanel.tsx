@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { getThirdwebClient } from "@/lib/thirdweb";
+import { getSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/browser";
+import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { getMarketplaceChain, getMarketplaceChainLabel } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
@@ -15,8 +15,15 @@ type SessionState = {
 export default function LoginAccessPanel() {
   const activeAccount = useActiveAccount();
   const [session, setSession] = useState<SessionState | null>(null);
+  const supabaseConfigured = isSupabaseBrowserConfigured();
+  const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
 
   useEffect(() => {
+    if (!supabaseConfigured) {
+      setSession(null);
+      return;
+    }
+
     const supabase = getSupabaseBrowserClient();
 
     async function hydrate() {
@@ -37,7 +44,7 @@ export default function LoginAccessPanel() {
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [supabaseConfigured]);
 
   return (
     <section className="space-y-5 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl shadow-2xl shadow-black/30">
@@ -50,15 +57,21 @@ export default function LoginAccessPanel() {
       </div>
 
       <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
-        <ConnectButton
-          client={getThirdwebClient()}
-          wallets={getThirdwebWalletOptions()}
-          chain={getMarketplaceChain()}
-          connectButton={{
-            label: activeAccount ? "Wallet connected" : "Connect with Thirdweb",
-            className: "!w-full !rounded-full !bg-white !px-5 !py-3 !font-semibold !text-black",
-          }}
-        />
+        {thirdwebClient ? (
+          <ConnectButton
+            client={thirdwebClient}
+            wallets={getThirdwebWalletOptions()}
+            chain={getMarketplaceChain()}
+            connectButton={{
+              label: activeAccount ? "Wallet connected" : "Connect with Thirdweb",
+              className: "!w-full !rounded-full !bg-white !px-5 !py-3 !font-semibold !text-black",
+            }}
+          />
+        ) : (
+          <div className="rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 px-4 py-3 text-sm font-semibold text-[#f0d46e]">
+            Wallet setup needed
+          </div>
+        )}
       </div>
 
       {activeAccount ? (
