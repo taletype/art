@@ -187,6 +187,17 @@ describe("artworks API PATCH", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("rejects blank artwork ids without opening auth or admin clients", async () => {
+    const response = await PATCH(makePatchRequest({ id: "   ", status: "live" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Artwork ID is required" });
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("rejects requests that only contain protected identity fields", async () => {
     const response = await PATCH(
       makePatchRequest({
@@ -208,7 +219,7 @@ describe("artworks API PATCH", () => {
 
     const response = await PATCH(
       makePatchRequest({
-        id: "artwork-id",
+        id: " artwork-id ",
         owner_user_id: "other-user",
         sellerWallet: ` ${sellerWallet} `,
         artist_wallet: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
