@@ -233,8 +233,8 @@ async function runMigration() {
   }
 
   if (errorCount > 0) {
-    console.warn(`Migration run completed with ${errorCount} statement error(s). Review the output above.`);
-    return;
+    console.error(`Migration run failed with ${errorCount} statement error(s). Review the output above.`);
+    process.exit(1);
   }
 
   console.log('Migrations executed successfully');
