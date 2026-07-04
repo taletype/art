@@ -3,6 +3,11 @@ import { getFeaturedArtwork, getSaleForLot, platformStats } from "@/lib/site-dat
 
 export default async function HeroSection() {
   const featuredArtwork = await getFeaturedArtwork();
+
+  if (!featuredArtwork) {
+    return null;
+  }
+
   const featuredSale = await getSaleForLot(featuredArtwork.id);
 
   return (
