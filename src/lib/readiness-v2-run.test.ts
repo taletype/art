@@ -87,4 +87,28 @@ describe("readiness-v2 runner", () => {
     expect(result.stderr).toContain("fundedBinaryProofSummary");
     expect(result.stderr).toContain(join(artifactDir, "funded-binary-proof-summary.json"));
   });
+
+  it("fails with a clear parse message when a JSON artifact is invalid", () => {
+    const artifactDir = makeArtifactDir();
+    writeValidBundle(artifactDir);
+    writeFileSync(join(artifactDir, "readiness-verdict.json"), "{not valid json");
+
+    const result = runReadiness(artifactDir);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("readiness:v2:run failed. Could not parse readinessVerdictJson:");
+  });
+
+  it("fails with a clear empty-artifact message when a markdown report is blank", () => {
+    const artifactDir = makeArtifactDir();
+    writeValidBundle(artifactDir);
+    writeFileSync(join(artifactDir, "readiness-verdict.md"), " \n");
+
+    const result = runReadiness(artifactDir);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("readiness:v2:run failed. Empty required markdown artifacts:");
+    expect(result.stderr).toContain("readinessVerdictMd");
+    expect(result.stderr).toContain(join(artifactDir, "readiness-verdict.md"));
+  });
 });
