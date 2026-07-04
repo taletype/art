@@ -14,6 +14,13 @@ const expected = {
   readinessVerdictMd: resolve(artifactDir, 'readiness-verdict.md'),
 };
 
+const requiredJsonReports = {
+  fundedBinaryProofSummary: expected.fundedBinaryProofSummary,
+  fundedMultiProofSummary: expected.fundedMultiProofSummary,
+  deployCandidateSmokeEvidenceJson: expected.deployCandidateSmokeEvidenceJson,
+  readinessVerdictJson: expected.readinessVerdictJson,
+};
+
 const missing = Object.entries(expected).filter(([, p]) => !existsSync(p));
 if (missing.length > 0) {
   console.error('❌ readiness:v2:run failed. Missing required artifacts:');
@@ -21,19 +28,27 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+function readJsonReport(name, path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    console.error(`❌ readiness:v2:run failed. Could not parse ${name}: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  }
+}
+
+const parsedReports = Object.fromEntries(
+  Object.entries(requiredJsonReports).map(([name, path]) => [name, readJsonReport(name, path)]),
+);
+
 let verdict = 'INCOMPLETE';
 let phases = [];
 let smokeMode = process.env.READINESS_SMOKE_MODE ?? 'validate';
 
-try {
-  const verdictJson = JSON.parse(readFileSync(expected.readinessVerdictJson, 'utf8'));
-  verdict = verdictJson.verdict ?? verdict;
-  phases = Array.isArray(verdictJson.phasesRan) ? verdictJson.phasesRan : [];
-  smokeMode = verdictJson.smokeMode ?? smokeMode;
-} catch (error) {
-  console.error(`❌ readiness:v2:run failed. Could not parse readiness verdict JSON: ${error instanceof Error ? error.message : String(error)}`);
-  process.exit(1);
-}
+const verdictJson = parsedReports.readinessVerdictJson;
+verdict = verdictJson.verdict ?? verdict;
+phases = Array.isArray(verdictJson.phasesRan) ? verdictJson.phasesRan : [];
+smokeMode = verdictJson.smokeMode ?? smokeMode;
 
 const summary = {
   verdict,
