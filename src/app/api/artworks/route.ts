@@ -36,6 +36,15 @@ function invalidJsonResponse() {
   return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
 }
 
+function isMissingArtworkError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "PGRST116"
+  );
+}
+
 function normalizeEvmAddress(value: unknown) {
   if (typeof value !== "string") {
     return null;
@@ -194,6 +203,10 @@ export async function PATCH(request: NextRequest) {
     const { data, error } = await query.select("*").single();
 
     if (error) {
+      if (isMissingArtworkError(error)) {
+        return NextResponse.json({ error: "Artwork not found" }, { status: 404 });
+      }
+
       throw error;
     }
 
