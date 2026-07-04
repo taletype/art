@@ -28,6 +28,12 @@ export type ArtworkRecord = {
   sale_id?: string;
 };
 
+type ArtworkDataRecord = ArtworkRecord & {
+  artist_wallet?: string;
+  seller_wallet?: string;
+  sale_id?: string;
+};
+
 export type AuctionLotStatus = "upcoming" | "live" | "sold" | "passed";
 
 export type AuctionLotRecord = ArtworkRecord & {
@@ -105,14 +111,18 @@ function titleFromId(id: string) {
     .join(" ");
 }
 
+function isArtworkByWallet(artwork: ArtworkDataRecord, wallet: string) {
+  return artwork.artist_wallet === wallet || artwork.seller_wallet === wallet || artwork.artistWallet === wallet;
+}
+
 export async function getFeaturedArtworks() {
   const data = await listArtworks(6);
-  return data;
+  return data as AuctionLotRecord[];
 }
 
 export async function getFeaturedArtwork() {
   const data = await listArtworks(1);
-  return data[0] ?? null;
+  return (data[0] as AuctionLotRecord | undefined) ?? null;
 }
 
 export async function getArtworkById(id: string) {
@@ -122,7 +132,7 @@ export async function getArtworkById(id: string) {
 
 export async function getCreators() {
   const data = await listCreators();
-  return data;
+  return data as CreatorRecord[];
 }
 
 export async function getCreatorByWallet(wallet: string) {
@@ -131,10 +141,8 @@ export async function getCreatorByWallet(wallet: string) {
     return data as CreatorRecord;
   }
 
-  const artworks = await listArtworks();
-  const creatorArtworks = artworks.filter(
-    (artwork) => artwork.artist_wallet === wallet || artwork.seller_wallet === wallet,
-  );
+  const artworks = (await listArtworks()) as ArtworkDataRecord[];
+  const creatorArtworks = artworks.filter((artwork) => isArtworkByWallet(artwork, wallet));
 
   if (!creatorArtworks.length) {
     return null;
@@ -170,13 +178,13 @@ export async function getCreatorByWallet(wallet: string) {
 }
 
 export async function getCreatorArtworks(wallet: string) {
-  const artworks = await listArtworks();
-  return artworks.filter(a => a.artist_wallet === wallet || a.seller_wallet === wallet);
+  const artworks = (await listArtworks()) as ArtworkDataRecord[];
+  return artworks.filter((artwork) => isArtworkByWallet(artwork, wallet));
 }
 
 export async function getAuctionSales() {
   const data = await listSales();
-  return data;
+  return data as AuctionSaleRecord[];
 }
 
 export async function getAuctionSaleById(id: string) {
@@ -185,8 +193,8 @@ export async function getAuctionSaleById(id: string) {
 }
 
 export async function getAuctionLotsBySaleId(saleId: string) {
-  const artworks = await listArtworks();
-  return artworks.filter(lot => lot.sale_id === saleId) as AuctionLotRecord[];
+  const artworks = (await listArtworks()) as ArtworkDataRecord[];
+  return artworks.filter((lot) => lot.sale_id === saleId) as AuctionLotRecord[];
 }
 
 export async function getAuctionLotById(lotId: string) {
