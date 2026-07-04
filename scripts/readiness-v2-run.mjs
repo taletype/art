@@ -21,10 +21,24 @@ const requiredJsonReports = {
   readinessVerdictJson: expected.readinessVerdictJson,
 };
 
+const requiredMarkdownReports = {
+  deployCandidateSmokeEvidenceMd: expected.deployCandidateSmokeEvidenceMd,
+  readinessVerdictMd: expected.readinessVerdictMd,
+};
+
 const missing = Object.entries(expected).filter(([, p]) => !existsSync(p));
 if (missing.length > 0) {
   console.error('❌ readiness:v2:run failed. Missing required artifacts:');
   for (const [name, p] of missing) console.error(`- ${name}: ${p}`);
+  process.exit(1);
+}
+
+const emptyMarkdownReports = Object.entries(requiredMarkdownReports).filter(
+  ([, p]) => readFileSync(p, 'utf8').trim().length === 0,
+);
+if (emptyMarkdownReports.length > 0) {
+  console.error('❌ readiness:v2:run failed. Empty required markdown artifacts:');
+  for (const [name, p] of emptyMarkdownReports) console.error(`- ${name}: ${p}`);
   process.exit(1);
 }
 
