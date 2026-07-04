@@ -43,6 +43,26 @@ describe("listMarketplaceEntries", () => {
     expect(mockGetAllValidListings).not.toHaveBeenCalled();
   });
 
+  it("returns no entries without querying Thirdweb when the limit is not positive", async () => {
+    await expect(listMarketplaceEntries(0)).resolves.toEqual([]);
+    await expect(listMarketplaceEntries(-5)).resolves.toEqual([]);
+
+    expect(mockGetAllAuctions).not.toHaveBeenCalled();
+    expect(mockGetAllValidListings).not.toHaveBeenCalled();
+  });
+
+  it("normalizes fractional and oversized fetch limits before querying Thirdweb", async () => {
+    await expect(listMarketplaceEntries(2.9)).resolves.toEqual([]);
+    expect(mockGetAllAuctions).toHaveBeenCalledWith(expect.objectContaining({ count: 2n }));
+    expect(mockGetAllValidListings).toHaveBeenCalledWith(expect.objectContaining({ count: 2n }));
+
+    vi.clearAllMocks();
+
+    await expect(listMarketplaceEntries(250)).resolves.toEqual([]);
+    expect(mockGetAllAuctions).toHaveBeenCalledWith(expect.objectContaining({ count: 100n }));
+    expect(mockGetAllValidListings).toHaveBeenCalledWith(expect.objectContaining({ count: 100n }));
+  });
+
   it("maps auction and direct listings into marketplace entries", async () => {
     mockGetAllAuctions.mockResolvedValue([
       {
