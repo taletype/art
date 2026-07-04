@@ -1,11 +1,34 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/config";
 
-let supabaseClient: ReturnType<typeof createClient> | null = null;
+type SupabaseRow = Record<string, any>;
+
+type SupabaseTable = {
+  Row: SupabaseRow;
+  Insert: SupabaseRow;
+  Update: SupabaseRow;
+  Relationships: [];
+};
+
+type SupabaseDatabase = {
+  public: {
+    Tables: {
+      artworks: SupabaseTable;
+      auction_sales: SupabaseTable;
+      creators: SupabaseTable;
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, string>;
+    CompositeTypes: Record<string, never>;
+  };
+};
+
+let supabaseClient: SupabaseClient<SupabaseDatabase> | null = null;
 
 function getSupabaseClient() {
   if (!supabaseClient) {
-    supabaseClient = createClient(getSupabaseUrl(), getSupabasePublishableKey());
+    supabaseClient = createClient<SupabaseDatabase>(getSupabaseUrl(), getSupabasePublishableKey());
   }
 
   return supabaseClient;
