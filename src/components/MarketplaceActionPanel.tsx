@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useActiveAccount, useSendAndConfirmTransaction, ConnectButton } from "thirdweb/react";
 import { bidInAuction, buyFromListing, buyoutAuction } from "thirdweb/extensions/marketplace";
 import { getThirdwebClient } from "@/lib/thirdweb";
-import { getMarketplaceChain, getMarketplaceContract } from "@/lib/thirdweb-config";
+import { getMarketplaceChain, getMarketplaceContract, parseListingRouteId } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 
 type MarketplaceActionPanelProps = {
@@ -30,14 +30,25 @@ export default function MarketplaceActionPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<"bid" | "buyout" | "buy" | null>(null);
 
-  const numericId = useMemo(() => {
-    const parts = listingId.split("-", 2);
-    return parts[1] ? BigInt(parts[1]) : 0n;
-  }, [listingId]);
+  const parsedListing = useMemo(() => parseListingRouteId(listingId), [listingId]);
+  const numericId = parsedListing?.id ?? 0n;
+
+  function hasValidListingRoute() {
+    if (parsedListing?.kind === type) {
+      return true;
+    }
+
+    setMessage("This marketplace listing link is invalid. Refresh the page and try again.");
+    return false;
+  }
 
   async function handleBid() {
     if (!activeAccount?.address) {
       setMessage("Connect your wallet before placing a bid.");
+      return;
+    }
+
+    if (!hasValidListingRoute()) {
       return;
     }
 
@@ -67,6 +78,10 @@ export default function MarketplaceActionPanel({
       return;
     }
 
+    if (!hasValidListingRoute()) {
+      return;
+    }
+
     setMessage(null);
     setPendingAction("buyout");
 
@@ -89,6 +104,10 @@ export default function MarketplaceActionPanel({
   async function handleBuyListing() {
     if (!activeAccount?.address) {
       setMessage("Connect your wallet before buying.");
+      return;
+    }
+
+    if (!hasValidListingRoute()) {
       return;
     }
 
