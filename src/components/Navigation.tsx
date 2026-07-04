@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useActiveAccount, ConnectButton } from "thirdweb/react";
 import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
@@ -16,8 +17,10 @@ const navItems = [
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const activeAccount = useActiveAccount();
   const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
+  const isCurrentHref = (href: string) => (href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`));
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl">
@@ -30,11 +33,22 @@ export default function Navigation() {
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="text-sm font-medium text-white/70 hover:text-[#f0d46e] transition-colors duration-200 relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-[#d4af37] after:to-[#e8c547] hover:after:w-full after:transition-all after:duration-300">
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isCurrent = isCurrentHref(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isCurrent ? "page" : undefined}
+                className={`text-sm font-medium transition-colors duration-200 relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:bg-gradient-to-r after:from-[#d4af37] after:to-[#e8c547] hover:text-[#f0d46e] hover:after:w-full after:transition-all after:duration-300 ${
+                  isCurrent ? "text-[#f0d46e] after:w-full" : "text-white/70 after:w-0"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -50,7 +64,7 @@ export default function Navigation() {
               Wallet setup needed
             </span>
           )}
-          <Link href="/seller" className="button-secondary px-5 py-2.5 text-sm">
+          <Link href="/seller" aria-current={isCurrentHref("/seller") ? "page" : undefined} className="button-secondary px-5 py-2.5 text-sm">
             Seller Hub
           </Link>
         </div>
@@ -69,16 +83,23 @@ export default function Navigation() {
       {open ? (
         <div className="border-t border-[#d4af37]/20 bg-[#050507]/95 backdrop-blur-xl md:hidden animate-fade-in">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-6 sm:px-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="rounded-2xl px-5 py-4 text-base font-medium text-white/70 transition-all duration-200 hover:bg-[#d4af37]/10 hover:text-[#f0d46e] active:scale-[0.98]"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isCurrent = isCurrentHref(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isCurrent ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                  className={`rounded-2xl px-5 py-4 text-base font-medium transition-all duration-200 active:scale-[0.98] ${
+                    isCurrent ? "bg-[#d4af37]/10 text-[#f0d46e]" : "text-white/70 hover:bg-[#d4af37]/10 hover:text-[#f0d46e]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
             <div className="mt-4 pt-4 border-t border-[#d4af37]/20">
               {thirdwebClient ? (
                 <ConnectButton
@@ -95,6 +116,7 @@ export default function Navigation() {
             </div>
             <Link
               href="/seller"
+              aria-current={isCurrentHref("/seller") ? "page" : undefined}
               onClick={() => setOpen(false)}
               className="button-primary px-5 py-4 text-base mt-2 active:scale-[0.98]"
             >
