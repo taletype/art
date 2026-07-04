@@ -35,6 +35,22 @@ export type MarketplaceDetail = MarketplaceEntry & {
   currencyContractAddress: string;
 };
 
+const DEFAULT_MARKETPLACE_ENTRY_LIMIT = 24;
+const MAX_MARKETPLACE_ENTRY_LIMIT = 100;
+
+function normalizeMarketplaceEntryLimit(limit: number) {
+  if (!Number.isFinite(limit)) {
+    return DEFAULT_MARKETPLACE_ENTRY_LIMIT;
+  }
+
+  const normalizedLimit = Math.floor(limit);
+  if (normalizedLimit <= 0) {
+    return 0;
+  }
+
+  return Math.min(normalizedLimit, MAX_MARKETPLACE_ENTRY_LIMIT);
+}
+
 function fromWei(value: bigint | null | undefined) {
   if (value === null || value === undefined) {
     return null;
@@ -61,8 +77,9 @@ function readAssetDescription(asset: { metadata?: { description?: string | null 
   return asset?.metadata?.description || "";
 }
 
-export async function listMarketplaceEntries(limit = 24): Promise<MarketplaceEntry[]> {
-  if (!isMarketplaceConfigured()) {
+export async function listMarketplaceEntries(limit = DEFAULT_MARKETPLACE_ENTRY_LIMIT): Promise<MarketplaceEntry[]> {
+  const normalizedLimit = normalizeMarketplaceEntryLimit(limit);
+  if (normalizedLimit === 0 || !isMarketplaceConfigured()) {
     return [];
   }
 
@@ -72,8 +89,8 @@ export async function listMarketplaceEntries(limit = 24): Promise<MarketplaceEnt
 
   try {
     [auctions, listings] = await Promise.all([
-      getAllAuctions({ contract, start: 0, count: BigInt(limit) }),
-      getAllValidListings({ contract, start: 0, count: BigInt(limit) }),
+      getAllAuctions({ contract, start: 0, count: BigInt(normalizedLimit) }),
+      getAllValidListings({ contract, start: 0, count: BigInt(normalizedLimit) }),
     ]);
   } catch (error) {
     console.warn("Unable to load marketplace entries.", error);
@@ -122,7 +139,7 @@ export async function listMarketplaceEntries(limit = 24): Promise<MarketplaceEnt
 
   return [...auctionEntries, ...directEntries]
     .sort((left, right) => new Date(right.endsAt).getTime() - new Date(left.endsAt).getTime())
-    .slice(0, limit);
+    .slice(0, normalizedLimit);
 }
 
 export async function getMarketplaceDetail(routeId: string): Promise<MarketplaceDetail | null> {
