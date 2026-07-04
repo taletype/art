@@ -51,6 +51,15 @@ function readJsonReport(name, path) {
   }
 }
 
+function requireJsonObject(name, value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value;
+  }
+
+  console.error(`❌ readiness:v2:run failed. ${name} must be a JSON object.`);
+  process.exit(1);
+}
+
 const parsedReports = Object.fromEntries(
   Object.entries(requiredJsonReports).map(([name, path]) => [name, readJsonReport(name, path)]),
 );
@@ -59,7 +68,7 @@ let verdict = 'INCOMPLETE';
 let phases = [];
 let smokeMode = process.env.READINESS_SMOKE_MODE ?? 'validate';
 
-const verdictJson = parsedReports.readinessVerdictJson;
+const verdictJson = requireJsonObject('readinessVerdictJson', parsedReports.readinessVerdictJson);
 verdict = verdictJson.verdict ?? verdict;
 phases = Array.isArray(verdictJson.phasesRan) ? verdictJson.phasesRan : [];
 smokeMode = verdictJson.smokeMode ?? smokeMode;
