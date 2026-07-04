@@ -225,6 +225,26 @@ describe("artworks API PATCH", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("returns not found when no artwork matches the actor", async () => {
+    const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
+    single.mockResolvedValueOnce({ data: null, error: { code: "PGRST116", message: "No rows found" } });
+
+    const response = await PATCH(
+      makePatchRequest({
+        id: "artwork-id",
+        sellerWallet,
+        status: "live",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({ error: "Artwork not found" });
+    expect(update).toHaveBeenCalledWith({ status: "live" });
+    expect(eq).toHaveBeenNthCalledWith(1, "id", "artwork-id");
+    expect(eq).toHaveBeenNthCalledWith(2, "seller_wallet", sellerWallet);
+  });
+
   it("uses normalized wallet identity fields for authorization without allowing clients to mutate them", async () => {
     const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
 
