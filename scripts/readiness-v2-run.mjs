@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const artifactDir = resolve(process.cwd(), process.env.READINESS_ARTIFACT_DIR ?? 'artifacts/readiness-v2');
-mkdirSync(artifactDir, { recursive: true });
 
 const expected = {
   fundedBinaryProofSummary: resolve(artifactDir, 'funded-binary-proof-summary.json'),
