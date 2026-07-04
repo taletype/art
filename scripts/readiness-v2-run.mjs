@@ -61,14 +61,14 @@ function requireJsonObject(name, value) {
 }
 
 const parsedReports = Object.fromEntries(
-  Object.entries(requiredJsonReports).map(([name, path]) => [name, readJsonReport(name, path)]),
+  Object.entries(requiredJsonReports).map(([name, path]) => [name, requireJsonObject(name, readJsonReport(name, path))]),
 );
 
 let verdict = 'INCOMPLETE';
 let phases = [];
 let smokeMode = process.env.READINESS_SMOKE_MODE ?? 'validate';
 
-const verdictJson = requireJsonObject('readinessVerdictJson', parsedReports.readinessVerdictJson);
+const verdictJson = parsedReports.readinessVerdictJson;
 verdict = verdictJson.verdict ?? verdict;
 phases = Array.isArray(verdictJson.phasesRan) ? verdictJson.phasesRan : [];
 smokeMode = verdictJson.smokeMode ?? smokeMode;
