@@ -3,6 +3,13 @@ import { base, baseSepolia } from "thirdweb/chains";
 import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 
+type ListingRouteKind = "auction" | "direct";
+
+type ParsedListingRouteId = {
+  kind: ListingRouteKind;
+  id: bigint;
+};
+
 function readEnv(name: string) {
   return process.env[name]?.trim() || "";
 }
@@ -77,19 +84,20 @@ export function getNftCollectionContract() {
   });
 }
 
-export function getListingRouteId(type: "auction" | "direct", id: bigint | string) {
+export function getListingRouteId(type: ListingRouteKind, id: bigint | string) {
   return `${type}-${id.toString()}`;
 }
 
-export function parseListingRouteId(value: string) {
-  if (!/^(auction|direct)-\d+$/.test(value)) {
+export function parseListingRouteId(value: string): ParsedListingRouteId | null {
+  const match = /^(auction|direct)-(\d+)$/.exec(value);
+  if (!match) {
     return null;
   }
 
-  const [kind, rawId] = value.split("-");
+  const [, kind, rawId] = match;
 
   return {
-    kind,
+    kind: kind as ListingRouteKind,
     id: BigInt(rawId),
-  } as const;
+  };
 }
