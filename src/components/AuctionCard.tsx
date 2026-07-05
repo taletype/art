@@ -42,7 +42,7 @@ export default function AuctionCard({ auction }: { auction: MarketplaceEntry }) 
           <div className="rounded-2xl border border-[#d4af37]/20 bg-black/30 p-2.5 sm:p-3 backdrop-blur-sm">
             <dt className="text-white/50 text-[10px] sm:text-xs">{auction.type === "auction" ? "Buyout" : "Settlement"}</dt>
             <dd className="mt-1 font-semibold text-[#f0d46e] text-sm sm:text-base">
-              {auction.buyoutPriceEth ? `${auction.buyoutPriceEth.toFixed(4)} ETH` : "Wallet checkout"}
+              {auction.buyoutPriceEth !== null ? `${auction.buyoutPriceEth.toFixed(4)} ETH` : "Wallet checkout"}
             </dd>
           </div>
           <div className="rounded-2xl border border-[#d4af37]/20 bg-black/30 p-2.5 sm:p-3 backdrop-blur-sm">
