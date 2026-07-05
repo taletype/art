@@ -72,6 +72,25 @@ describe("verify-human API route guards", () => {
     });
   });
 
+  it("rejects forced mock-review status when mock review mode is disabled", async () => {
+    const response = await POST(
+      makeRawPostRequest(
+        JSON.stringify({
+          ...validPayload,
+          forceStatus: "VERIFIED_HUMAN",
+        }),
+      ),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({
+      ok: false,
+      message: "forceStatus is only available when mock review mode is enabled.",
+    });
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
+  });
+
   it("rate limits missing bearer token attempts when write auth is configured", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-04T00:00:00.000Z"));
