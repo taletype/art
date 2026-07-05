@@ -125,6 +125,7 @@ Notes:
 
 ## Non-production notes
 
+- Production readiness guardrails for Seller Hub write authorization are tracked in [docs/production-readiness.md](docs/production-readiness.md); treat them as blocking before exposing wallet-mode writes beyond local/testnet use.
 - Legacy purchase-state file recovery is not part of the active purchase flow; if restored, the local file fallback remains single-instance only and not multi-instance safe.
 - Admin/reviewer auth remains mock.
 - Operational hardening (queues/retries/observability/abuse controls) is still pending.
