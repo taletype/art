@@ -26,11 +26,28 @@ function makePostRequest(headers?: HeadersInit) {
   });
 }
 
+function makeRawPostRequest(body: string) {
+  return new Request("https://example.test/api/verify-human", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body,
+  });
+}
+
 describe("verify-human API route guards", () => {
   afterEach(() => {
     globalThis.__realArtWorksRateLimitBuckets?.clear();
     vi.unstubAllEnvs();
     vi.useRealTimers();
+  });
+
+  it("returns bad request for malformed JSON", async () => {
+    const response = await POST(makeRawPostRequest("{"));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ ok: false, message: "Invalid JSON payload" });
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
   });
 
   it("rate limits missing bearer token attempts when write auth is configured", async () => {
