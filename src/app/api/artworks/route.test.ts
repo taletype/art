@@ -129,6 +129,60 @@ describe("artworks API POST", () => {
     expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
+
+  it("creates a draft artwork for a valid wallet-backed request", async () => {
+    const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
+    const from = vi.fn();
+    const insert = vi.fn();
+    const select = vi.fn();
+    const single = vi.fn();
+    const createdArtwork = { id: "artwork-id", seller_wallet: sellerWallet };
+    const query = { insert, select, single };
+
+    from.mockReturnValue(query);
+    insert.mockReturnValue(query);
+    select.mockReturnValue(query);
+    single.mockResolvedValue({ data: createdArtwork, error: null });
+    mockCreateSupabaseAdminClient.mockReturnValue({ from } as unknown as ReturnType<typeof createSupabaseAdminClient>);
+
+    const response = await POST(
+      makePostRequest({
+        title: "Verified studio work",
+        description: "A handmade work with provenance notes ready for review.",
+        imageUrl: "https://example.test/artwork.png",
+        medium: "digital painting",
+        category: "visual",
+        provenanceText: "Process notes and source artifact hashes.",
+        priceEth: 0.05,
+        sellerWallet,
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body).toEqual(createdArtwork);
+    expect(mockGetAuthenticatedAppUser).toHaveBeenCalledTimes(1);
+    expect(from).toHaveBeenCalledWith("artworks");
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Verified studio work",
+        description: "A handmade work with provenance notes ready for review.",
+        image_url: "https://example.test/artwork.png",
+        medium: "digital painting",
+        category: "visual",
+        provenance_text: "Process notes and source artifact hashes.",
+        owner_user_id: null,
+        seller_wallet: sellerWallet,
+        artist_wallet: sellerWallet,
+        artist_name: sellerWallet,
+        price_sol: 0.05,
+        status: "draft",
+        seller_flow_status: "draft",
+      }),
+    );
+    expect(select).toHaveBeenCalledWith("*");
+    expect(single).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("artworks API PATCH", () => {
