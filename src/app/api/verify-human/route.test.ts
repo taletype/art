@@ -50,6 +50,28 @@ describe("verify-human API route guards", () => {
     expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
   });
 
+  it("uses the forced mock-review status for the returned badge state", async () => {
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_REVIEW", "true");
+
+    const response = await POST(
+      makeRawPostRequest(
+        JSON.stringify({
+          ...validPayload,
+          forceStatus: "VERIFIED_HUMAN",
+        }),
+      ),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      ok: true,
+      verificationStatus: "VERIFIED_HUMAN",
+      badgeState: "verified",
+      evidenceCheck: [],
+    });
+  });
+
   it("rate limits missing bearer token attempts when write auth is configured", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-04T00:00:00.000Z"));
