@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAuthenticatedAppUser } from "@/lib/auth";
 import { GET, PATCH, POST } from "./route";
@@ -38,6 +38,66 @@ function makeRawArtworkRequest(method: "PATCH" | "POST", body: string) {
     body,
   });
 }
+
+afterEach(() => {
+  globalThis.__realArtWorksRateLimitBuckets?.clear();
+  vi.unstubAllEnvs();
+  vi.useRealTimers();
+});
+
+describe("artworks API write guards", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("requires the configured write bearer token before parsing POST bodies", async () => {
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", "secret-token");
+
+    const response = await POST(makeRawArtworkRequest("POST", "{"));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      ok: false,
+      message: "Missing bearer token for protected route (API_WRITE_BEARER_TOKEN)",
+    });
+    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer realm="realartworks"');
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
+  it("rate limits missing bearer token attempts for PATCH writes", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-05T00:00:00.000Z"));
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", "secret-token");
+    vi.stubEnv("API_RATE_LIMIT_MAX", "2");
+    vi.stubEnv("API_RATE_LIMIT_WINDOW_MS", "1000");
+
+    const body = {
+      id: "artwork-id",
+      sellerWallet: "0x1234567890abcdef1234567890abcdef12345678",
+      status: "live",
+    };
+
+    const first = await PATCH(makePatchRequest(body));
+    const second = await PATCH(makePatchRequest(body));
+    const third = await PATCH(makePatchRequest(body));
+
+    expect(first.status).toBe(401);
+    expect(first.headers.get("X-RateLimit-Limit")).toBe("2");
+    expect(first.headers.get("X-RateLimit-Remaining")).toBe("1");
+
+    expect(second.status).toBe(401);
+    expect(second.headers.get("X-RateLimit-Remaining")).toBe("0");
+
+    expect(third.status).toBe(429);
+    expect(third.headers.get("Retry-After")).toBe("1");
+    expect(third.headers.get("X-RateLimit-Remaining")).toBe("0");
+    expect(mockGetAuthenticatedAppUser).not.toHaveBeenCalled();
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+});
 
 describe("artworks API GET", () => {
   const from = vi.fn();
