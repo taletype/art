@@ -4,12 +4,12 @@ config({ path: ".env.local" });
 import { createThirdwebClient } from "thirdweb";
 import { getContract } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
-import { mintTo, nextTokenIdToMint, setApprovalForAll } from "thirdweb/extensions/erc721";
-import { createAuction, createListing } from "thirdweb/extensions/marketplace";
+import { mintTo, nextTokenIdToMint } from "thirdweb/extensions/erc721";
+import { createAuction } from "thirdweb/extensions/marketplace";
 import { privateKeyToAccount } from "thirdweb/wallets";
 import { sendAndConfirmTransaction } from "thirdweb";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { prepareContractCall, readContract } from "thirdweb";
+import { prepareContractCall } from "thirdweb";
 
 const evmAddressPattern = /^0x[a-fA-F0-9]{40}$/;
 const thirdwebClientIdPlaceholderValues = new Set(["your_thirdweb_client_id"]);
