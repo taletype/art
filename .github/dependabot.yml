@@ -23,6 +23,10 @@ updates:
       - dependency-name: "@types/node"
         versions:
           - ">=23.0.0"
+      # TypeScript 6 needs a deliberate migration; the current major update PR fails npm ci.
+      - dependency-name: "typescript"
+        versions:
+          - ">=6.0.0"
   - package-ecosystem: github-actions
     directory: /
     schedule:
