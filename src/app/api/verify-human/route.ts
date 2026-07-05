@@ -52,6 +52,13 @@ export async function POST(request: Request) {
       rateLimit,
     );
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return applyRateLimitHeaders(
+        NextResponse.json({ ok: false, message: "Invalid JSON payload" }, { status: 400 }),
+        rateLimit,
+      );
+    }
+
     if (error instanceof ZodError) {
       return applyRateLimitHeaders(
         NextResponse.json(
