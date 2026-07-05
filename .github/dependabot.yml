@@ -14,6 +14,14 @@ updates:
         update-types:
           - minor
           - patch
+      production-minor-patch:
+        applies-to: version-updates
+        dependency-type: production
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
     ignore:
       # Tailwind 4 requires a deliberate CSS pipeline migration; keep v3 updated for now.
       - dependency-name: "tailwindcss"
