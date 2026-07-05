@@ -19,6 +19,10 @@ updates:
       - dependency-name: "tailwindcss"
         versions:
           - ">=4.0.0"
+      # Next 16 requires a deliberate framework migration; keep v15 updated for now.
+      - dependency-name: "next"
+        versions:
+          - ">=16.0.0"
       # Keep ambient Node types aligned with .nvmrc and package.json engines.
       - dependency-name: "@types/node"
         versions:
