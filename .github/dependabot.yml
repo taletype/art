@@ -39,6 +39,10 @@ updates:
       - dependency-name: "typescript"
         versions:
           - ">=6.0.0"
+      # Zod 4 tightens validation behavior and needs a deliberate schema migration.
+      - dependency-name: "zod"
+        versions:
+          - ">=4.0.0"
   - package-ecosystem: github-actions
     directory: /
     schedule:
