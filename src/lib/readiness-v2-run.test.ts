@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -10,6 +10,12 @@ function makeArtifactDir() {
   const artifactDir = mkdtempSync(join(tmpdir(), "readiness-v2-"));
   tempDirs.push(artifactDir);
   return artifactDir;
+}
+
+function makeMissingArtifactDir() {
+  const parentDir = mkdtempSync(join(tmpdir(), "readiness-v2-parent-"));
+  tempDirs.push(parentDir);
+  return join(parentDir, "missing-bundle");
 }
 
 function runReadiness(artifactDir: string) {
@@ -86,6 +92,16 @@ describe("readiness-v2 runner", () => {
     expect(result.stderr).toContain("readiness:v2:run failed. Missing required artifacts:");
     expect(result.stderr).toContain("fundedBinaryProofSummary");
     expect(result.stderr).toContain(join(artifactDir, "funded-binary-proof-summary.json"));
+  });
+
+  it("does not create the artifact directory when the bundle path is missing", () => {
+    const artifactDir = makeMissingArtifactDir();
+
+    const result = runReadiness(artifactDir);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("readiness:v2:run failed. Missing required artifacts:");
+    expect(existsSync(artifactDir)).toBe(false);
   });
 
   it("fails with a clear parse message when a JSON artifact is invalid", () => {
