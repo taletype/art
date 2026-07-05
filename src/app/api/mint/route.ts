@@ -6,11 +6,10 @@ import { createSellerArtwork } from "@/lib/seller";
 import { createSellerArtworkSchema } from "@/types/seller";
 
 export async function POST(request: NextRequest) {
-  const user = await getAuthenticatedAppUser();
-
   try {
     const body = await request.json();
     const payload = createSellerArtworkSchema.parse(body);
+    const user = await getAuthenticatedAppUser();
     const sellerWallet = user?.walletAddress ?? payload.sellerWallet ?? null;
     if (!sellerWallet || !isValidEvmAddress(sellerWallet)) {
       return NextResponse.json(
@@ -33,6 +32,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, artwork }, { status: 201 });
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ ok: false, message: "Invalid JSON payload" }, { status: 400 });
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json({ ok: false, message: "Invalid seller payload", issues: error.issues }, { status: 400 });
     }
