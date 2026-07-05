@@ -41,12 +41,13 @@ export async function POST(request: Request) {
     const verificationStatus = mockReviewEnabled
       ? parsed.forceStatus ?? provenance.verificationStatus
       : provenance.verificationStatus;
+    const reviewedProvenance = { ...provenance, verificationStatus };
 
     return applyRateLimitHeaders(
       NextResponse.json({
         ok: true,
         verificationStatus,
-        badgeState: getProvenanceBadgeState(provenance),
+        badgeState: getProvenanceBadgeState(reviewedProvenance),
         evidenceCheck,
       }),
       rateLimit,
