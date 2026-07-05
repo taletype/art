@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAuthenticatedAppUser } from "@/lib/auth";
 import { isValidEvmAddress } from "@/lib/evmAddress";
@@ -101,14 +102,27 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimit = enforceRouteRateLimit(request, "artworks-post");
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
+
+  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
+  if (authFailure) {
+    return applyRateLimitHeaders(authFailure, rateLimit);
+  }
+
   try {
     const body = createSellerArtworkSchema.parse(await request.json());
     const user = await getAuthenticatedAppUser();
     const sellerWallet = user?.walletAddress ?? body.sellerWallet ?? null;
     if (!sellerWallet || !isValidEvmAddress(sellerWallet)) {
-      return NextResponse.json(
-        { error: "Connect a Thirdweb wallet or sign in with a profile wallet before creating a draft." },
-        { status: 401 },
+      return applyRateLimitHeaders(
+        NextResponse.json(
+          { error: "Connect a Thirdweb wallet or sign in with a profile wallet before creating a draft." },
+          { status: 401 },
+        ),
+        rateLimit,
       );
     }
 
@@ -138,51 +152,73 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json(data, { status: 201 });
+    return applyRateLimitHeaders(NextResponse.json(data, { status: 201 }), rateLimit);
   } catch (error) {
     if (error instanceof SyntaxError) {
-      return invalidJsonResponse();
+      return applyRateLimitHeaders(invalidJsonResponse(), rateLimit);
     }
 
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid artwork payload", issues: error.issues },
-        { status: 400 },
+      return applyRateLimitHeaders(
+        NextResponse.json(
+          { error: "Invalid artwork payload", issues: error.issues },
+          { status: 400 },
+        ),
+        rateLimit,
       );
     }
 
     console.error("Error creating artwork:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create artwork" },
-      { status: 500 }
+    return applyRateLimitHeaders(
+      NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to create artwork" },
+        { status: 500 }
+      ),
+      rateLimit,
     );
   }
 }
 
 export async function PATCH(request: NextRequest) {
+  const rateLimit = enforceRouteRateLimit(request, "artworks-patch");
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
+
+  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
+  if (authFailure) {
+    return applyRateLimitHeaders(authFailure, rateLimit);
+  }
+
   try {
     const body = await request.json();
     if (!body || typeof body !== "object" || Array.isArray(body)) {
-      return NextResponse.json({ error: "Invalid artwork payload" }, { status: 400 });
+      return applyRateLimitHeaders(NextResponse.json({ error: "Invalid artwork payload" }, { status: 400 }), rateLimit);
     }
 
     const { id, ...rawUpdates } = body as Record<string, unknown>;
     const artworkId = readArtworkId(id);
     const updates = removeProtectedArtworkUpdateFields(rawUpdates);
     if (!artworkId) {
-      return NextResponse.json({ error: "Artwork ID is required" }, { status: 400 });
+      return applyRateLimitHeaders(NextResponse.json({ error: "Artwork ID is required" }, { status: 400 }), rateLimit);
     }
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No mutable artwork fields provided" }, { status: 400 });
+      return applyRateLimitHeaders(
+        NextResponse.json({ error: "No mutable artwork fields provided" }, { status: 400 }),
+        rateLimit,
+      );
     }
 
     const requestedSellerWallet = readRequestedSellerWallet(body);
     const user = await getAuthenticatedAppUser();
     const actorWallet = user?.walletAddress ?? requestedSellerWallet;
     if (!user && !actorWallet) {
-      return NextResponse.json(
-        { error: "Connect a Thirdweb wallet or sign in before updating artwork." },
-        { status: 401 },
+      return applyRateLimitHeaders(
+        NextResponse.json(
+          { error: "Connect a Thirdweb wallet or sign in before updating artwork." },
+          { status: 401 },
+        ),
+        rateLimit,
       );
     }
 
@@ -204,22 +240,25 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (isMissingArtworkError(error)) {
-        return NextResponse.json({ error: "Artwork not found" }, { status: 404 });
+        return applyRateLimitHeaders(NextResponse.json({ error: "Artwork not found" }, { status: 404 }), rateLimit);
       }
 
       throw error;
     }
 
-    return NextResponse.json(data);
+    return applyRateLimitHeaders(NextResponse.json(data), rateLimit);
   } catch (error) {
     if (error instanceof SyntaxError) {
-      return invalidJsonResponse();
+      return applyRateLimitHeaders(invalidJsonResponse(), rateLimit);
     }
 
     console.error("Error updating artwork:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update artwork" },
-      { status: 500 }
+    return applyRateLimitHeaders(
+      NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to update artwork" },
+        { status: 500 }
+      ),
+      rateLimit,
     );
   }
 }
