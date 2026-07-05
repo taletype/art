@@ -52,3 +52,11 @@ updates:
       ci-actions:
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Action major upgrades can change runner/runtime behavior; review them deliberately.
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
