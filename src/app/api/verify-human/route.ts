@@ -9,14 +9,14 @@ import {
 } from "@/lib/provenance";
 
 export async function POST(request: Request) {
-  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
-  if (authFailure) {
-    return authFailure;
-  }
-
   const rateLimit = enforceRouteRateLimit(request, "verify-human-post");
   if (!rateLimit.ok) {
     return rateLimit.response;
+  }
+
+  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
+  if (authFailure) {
+    return applyRateLimitHeaders(authFailure, rateLimit);
   }
 
   try {
