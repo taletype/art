@@ -73,7 +73,7 @@ describe("mint API POST", () => {
 
     expect(response.status).toBe(201);
     expect(body).toEqual({ ok: true, artwork: { id: "artwork-id" } });
-    expect(mockGetAuthenticatedAppUser).toHaveBeenCalledOnce();
+    expect(mockGetAuthenticatedAppUser).toHaveBeenCalledTimes(1);
     expect(mockCreateSellerArtwork).toHaveBeenCalledWith(
       expect.objectContaining({
         ownerUserId: null,
