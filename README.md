@@ -97,7 +97,7 @@ Notes:
 - `nvm use` reads the committed `.nvmrc`, which pins Node.js 22 to match CI.
 - `npm ci` installs the locked dependency graph used by CI.
 - `npm run check` mirrors CI by running TypeScript, Vitest, and the production build in sequence.
-- `npm run typecheck` runs TypeScript with `tsc --noEmit`.
+- `npm run typecheck` generates Next.js route types with `next typegen`, then runs TypeScript with `tsc --noEmit`.
 - `npm test` runs Vitest tests named `*.test.ts` / `*.test.tsx` under `src`.
 - `npm run build` verifies the same production build step enforced by CI.
 - `npm run lint` is currently a placeholder and does not perform real linting yet.
