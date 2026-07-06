@@ -1,9 +1,10 @@
 import AdminPanel from "@/components/AdminPanel";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 import {
-  getMarketplaceChainLabel,
+  getMarketplaceChainConfigLabel,
   getMarketplaceContractAddress,
   getNftCollectionAddress,
+  isMarketplaceChainConfigured,
 } from "@/lib/thirdweb-config";
 import { isThirdwebClientConfigured } from "@/lib/thirdweb";
 
@@ -50,8 +51,8 @@ export default function AdminPage() {
         },
         {
           label: "Chain",
-          configured: true,
-          value: getMarketplaceChainLabel(),
+          configured: isMarketplaceChainConfigured(),
+          value: getMarketplaceChainConfigLabel(),
         },
         {
           label: "Marketplace",
