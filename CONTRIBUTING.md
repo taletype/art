@@ -29,7 +29,7 @@ Run the checks that match your change:
 - `npm run readiness:v2:run` when changing readiness evidence, deployment smoke checks, or artifact bundle logic.
 - Manual wallet and marketplace smoke checks when changing Seller Hub, auctions, direct listings, minting, bidding, or buyout flows.
 
-`npm run lint` is currently a placeholder, so do not treat it as a real quality gate until linting is configured.
+`npm run lint` currently runs the same TypeScript/Next route type check as `npm run typecheck`; add ESLint before treating it as style linting.
 
 ## Supabase and migrations
 
