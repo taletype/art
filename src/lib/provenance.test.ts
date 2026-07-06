@@ -3,6 +3,7 @@ import {
   getHumanMadePolicyFailureReason,
   getProvenanceBadgeState,
   requiresMoreEvidence,
+  verifyProvenancePayloadSchema,
 } from "@/lib/provenance";
 import type { Provenance } from "@/types/provenance";
 
@@ -63,5 +64,45 @@ describe("provenance badge state", () => {
         }),
       ),
     ).toBe("verified");
+  });
+});
+
+describe("verifyProvenancePayloadSchema", () => {
+  it("rejects evidence entries without a usable hash", () => {
+    const provenance = makeProvenance({
+      evidence: [
+        {
+          kind: "source_file",
+          hash: "   ",
+          label: "Source file hash",
+        },
+      ],
+      evidenceHashes: ["   "],
+    });
+
+    const parsed = verifyProvenancePayloadSchema.safeParse({ provenance });
+
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues.map((issue) => issue.path.join("."))).toContain("provenance.evidence.0.hash");
+    }
+  });
+
+  it("trims evidence hashes before verification handling", () => {
+    const hash = "a".repeat(64);
+    const provenance = makeProvenance({
+      evidence: [
+        {
+          kind: "source_file",
+          hash: ` ${hash} `,
+          label: "Source file hash",
+        },
+      ],
+      evidenceHashes: [` ${hash} `],
+    });
+
+    const parsed = verifyProvenancePayloadSchema.parse({ provenance });
+
+    expect(parsed.provenance.evidence[0].hash).toBe(hash);
   });
 });
