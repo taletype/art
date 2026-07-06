@@ -95,7 +95,7 @@ export const verifyProvenancePayloadSchema = z.object({
     evidence: z.array(z.object({
       kind: z.string(),
       label: z.string(),
-      hash: z.string(),
+      hash: z.string().trim().min(32),
     })),
     verificationStatus: z.enum(["PENDING_REVIEW", "VERIFIED_HUMAN", "REJECTED"]).optional(),
   }),
