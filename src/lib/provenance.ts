@@ -26,12 +26,12 @@ export function getProvenanceBadgeState(provenance: Provenance): "verified" | "p
     return "rejected";
   }
 
-  if (provenance.verificationStatus === "PENDING_REVIEW") {
-    return "pending";
-  }
-
   if (provenance.evidenceHashes.length === 0) {
     return "needs_evidence";
+  }
+
+  if (provenance.verificationStatus === "PENDING_REVIEW") {
+    return "pending";
   }
 
   return "pending";
