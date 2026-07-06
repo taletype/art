@@ -9,7 +9,7 @@ HUMAN_ Arts is human-made only. AI-generated artwork, AI-assisted final artwork,
 - `/` is the auction-house landing page with featured timed sales, human-made auction lots, artist spotlighting, and trust messaging.
 - `/sales/[saleId]` is a formal sale catalog with curator note, sale calendar, hero lot, and lot grid.
 - `/art/[assetId]` is the lot detail page with estimates, reserve, condition report, provenance context, buyer premium disclosure, and marketplace handoff.
-- `/submit` is the artist consignment workflow for drafting metadata, attaching human-authorship evidence, simulating review, and testing mint/list preparation.
+- `/submit` is the wallet-first artist consignment entry point powered by Seller Hub. It drafts metadata, attaches human-authorship evidence, and prepares mint/list actions against Thirdweb.
 - `/creator/[wallet]` is the artist profile and consigned works view.
 - `/auctions` and `/auctions/[id]` read live auction and direct listing state from the configured Thirdweb marketplace contract.
 - `/seller` creates artwork drafts in Supabase, then mints ERC-721s and publishes either auction or direct listings to the Thirdweb marketplace.
@@ -108,10 +108,10 @@ Notes:
 
 ## Primary user flow
 
-1. Submit human-authorship evidence/provenance at `/submit`.
-2. Use the mock review UI to move the asset to `VERIFIED_HUMAN`.
-3. Curate the artwork into a named timed sale and lot record.
-4. Open Seller Hub and mint the artwork into the configured ERC-721 collection.
+1. Open `/submit` or Seller Hub and connect a Base-compatible EVM wallet.
+2. Create an artwork draft with catalog metadata, human-authorship evidence, and provenance notes.
+3. Complete human-made review before treating the asset as `VERIFIED_HUMAN` outside local/testnet workflows.
+4. Mint the artwork into the configured ERC-721 collection.
 5. From Seller Hub, publish either an English auction or a direct listing to the marketplace contract.
 6. Open `/auctions` or `/auctions/[id]` and place a bid or purchase directly with a connected wallet.
 7. Refresh the listing page after confirmation to see the latest onchain state.
