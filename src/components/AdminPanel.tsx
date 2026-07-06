@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
-import { getThirdwebClient } from "@/lib/thirdweb";
+import { getThirdwebClient, isThirdwebClientConfigured } from "@/lib/thirdweb";
 import { getMarketplaceChain } from "@/lib/thirdweb-config";
 import { getThirdwebWalletOptions } from "@/lib/thirdwebWallets";
 import { ReviewPanel } from "@/components/ReviewPanel";
@@ -36,6 +36,7 @@ export default function AdminPanel({
 }: AdminPanelProps) {
   const activeAccount = useActiveAccount();
   const connectedWallet = activeAccount?.address ?? null;
+  const thirdwebClient = isThirdwebClientConfigured() ? getThirdwebClient() : null;
   const isAdmin =
     Boolean(adminWallet && connectedWallet) &&
     connectedWallet?.toLowerCase() === adminWallet?.toLowerCase();
@@ -96,15 +97,21 @@ export default function AdminPanel({
             </p>
           </div>
 
-          <ConnectButton
-            client={getThirdwebClient()}
-            wallets={getThirdwebWalletOptions()}
-            chain={getMarketplaceChain()}
-            connectButton={{
-              label: connectedWallet ? "Wallet connected" : "Connect admin wallet",
-              className: "!w-full !rounded-full !bg-white !text-black !px-5 !py-3 !font-semibold",
-            }}
-          />
+          {thirdwebClient ? (
+            <ConnectButton
+              client={thirdwebClient}
+              wallets={getThirdwebWalletOptions()}
+              chain={getMarketplaceChain()}
+              connectButton={{
+                label: connectedWallet ? "Wallet connected" : "Connect admin wallet",
+                className: "!w-full !rounded-full !bg-white !text-black !px-5 !py-3 !font-semibold",
+              }}
+            />
+          ) : (
+            <div className="rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 px-4 py-3 text-sm font-semibold text-[#f0d46e]">
+              Wallet setup needed
+            </div>
+          )}
 
           <div className="rounded-[1.2rem] border border-white/10 bg-black/20 p-4">
             <p className="text-sm text-white/45">Connected</p>
