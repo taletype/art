@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </a>
           <div className="relative min-h-screen">
             <Navigation />
-            <div id="main-content" className="relative z-10">
+            <div id="main-content" tabIndex={-1} className="relative z-10 scroll-mt-16">
               {children}
             </div>
             <Footer />
