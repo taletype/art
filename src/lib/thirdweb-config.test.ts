@@ -2,8 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getListingRouteId,
   getMarketplaceChain,
+  getMarketplaceChainConfigLabel,
   getMarketplaceChainLabel,
   getMarketplaceExplorerUrl,
+  isMarketplaceChainConfigured,
   isMarketplaceConfigured,
   isNftCollectionConfigured,
   parseListingRouteId,
@@ -49,6 +51,8 @@ describe("thirdweb-config Base Sepolia chain", () => {
 
     expect(getMarketplaceChain().id).toBe(84532);
     expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
+    expect(getMarketplaceChainConfigLabel()).toBe("Base Sepolia (default)");
+    expect(isMarketplaceChainConfigured()).toBe(true);
   });
 
   it("accepts the documented Base Sepolia chain value", () => {
@@ -56,6 +60,7 @@ describe("thirdweb-config Base Sepolia chain", () => {
 
     expect(getMarketplaceChain().id).toBe(84532);
     expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
+    expect(isMarketplaceChainConfigured()).toBe(true);
   });
 
   it("accepts the Base Sepolia chain id", () => {
@@ -63,6 +68,7 @@ describe("thirdweb-config Base Sepolia chain", () => {
 
     expect(getMarketplaceChain().id).toBe(84532);
     expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
+    expect(isMarketplaceChainConfigured()).toBe(true);
   });
 
   it("uses the Base Sepolia explorer by default", () => {
@@ -76,6 +82,7 @@ describe("thirdweb-config Base Sepolia chain", () => {
 
     expect(getMarketplaceChain().id).toBe(8453);
     expect(getMarketplaceChainLabel()).toBe("Base");
+    expect(isMarketplaceChainConfigured()).toBe(true);
   });
 
   it("accepts the Base mainnet chain id", () => {
@@ -83,12 +90,22 @@ describe("thirdweb-config Base Sepolia chain", () => {
 
     expect(getMarketplaceChain().id).toBe(8453);
     expect(getMarketplaceChainLabel()).toBe("Base");
+    expect(isMarketplaceChainConfigured()).toBe(true);
   });
 
   it("uses the Base mainnet explorer when configured", () => {
     vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "8453");
 
     expect(getMarketplaceExplorerUrl("tx", "0xabc")).toBe("https://basescan.org/tx/0xabc");
+  });
+
+  it("reports unsupported chain env values without changing the runtime fallback", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "ethereum");
+
+    expect(getMarketplaceChain().id).toBe(84532);
+    expect(getMarketplaceChainLabel()).toBe("Base Sepolia");
+    expect(getMarketplaceChainConfigLabel()).toBe("ethereum");
+    expect(isMarketplaceChainConfigured()).toBe(false);
   });
 });
 
@@ -116,6 +133,16 @@ describe("thirdweb-config marketplace readiness", () => {
     vi.stubEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
 
     expect(isMarketplaceConfigured()).toBe(true);
+  });
+
+  it("does not treat valid contracts as ready when the chain env is unsupported", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "ethereum");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+
+    expect(isMarketplaceConfigured()).toBe(false);
+    expect(isNftCollectionConfigured()).toBe(false);
   });
 
   it("does not treat the NFT collection as ready without a real client id", () => {
