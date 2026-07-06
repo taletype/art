@@ -100,7 +100,7 @@ Notes:
 - `npm run typecheck` generates Next.js route types with `next typegen`, then runs TypeScript with `tsc --noEmit`.
 - `npm test` runs Vitest tests named `*.test.ts` / `*.test.tsx` under `src`.
 - `npm run build` verifies the same production build step enforced by CI.
-- `npm run lint` is currently a placeholder and does not perform real linting yet.
+- `npm run lint` currently runs the same TypeScript/Next route type check as `npm run typecheck`; add ESLint before treating it as style linting.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
 - `npm run seed:base-sepolia-auctions` mints sample NFTs on Base Sepolia, uploads images to Supabase Storage, records artwork rows, and creates marketplace auctions. It requires a funded `PRIVATE_KEY` plus the Thirdweb and Supabase env vars in `.env.local`.
 - Apply the SQL files in `supabase/migrations/` in order before relying on Supabase-backed auction artists, sales, lots, collectors, bids, watchlists, or Seller Hub artwork drafts in shared environments.
