@@ -12,7 +12,7 @@
     "build": "next build",
     "start": "next start",
     "vercel-build": "next build",
-    "lint": "echo 'lint not configured'",
+    "lint": "npm run typecheck",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "check": "npm run typecheck && npm test && npm run build",
