@@ -88,6 +88,26 @@ describe("verifyProvenancePayloadSchema", () => {
     }
   });
 
+  it("rejects unsupported evidence kinds", () => {
+    const provenance = {
+      ...makeProvenance(),
+      evidence: [
+        {
+          kind: "ai_prompt",
+          hash: "a".repeat(64),
+          label: "Prompt transcript",
+        },
+      ],
+    };
+
+    const parsed = verifyProvenancePayloadSchema.safeParse({ provenance });
+
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues.map((issue) => issue.path.join("."))).toContain("provenance.evidence.0.kind");
+    }
+  });
+
   it("trims evidence hashes before verification handling", () => {
     const hash = "a".repeat(64);
     const provenance = makeProvenance({
