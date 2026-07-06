@@ -1,5 +1,13 @@
 import { z } from "zod";
-import type { ArtCategory, EvidenceItem, Provenance, VerificationStatus } from "../types/provenance";
+import {
+  artCategorySchema,
+  evidenceKindSchema,
+  verificationStatusSchema,
+  type ArtCategory,
+  type EvidenceItem,
+  type Provenance,
+  type VerificationStatus,
+} from "../types/provenance";
 
 export function getHumanMadePolicyFailureReason(provenance: Provenance): string | null {
   if (provenance.verificationStatus === "VERIFIED_HUMAN") {
@@ -90,14 +98,14 @@ export function requiresMoreEvidence(provenance: Provenance): string[] {
 
 export const verifyProvenancePayloadSchema = z.object({
   provenance: z.object({
-    category: z.enum(["visual", "audio", "video", "writing", "mixed_media"]),
+    category: artCategorySchema,
     medium: z.string(),
     evidence: z.array(z.object({
-      kind: z.string(),
+      kind: evidenceKindSchema,
       label: z.string(),
       hash: z.string().trim().min(32),
     })),
-    verificationStatus: z.enum(["PENDING_REVIEW", "VERIFIED_HUMAN", "REJECTED"]).optional(),
+    verificationStatus: verificationStatusSchema.optional(),
   }),
-  forceStatus: z.enum(["PENDING_REVIEW", "VERIFIED_HUMAN", "REJECTED"]).optional(),
+  forceStatus: verificationStatusSchema.optional(),
 });
