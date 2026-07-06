@@ -25,7 +25,7 @@ export default function MarketplaceActionPanel({
   const activeAccount = useActiveAccount();
   const sendTransaction = useSendAndConfirmTransaction();
   const [bidAmount, setBidAmount] = useState(
-    minimumBidEth ? minimumBidEth.toFixed(4).replace(/0+$/, "").replace(/\.$/, "") : "0.01",
+    minimumBidEth !== null ? minimumBidEth.toFixed(4).replace(/0+$/, "").replace(/\.$/, "") : "0.01",
   );
   const [message, setMessage] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<"bid" | "buyout" | "buy" | null>(null);
@@ -179,7 +179,7 @@ export default function MarketplaceActionPanel({
             {pendingAction === "bid" ? "Submitting bid..." : "Place onchain bid"}
           </button>
 
-          {buyoutPriceEth ? (
+          {buyoutPriceEth !== null ? (
             <button
               type="button"
               onClick={handleBuyoutAuction}
