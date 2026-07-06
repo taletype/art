@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAuthenticatedAppUser, resolveMatchingSellerWallet } from "@/lib/auth";
+import { getAuthenticatedAppUser, resolveMatchingSellerWallet, resolveSellerWallet } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -12,6 +12,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 const mixedCaseWallet = "0x1234567890ABCDEF1234567890aBcDeF12345678";
+const requestWallet = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd";
 const mockIsSupabaseConfigured = vi.mocked(isSupabaseConfigured);
 const mockCreateSupabaseServerClient = vi.mocked(createSupabaseServerClient);
 
@@ -84,6 +85,27 @@ describe("getAuthenticatedAppUser", () => {
   });
 });
 
+describe("resolveSellerWallet", () => {
+  it("uses a valid request wallet when one is provided", () => {
+    expect(
+      resolveSellerWallet({
+        profileWalletAddress: mixedCaseWallet,
+        requestWalletAddress: ` ${requestWallet} `,
+      }),
+    ).toBe(requestWallet);
+  });
+
+  it("falls back to the profile wallet when the request wallet is missing or invalid", () => {
+    expect(resolveSellerWallet({ profileWalletAddress: mixedCaseWallet })).toBe(mixedCaseWallet);
+    expect(
+      resolveSellerWallet({
+        profileWalletAddress: mixedCaseWallet,
+        requestWalletAddress: "0x1234",
+      }),
+    ).toBe(mixedCaseWallet);
+  });
+});
+
 describe("resolveMatchingSellerWallet", () => {
   it("matches the same EVM address regardless of casing", () => {
     expect(
@@ -98,7 +120,7 @@ describe("resolveMatchingSellerWallet", () => {
     expect(
       resolveMatchingSellerWallet({
         profileWalletAddress: mixedCaseWallet,
-        requestWalletAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+        requestWalletAddress: requestWallet,
       }),
     ).toEqual({ wallet: null, mismatch: true });
   });
