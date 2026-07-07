@@ -84,18 +84,22 @@ export async function listMarketplaceEntries(limit = DEFAULT_MARKETPLACE_ENTRY_L
   }
 
   const contract = getMarketplaceContract();
-  let auctions: Awaited<ReturnType<typeof getAllAuctions>>;
-  let listings: Awaited<ReturnType<typeof getAllValidListings>>;
+  const [auctionResult, listingResult] = await Promise.allSettled([
+    getAllAuctions({ contract, start: 0, count: BigInt(normalizedLimit) }),
+    getAllValidListings({ contract, start: 0, count: BigInt(normalizedLimit) }),
+  ]);
 
-  try {
-    [auctions, listings] = await Promise.all([
-      getAllAuctions({ contract, start: 0, count: BigInt(normalizedLimit) }),
-      getAllValidListings({ contract, start: 0, count: BigInt(normalizedLimit) }),
-    ]);
-  } catch (error) {
-    console.warn("Unable to load marketplace entries.", error);
-    return [];
+  if (auctionResult.status === "rejected") {
+    console.warn("Unable to load marketplace entries.", auctionResult.reason);
   }
+  if (listingResult.status === "rejected") {
+    console.warn("Unable to load marketplace entries.", listingResult.reason);
+  }
+
+  const auctions: Awaited<ReturnType<typeof getAllAuctions>> =
+    auctionResult.status === "fulfilled" ? auctionResult.value : [];
+  const listings: Awaited<ReturnType<typeof getAllValidListings>> =
+    listingResult.status === "fulfilled" ? listingResult.value : [];
 
   const auctionEntries: MarketplaceEntry[] = auctions.map((auction) => ({
     id: getListingRouteId("auction", auction.id),
