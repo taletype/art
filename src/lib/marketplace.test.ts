@@ -156,6 +156,40 @@ describe("listMarketplaceEntries", () => {
     );
   });
 
+  it("keeps available entries when one marketplace read fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const rpcError = new Error("Auction RPC unavailable");
+    mockGetAllAuctions.mockRejectedValue(rpcError);
+    mockGetAllValidListings.mockResolvedValue([
+      {
+        id: 11n,
+        asset: {
+          metadata: {
+            name: "Direct Work",
+            description: "Direct description",
+            image: "ipfs://direct-image",
+          },
+        },
+        creatorAddress: "0xdirectcreator",
+        status: "ACTIVE",
+        pricePerToken: 2_000_000_000_000_000_000n,
+        startTimeInSeconds: 1_700_000_300n,
+        endTimeInSeconds: 1_700_004_000n,
+      },
+    ] as Awaited<ReturnType<typeof getAllValidListings>>);
+
+    await expect(listMarketplaceEntries(12)).resolves.toEqual([
+      expect.objectContaining({
+        id: "direct-11",
+        type: "direct",
+        title: "Direct Work",
+      }),
+    ]);
+    expect(warn).toHaveBeenCalledWith("Unable to load marketplace entries.", rpcError);
+
+    warn.mockRestore();
+  });
+
   it("applies the overall limit after combining and sorting marketplace entries", async () => {
     mockGetAllAuctions.mockResolvedValue([
       {
