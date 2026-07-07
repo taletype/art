@@ -1,6 +1,19 @@
 import { z } from "zod";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 
+function requireAuctionEndsAfterStart(
+  value: { startsAt: string; endsAt: string },
+  ctx: z.RefinementCtx,
+) {
+  if (Date.parse(value.endsAt) <= Date.parse(value.startsAt)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Auction end time must be after the start time.",
+      path: ["endsAt"],
+    });
+  }
+}
+
 export const createSellerArtworkSchema = z.object({
   title: z.string().min(2).max(120),
   description: z.string().min(10).max(4000),
@@ -21,7 +34,7 @@ export const prepareArtworkSchema = z.object({
   }).optional(),
 });
 
-export const createSellerAuctionSchema = z.object({
+const sellerAuctionFields = z.object({
   artworkId: z.string().uuid(),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
@@ -31,6 +44,8 @@ export const createSellerAuctionSchema = z.object({
     message: "Enter a valid wallet address.",
   }).optional(),
 });
+
+export const createSellerAuctionSchema = sellerAuctionFields.superRefine(requireAuctionEndsAfterStart);
 
 export const finalizeArtworkMintSchema = z.object({
   artworkId: z.string().uuid(),
@@ -45,7 +60,7 @@ export const finalizeArtworkMintSchema = z.object({
   }).optional(),
 });
 
-export const finalizeSellerAuctionSchema = createSellerAuctionSchema.extend({
+export const finalizeSellerAuctionSchema = sellerAuctionFields.extend({
   txSignature: z.string().min(32),
   listingAddress: z.string().trim().refine(isValidEvmAddress, {
     message: "Listing contract must be a valid EVM address.",
@@ -55,7 +70,7 @@ export const finalizeSellerAuctionSchema = createSellerAuctionSchema.extend({
   }),
   recentBlockhash: z.string().trim().min(20),
   lastValidBlockHeight: z.number().int().positive(),
-});
+}).superRefine(requireAuctionEndsAfterStart);
 
 export type CreateSellerArtworkRequest = z.infer<typeof createSellerArtworkSchema>;
 export type PrepareArtworkRequest = z.infer<typeof prepareArtworkSchema>;
