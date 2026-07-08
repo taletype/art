@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getAllAuctions, getAllValidListings, getAuction, getListing } from "thirdweb/extensions/marketplace";
 import { isMarketplaceConfigured, parseListingRouteId } from "@/lib/thirdweb-config";
 import { getMarketplaceDetail, listMarketplaceEntries } from "@/lib/marketplace";
@@ -26,6 +26,10 @@ const mockGetAuction = vi.mocked(getAuction);
 const mockGetListing = vi.mocked(getListing);
 const mockIsMarketplaceConfigured = vi.mocked(isMarketplaceConfigured);
 const mockParseListingRouteId = vi.mocked(parseListingRouteId);
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("listMarketplaceEntries", () => {
   beforeEach(() => {
@@ -186,8 +190,6 @@ describe("listMarketplaceEntries", () => {
       }),
     ]);
     expect(warn).toHaveBeenCalledWith("Unable to load marketplace entries.", rpcError);
-
-    warn.mockRestore();
   });
 
   it("applies the overall limit after combining and sorting marketplace entries", async () => {
@@ -246,8 +248,6 @@ describe("listMarketplaceEntries", () => {
 
     await expect(listMarketplaceEntries()).resolves.toEqual([]);
     expect(warn).toHaveBeenCalledWith("Unable to load marketplace entries.", expect.any(Error));
-
-    warn.mockRestore();
   });
 });
 
