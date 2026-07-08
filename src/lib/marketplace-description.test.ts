@@ -14,6 +14,7 @@ vi.mock("@/lib/thirdweb-config", () => ({
   getMarketplaceChainLabel: vi.fn(() => "Base Sepolia"),
   getMarketplaceContract: vi.fn(() => ({ address: "0x1234567890abcdef1234567890abcdef12345678" })),
   getMarketplaceContractAddress: vi.fn(() => "0x1234567890abcdef1234567890abcdef12345678"),
+  getMarketplaceExplorerUrl: vi.fn((path: "address" | "tx", value: string) => `https://sepolia.basescan.org/${path}/${value}`),
   isMarketplaceConfigured: vi.fn(() => true),
   parseListingRouteId: vi.fn(),
 }));
