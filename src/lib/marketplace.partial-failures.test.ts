@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getAllAuctions, getAllValidListings } from "thirdweb/extensions/marketplace";
 import { listMarketplaceEntries } from "@/lib/marketplace";
 import { isMarketplaceConfigured } from "@/lib/thirdweb-config";
@@ -28,6 +28,10 @@ describe("listMarketplaceEntries partial failures", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsMarketplaceConfigured.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("keeps auction entries when direct listing reads fail", async () => {
@@ -62,8 +66,6 @@ describe("listMarketplaceEntries partial failures", () => {
       }),
     ]);
     expect(warn).toHaveBeenCalledWith("Unable to load marketplace entries.", rpcError);
-
-    warn.mockRestore();
   });
 
   it("keeps direct listing entries when auction reads fail", async () => {
@@ -97,7 +99,5 @@ describe("listMarketplaceEntries partial failures", () => {
       }),
     ]);
     expect(warn).toHaveBeenCalledWith("Unable to load marketplace entries.", rpcError);
-
-    warn.mockRestore();
   });
 });
