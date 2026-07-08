@@ -6,6 +6,8 @@ import { isMarketplaceConfigured } from "@/lib/thirdweb-config";
 vi.mock("thirdweb/extensions/marketplace", () => ({
   getAllAuctions: vi.fn(),
   getAllValidListings: vi.fn(),
+  getAuction: vi.fn(),
+  getListing: vi.fn(),
 }));
 
 vi.mock("@/lib/thirdweb-config", () => ({
