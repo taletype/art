@@ -37,6 +37,7 @@ export type MarketplaceDetail = MarketplaceEntry & {
 
 const DEFAULT_MARKETPLACE_ENTRY_LIMIT = 24;
 const MAX_MARKETPLACE_ENTRY_LIMIT = 100;
+const DEFAULT_ASSET_DESCRIPTION = "Catalog notes are being prepared for this marketplace listing.";
 
 function normalizeMarketplaceEntryLimit(limit: number) {
   if (!Number.isFinite(limit)) {
@@ -74,7 +75,7 @@ function readAssetImage(asset: { metadata?: { image?: string | null } } | undefi
 }
 
 function readAssetDescription(asset: { metadata?: { description?: string | null } } | undefined) {
-  return asset?.metadata?.description || "";
+  return asset?.metadata?.description?.trim() || DEFAULT_ASSET_DESCRIPTION;
 }
 
 export async function listMarketplaceEntries(limit = DEFAULT_MARKETPLACE_ENTRY_LIMIT): Promise<MarketplaceEntry[]> {
