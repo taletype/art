@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAllAuctions, getAllValidListings, getAuction } from "thirdweb/extensions/marketplace";
+import { getAllAuctions, getAllValidListings, getAuction, getListing } from "thirdweb/extensions/marketplace";
 import { parseListingRouteId } from "@/lib/thirdweb-config";
 import { getMarketplaceDetail, listMarketplaceEntries } from "@/lib/marketplace";
 
@@ -23,6 +23,7 @@ vi.mock("@/lib/thirdweb-config", () => ({
 const mockGetAllAuctions = vi.mocked(getAllAuctions);
 const mockGetAllValidListings = vi.mocked(getAllValidListings);
 const mockGetAuction = vi.mocked(getAuction);
+const mockGetListing = vi.mocked(getListing);
 const mockParseListingRouteId = vi.mocked(parseListingRouteId);
 
 describe("marketplace description fallback", () => {
@@ -107,6 +108,34 @@ describe("marketplace description fallback", () => {
     await expect(getMarketplaceDetail("auction-9")).resolves.toEqual(
       expect.objectContaining({
         id: "auction-9",
+        description: "Catalog notes are being prepared for this marketplace listing.",
+      }),
+    );
+  });
+
+  it("uses prepared catalog copy when direct listing detail metadata has no description", async () => {
+    mockParseListingRouteId.mockReturnValue({ kind: "direct", id: 10n });
+    mockGetListing.mockResolvedValue({
+      id: 10n,
+      asset: {
+        metadata: {
+          name: "Direct Marketplace Work",
+        },
+      },
+      creatorAddress: "0xdirectcreator",
+      status: "ACTIVE",
+      pricePerToken: 1_500_000_000_000_000_000n,
+      startTimeInSeconds: 1_700_000_000n,
+      endTimeInSeconds: 1_700_003_600n,
+      assetContractAddress: "0xassetcontract",
+      tokenId: 10n,
+      currencyContractAddress: "0xcurrency",
+    } as Awaited<ReturnType<typeof getListing>>);
+
+    await expect(getMarketplaceDetail("direct-10")).resolves.toEqual(
+      expect.objectContaining({
+        id: "direct-10",
+        type: "direct",
         description: "Catalog notes are being prepared for this marketplace listing.",
       }),
     );
