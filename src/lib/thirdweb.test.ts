@@ -52,4 +52,32 @@ describe("thirdweb client", () => {
     expect(thirdwebMocks.createThirdwebClient).toHaveBeenCalledTimes(1);
     expect(thirdwebMocks.createThirdwebClient).toHaveBeenCalledWith({ clientId: "test-thirdweb-client" });
   });
+
+  it("creates a new Thirdweb client when the configured client id changes", async () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client-a");
+    const { getThirdwebClient } = await loadThirdwebModule();
+
+    const firstClient = getThirdwebClient();
+
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client-b");
+    const secondClient = getThirdwebClient();
+
+    expect(secondClient).toEqual({ clientId: "test-thirdweb-client-b" });
+    expect(secondClient).not.toBe(firstClient);
+    expect(thirdwebMocks.createThirdwebClient).toHaveBeenCalledTimes(2);
+    expect(thirdwebMocks.createThirdwebClient).toHaveBeenNthCalledWith(1, { clientId: "test-thirdweb-client-a" });
+    expect(thirdwebMocks.createThirdwebClient).toHaveBeenNthCalledWith(2, { clientId: "test-thirdweb-client-b" });
+  });
+
+  it("does not return a cached Thirdweb client after the client id becomes invalid", async () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client");
+    const { getThirdwebClient } = await loadThirdwebModule();
+
+    getThirdwebClient();
+
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "");
+
+    expect(() => getThirdwebClient()).toThrow("NEXT_PUBLIC_THIRDWEB_CLIENT_ID is required");
+    expect(thirdwebMocks.createThirdwebClient).toHaveBeenCalledTimes(1);
+  });
 });
