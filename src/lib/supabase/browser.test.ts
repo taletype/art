@@ -37,6 +37,39 @@ describe("supabase browser client", () => {
     expect(createBrowserClient).toHaveBeenCalledWith("https://example.supabase.co", "sb_publishable_real_key");
   });
 
+  it("reuses the browser client while the Supabase configuration is unchanged", () => {
+    clearBrowserSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_real_key");
+
+    const firstClient = getSupabaseBrowserClient();
+    const secondClient = getSupabaseBrowserClient();
+
+    expect(secondClient).toBe(firstClient);
+    expect(createBrowserClient).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates a new browser client when the Supabase configuration changes", () => {
+    clearBrowserSupabaseEnv();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://first.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_first_key");
+
+    const firstClient = getSupabaseBrowserClient();
+
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://second.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_second_key");
+    const secondClient = getSupabaseBrowserClient();
+
+    expect(secondClient).toEqual({
+      key: "sb_publishable_second_key",
+      url: "https://second.supabase.co",
+    });
+    expect(secondClient).not.toBe(firstClient);
+    expect(createBrowserClient).toHaveBeenCalledTimes(2);
+    expect(createBrowserClient).toHaveBeenNthCalledWith(1, "https://first.supabase.co", "sb_publishable_first_key");
+    expect(createBrowserClient).toHaveBeenNthCalledWith(2, "https://second.supabase.co", "sb_publishable_second_key");
+  });
+
   it("falls back to the browser anon key", () => {
     clearBrowserSupabaseEnv();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
