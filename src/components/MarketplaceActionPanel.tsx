@@ -205,7 +205,7 @@ export default function MarketplaceActionPanel({
         >
           {pendingAction === "buy"
             ? "Purchasing..."
-            : directListingPriceUnavailable
+            : buyoutPriceEth === null
               ? "Price unavailable"
               : `Buy now for ${buyoutPriceEth.toFixed(4)} ETH`}
         </button>
