@@ -18,6 +18,8 @@ const supportedMarketplaceChainKeys = new Set([
   "base-sepolia-testnet",
   "84532",
 ]);
+const supportedMarketplaceChainDescription =
+  "base, base-mainnet, 8453, base-sepolia, base-sepolia-testnet, or 84532";
 
 function readEnv(name: string) {
   return process.env[name]?.trim() || "";
@@ -35,6 +37,12 @@ function readMarketplaceChainKey() {
 export function isMarketplaceChainConfigured() {
   const key = readMarketplaceChainKey();
   return !key || supportedMarketplaceChainKeys.has(key);
+}
+
+function assertMarketplaceChainConfigured() {
+  if (!isMarketplaceChainConfigured()) {
+    throw new Error(`NEXT_PUBLIC_THIRDWEB_CHAIN must be ${supportedMarketplaceChainDescription}.`);
+  }
 }
 
 export function getMarketplaceChain() {
@@ -90,6 +98,7 @@ export function getMarketplaceContract() {
   if (!address) {
     throw new Error("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT is required.");
   }
+  assertMarketplaceChainConfigured();
 
   return getContract({
     client: getThirdwebClient(),
@@ -103,6 +112,7 @@ export function getNftCollectionContract() {
   if (!address) {
     throw new Error("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT is required.");
   }
+  assertMarketplaceChainConfigured();
 
   return getContract({
     client: getThirdwebClient(),
