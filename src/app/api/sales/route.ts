@@ -94,6 +94,12 @@ export async function PATCH(request: NextRequest) {
     if (!id) {
       return applyRateLimitHeaders(NextResponse.json({ error: "Sale ID is required" }, { status: 400 }), rateLimit);
     }
+    if (Object.keys(updates).length === 0) {
+      return applyRateLimitHeaders(
+        NextResponse.json({ error: "No sale fields provided" }, { status: 400 }),
+        rateLimit,
+      );
+    }
 
     const adminClient = createSupabaseAdminClient();
     const { data, error } = await adminClient
