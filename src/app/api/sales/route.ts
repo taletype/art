@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
 import { listSales, getSaleById } from "@/lib/supabase-db";
+
+function invalidJsonResponse() {
+  return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -20,6 +25,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimit = enforceRouteRateLimit(request, "sales-post");
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
+
+  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
+  if (authFailure) {
+    return applyRateLimitHeaders(authFailure, rateLimit);
+  }
+
   try {
     const body = await request.json();
     const adminClient = createSupabaseAdminClient();
@@ -33,22 +48,43 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json(data, { status: 201 });
+    return applyRateLimitHeaders(NextResponse.json(data, { status: 201 }), rateLimit);
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return applyRateLimitHeaders(invalidJsonResponse(), rateLimit);
+    }
+
     console.error("Error creating sale:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create sale" },
-      { status: 500 }
+    return applyRateLimitHeaders(
+      NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to create sale" },
+        { status: 500 }
+      ),
+      rateLimit,
     );
   }
 }
 
 export async function PATCH(request: NextRequest) {
+  const rateLimit = enforceRouteRateLimit(request, "sales-patch");
+  if (!rateLimit.ok) {
+    return rateLimit.response;
+  }
+
+  const authFailure = optionalBearerAuth(request, "API_WRITE_BEARER_TOKEN");
+  if (authFailure) {
+    return applyRateLimitHeaders(authFailure, rateLimit);
+  }
+
   try {
     const body = await request.json();
-    const { id, ...updates } = body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return applyRateLimitHeaders(NextResponse.json({ error: "Invalid sale payload" }, { status: 400 }), rateLimit);
+    }
+
+    const { id, ...updates } = body as Record<string, unknown>;
     if (!id) {
-      return NextResponse.json({ error: "Sale ID is required" }, { status: 400 });
+      return applyRateLimitHeaders(NextResponse.json({ error: "Sale ID is required" }, { status: 400 }), rateLimit);
     }
 
     const adminClient = createSupabaseAdminClient();
@@ -63,12 +99,19 @@ export async function PATCH(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json(data);
+    return applyRateLimitHeaders(NextResponse.json(data), rateLimit);
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return applyRateLimitHeaders(invalidJsonResponse(), rateLimit);
+    }
+
     console.error("Error updating sale:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update sale" },
-      { status: 500 }
+    return applyRateLimitHeaders(
+      NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to update sale" },
+        { status: 500 }
+      ),
+      rateLimit,
     );
   }
 }
