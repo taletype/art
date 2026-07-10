@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { PATCH, POST } from "./route";
+import { listSales } from "@/lib/supabase-db";
+import { GET, PATCH, POST } from "./route";
 
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient: vi.fn(),
@@ -13,6 +14,7 @@ vi.mock("@/lib/supabase-db", () => ({
 }));
 
 const mockCreateSupabaseAdminClient = vi.mocked(createSupabaseAdminClient);
+const mockListSales = vi.mocked(listSales);
 
 function makeSalesRequest(method: "PATCH" | "POST", body: Record<string, unknown>, headers?: HeadersInit) {
   return makeRawSalesRequest(method, JSON.stringify(body), headers);
@@ -25,6 +27,33 @@ function makeRawSalesRequest(method: "PATCH" | "POST", body: string, headers?: H
     body,
   });
 }
+
+describe("sales API GET", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockListSales.mockResolvedValue([{ id: "sale-id" }]);
+  });
+
+  it("defaults missing, invalid, and non-positive list limits", async () => {
+    const missing = await GET(new NextRequest("https://example.test/api/sales"));
+    expect(await missing.json()).toEqual([{ id: "sale-id" }]);
+    expect(mockListSales).toHaveBeenLastCalledWith(20);
+
+    await GET(new NextRequest("https://example.test/api/sales?limit=not-a-number"));
+    expect(mockListSales).toHaveBeenLastCalledWith(20);
+
+    await GET(new NextRequest("https://example.test/api/sales?limit=-5"));
+    expect(mockListSales).toHaveBeenLastCalledWith(20);
+  });
+
+  it("floors decimal list limits and clamps oversized values", async () => {
+    await GET(new NextRequest("https://example.test/api/sales?limit=3.9"));
+    expect(mockListSales).toHaveBeenLastCalledWith(3);
+
+    await GET(new NextRequest("https://example.test/api/sales?limit=500"));
+    expect(mockListSales).toHaveBeenLastCalledWith(100);
+  });
+});
 
 describe("sales API write guards", () => {
   const from = vi.fn();
