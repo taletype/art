@@ -143,6 +143,16 @@ describe("sales API write guards", () => {
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
+  it("rejects PATCH requests without mutable sale fields before opening the admin client", async () => {
+    const response = await PATCH(makeSalesRequest("PATCH", { id: "sale-id" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "No sale fields provided" });
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("updates a sale when write guards allow the request", async () => {
     const response = await PATCH(makeSalesRequest("PATCH", { id: "sale-id", title: "Updated sale" }));
     const body = await response.json();
