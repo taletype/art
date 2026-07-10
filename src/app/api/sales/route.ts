@@ -3,6 +3,15 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { applyRateLimitHeaders, enforceRouteRateLimit, optionalBearerAuth } from "@/lib/apiGuards";
 import { listSales, getSaleById } from "@/lib/supabase-db";
 
+function readSalesListLimit(value: string | null) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 20;
+  }
+
+  return Math.min(Math.floor(parsed), 100);
+}
+
 function invalidJsonResponse() {
   return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
 }
@@ -19,8 +28,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(sale);
   }
 
-  const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : 20;
-  const sales = await listSales(limit);
+  const sales = await listSales(readSalesListLimit(searchParams.get("limit")));
   return NextResponse.json(sales);
 }
 
