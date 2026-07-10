@@ -84,16 +84,16 @@ describe("supabase browser client", () => {
 
   it("skips a publishable key placeholder before falling back to the browser anon key", () => {
     clearBrowserSupabaseEnv();
-    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://placeholder-fallback.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_your_project_key");
-    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon_public");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon_placeholder_fallback");
 
     expect(isSupabaseBrowserConfigured()).toBe(true);
     expect(getSupabaseBrowserClient()).toEqual({
-      key: "anon_public",
-      url: "https://example.supabase.co",
+      key: "anon_placeholder_fallback",
+      url: "https://placeholder-fallback.supabase.co",
     });
-    expect(createBrowserClient).toHaveBeenCalledWith("https://example.supabase.co", "anon_public");
+    expect(createBrowserClient).toHaveBeenCalledWith("https://placeholder-fallback.supabase.co", "anon_placeholder_fallback");
   });
 
   it("does not treat .env.example placeholders as browser Supabase configuration", () => {
