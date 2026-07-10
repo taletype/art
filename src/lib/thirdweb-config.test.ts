@@ -4,7 +4,9 @@ import {
   getMarketplaceChain,
   getMarketplaceChainConfigLabel,
   getMarketplaceChainLabel,
+  getMarketplaceContract,
   getMarketplaceExplorerUrl,
+  getNftCollectionContract,
   isMarketplaceChainConfigured,
   isMarketplaceConfigured,
   isNftCollectionConfigured,
@@ -143,6 +145,16 @@ describe("thirdweb-config marketplace readiness", () => {
 
     expect(isMarketplaceConfigured()).toBe(false);
     expect(isNftCollectionConfigured()).toBe(false);
+  });
+
+  it("refuses to create contracts when the chain env is unsupported", () => {
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CHAIN", "ethereum");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_CLIENT_ID", "test-thirdweb-client");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+    vi.stubEnv("NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT", "0x1234567890abcdef1234567890abcdef12345678");
+
+    expect(() => getMarketplaceContract()).toThrow("NEXT_PUBLIC_THIRDWEB_CHAIN must be");
+    expect(() => getNftCollectionContract()).toThrow("NEXT_PUBLIC_THIRDWEB_CHAIN must be");
   });
 
   it("does not treat the NFT collection as ready without a real client id", () => {
