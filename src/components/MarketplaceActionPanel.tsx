@@ -32,6 +32,7 @@ export default function MarketplaceActionPanel({
 
   const parsedListing = useMemo(() => parseListingRouteId(listingId), [listingId]);
   const numericId = parsedListing?.id ?? 0n;
+  const directListingPriceUnavailable = type === "direct" && buyoutPriceEth === null;
 
   function hasValidListingRoute() {
     if (parsedListing?.kind === type) {
@@ -108,6 +109,11 @@ export default function MarketplaceActionPanel({
     }
 
     if (!hasValidListingRoute()) {
+      return;
+    }
+
+    if (directListingPriceUnavailable) {
+      setMessage("This listing price is unavailable. Refresh the page before buying.");
       return;
     }
 
@@ -194,10 +200,14 @@ export default function MarketplaceActionPanel({
         <button
           type="button"
           onClick={handleBuyListing}
-          disabled={pendingAction !== null}
-          className="button-primary w-full disabled:cursor-wait disabled:opacity-60"
+          disabled={pendingAction !== null || directListingPriceUnavailable}
+          className="button-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pendingAction === "buy" ? "Purchasing..." : `Buy now for ${buyoutPriceEth?.toFixed(4) ?? "--"} ETH`}
+          {pendingAction === "buy"
+            ? "Purchasing..."
+            : directListingPriceUnavailable
+              ? "Price unavailable"
+              : `Buy now for ${buyoutPriceEth.toFixed(4)} ETH`}
         </button>
       )}
 
