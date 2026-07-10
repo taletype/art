@@ -9,6 +9,10 @@ const supabasePublishableKeyPlaceholderValues = new Set([
   "legacy_anon_key_if_needed",
 ]);
 
+type SupabaseBrowserClient = ReturnType<typeof createBrowserClient>;
+
+let cachedBrowserClient: { url: string; key: string; client: SupabaseBrowserClient } | null = null;
+
 function readBrowserEnv(value: string | undefined) {
   return value?.trim() || "";
 }
@@ -43,5 +47,12 @@ export function getSupabaseBrowserClient() {
   if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error(missingSupabaseBrowserEnvMessage);
   }
-  return createBrowserClient(supabaseUrl, supabasePublishableKey);
+
+  if (cachedBrowserClient?.url === supabaseUrl && cachedBrowserClient.key === supabasePublishableKey) {
+    return cachedBrowserClient.client;
+  }
+
+  const client = createBrowserClient(supabaseUrl, supabasePublishableKey);
+  cachedBrowserClient = { url: supabaseUrl, key: supabasePublishableKey, client };
+  return client;
 }
