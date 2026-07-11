@@ -17,10 +17,10 @@ function requireAuctionEndsAfterStart(
 export const createSellerArtworkSchema = z.object({
   title: z.string().trim().min(2).max(120),
   description: z.string().trim().min(10).max(4000),
-  imageUrl: z.string().url(),
-  medium: z.string().max(120).optional(),
-  category: z.string().max(120).optional(),
-  provenanceText: z.string().max(4000).optional(),
+  imageUrl: z.string().trim().url(),
+  medium: z.string().trim().max(120).optional(),
+  category: z.string().trim().max(120).optional(),
+  provenanceText: z.string().trim().max(4000).optional(),
   priceEth: z.number().finite().nonnegative().optional(),
   sellerWallet: z.string().trim().refine(isValidEvmAddress, {
     message: "Enter a valid wallet address.",
