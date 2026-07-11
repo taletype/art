@@ -21,7 +21,7 @@ export const createSellerArtworkSchema = z.object({
   medium: z.string().max(120).optional(),
   category: z.string().max(120).optional(),
   provenanceText: z.string().max(4000).optional(),
-  priceEth: z.number().nonnegative().optional(),
+  priceEth: z.number().finite().nonnegative().optional(),
   sellerWallet: z.string().trim().refine(isValidEvmAddress, {
     message: "Enter a valid wallet address.",
   }).optional(),
@@ -38,8 +38,8 @@ const sellerAuctionFields = z.object({
   artworkId: z.string().uuid(),
   startsAt: z.string().datetime(),
   endsAt: z.string().datetime(),
-  startPriceEth: z.number().positive(),
-  minBidEth: z.number().positive(),
+  startPriceEth: z.number().finite().positive(),
+  minBidEth: z.number().finite().positive(),
   sellerWallet: z.string().trim().refine(isValidEvmAddress, {
     message: "Enter a valid wallet address.",
   }).optional(),
