@@ -15,8 +15,8 @@ function requireAuctionEndsAfterStart(
 }
 
 export const createSellerArtworkSchema = z.object({
-  title: z.string().min(2).max(120),
-  description: z.string().min(10).max(4000),
+  title: z.string().trim().min(2).max(120),
+  description: z.string().trim().min(10).max(4000),
   imageUrl: z.string().url(),
   medium: z.string().max(120).optional(),
   category: z.string().max(120).optional(),
