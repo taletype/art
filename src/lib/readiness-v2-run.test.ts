@@ -115,6 +115,20 @@ describe("readiness-v2 runner", () => {
     expect(result.stderr).toContain("readiness:v2:run failed. Could not parse readinessVerdictJson:");
   });
 
+  it("fails with a clear object-shape message when a JSON artifact is not an object", () => {
+    const artifactDir = makeArtifactDir();
+    writeValidBundle(artifactDir);
+    writeFileSync(join(artifactDir, "funded-binary-proof-summary.json"), "[]");
+
+    const result = runReadiness(artifactDir);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "readiness:v2:run failed. fundedBinaryProofSummary must be a JSON object.",
+    );
+    expect(existsSync(join(artifactDir, "bundle-complete.json"))).toBe(false);
+  });
+
   it("fails with a clear empty-artifact message when a markdown report is blank", () => {
     const artifactDir = makeArtifactDir();
     writeValidBundle(artifactDir);
