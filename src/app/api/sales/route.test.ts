@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { listSales } from "@/lib/supabase-db";
+import { getSaleById, listSales } from "@/lib/supabase-db";
 import { GET, PATCH, POST } from "./route";
 
 vi.mock("@/lib/supabase/admin", () => ({
@@ -14,6 +14,7 @@ vi.mock("@/lib/supabase-db", () => ({
 }));
 
 const mockCreateSupabaseAdminClient = vi.mocked(createSupabaseAdminClient);
+const mockGetSaleById = vi.mocked(getSaleById);
 const mockListSales = vi.mocked(listSales);
 
 function makeSalesRequest(method: "PATCH" | "POST", body: Record<string, unknown>, headers?: HeadersInit) {
@@ -31,6 +32,7 @@ function makeRawSalesRequest(method: "PATCH" | "POST", body: string, headers?: H
 describe("sales API GET", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetSaleById.mockResolvedValue(null);
     mockListSales.mockResolvedValue([{ id: "sale-id" }]);
   });
 
@@ -52,6 +54,28 @@ describe("sales API GET", () => {
 
     await GET(new NextRequest("https://example.test/api/sales?limit=500"));
     expect(mockListSales).toHaveBeenLastCalledWith(100);
+  });
+
+  it("returns a single sale by id without listing sales", async () => {
+    mockGetSaleById.mockResolvedValue({ id: "sale-id", title: "Single sale" });
+
+    const response = await GET(new NextRequest("https://example.test/api/sales?id=sale-id"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ id: "sale-id", title: "Single sale" });
+    expect(mockGetSaleById).toHaveBeenCalledWith("sale-id");
+    expect(mockListSales).not.toHaveBeenCalled();
+  });
+
+  it("returns not found when the requested sale id is missing", async () => {
+    const response = await GET(new NextRequest("https://example.test/api/sales?id=missing-sale"));
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({ error: "Sale not found" });
+    expect(mockGetSaleById).toHaveBeenCalledWith("missing-sale");
+    expect(mockListSales).not.toHaveBeenCalled();
   });
 });
 
