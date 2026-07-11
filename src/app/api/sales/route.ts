@@ -31,10 +31,10 @@ function invalidSalePayloadResponse() {
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const id = searchParams.get("id");
+  const saleId = readSaleId(searchParams.get("id"));
 
-  if (id) {
-    const sale = await getSaleById(id);
+  if (saleId) {
+    const sale = await getSaleById(saleId);
     if (!sale) {
       return NextResponse.json({ error: "Sale not found" }, { status: 404 });
     }
