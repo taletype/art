@@ -58,6 +58,22 @@ describe("seller artwork schemas", () => {
     }
   });
 
+  it("omits blank optional artwork metadata fields", () => {
+    const result = createSellerArtworkSchema.safeParse({
+      ...validCreateArtworkPayload,
+      medium: "   ",
+      category: "\t",
+      provenanceText: "\n",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("medium");
+      expect(result.data).not.toHaveProperty("category");
+      expect(result.data).not.toHaveProperty("provenanceText");
+    }
+  });
+
   it("rejects blank-looking artwork titles and descriptions", () => {
     expect(
       createSellerArtworkSchema.safeParse({
