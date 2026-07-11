@@ -25,6 +25,10 @@ function invalidJsonResponse() {
   return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
 }
 
+function invalidSalePayloadResponse() {
+  return NextResponse.json({ error: "Invalid sale payload" }, { status: 400 });
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get("id");
@@ -54,6 +58,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return applyRateLimitHeaders(invalidSalePayloadResponse(), rateLimit);
+    }
+
     const adminClient = createSupabaseAdminClient();
     const { data, error } = await adminClient
       .from("auction_sales")
@@ -96,7 +104,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     if (!body || typeof body !== "object" || Array.isArray(body)) {
-      return applyRateLimitHeaders(NextResponse.json({ error: "Invalid sale payload" }, { status: 400 }), rateLimit);
+      return applyRateLimitHeaders(invalidSalePayloadResponse(), rateLimit);
     }
 
     const { id, ...updates } = body as Record<string, unknown>;
