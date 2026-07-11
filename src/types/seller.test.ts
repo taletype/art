@@ -36,17 +36,25 @@ const validFinalizeAuctionPayload = {
 };
 
 describe("seller artwork schemas", () => {
-  it("trims artwork titles and descriptions before validating", () => {
+  it("trims artwork text and URL fields before validating", () => {
     const result = createSellerArtworkSchema.safeParse({
       ...validCreateArtworkPayload,
       title: "  Verified studio work  ",
       description: "  A handmade work with provenance notes ready for review.  ",
+      imageUrl: "  https://example.test/artwork.png  ",
+      medium: "  digital painting  ",
+      category: "  visual  ",
+      provenanceText: "  Process notes and source artifact hashes.  ",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.title).toBe(validCreateArtworkPayload.title);
       expect(result.data.description).toBe(validCreateArtworkPayload.description);
+      expect(result.data.imageUrl).toBe(validCreateArtworkPayload.imageUrl);
+      expect(result.data.medium).toBe(validCreateArtworkPayload.medium);
+      expect(result.data.category).toBe(validCreateArtworkPayload.category);
+      expect(result.data.provenanceText).toBe(validCreateArtworkPayload.provenanceText);
     }
   });
 
