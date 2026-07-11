@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { isValidEvmAddress } from "@/lib/evmAddress";
 
+function optionalTrimmedString(maxLength: number) {
+  return z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().max(maxLength).optional(),
+  );
+}
+
 function requireAuctionEndsAfterStart(
   value: { startsAt: string; endsAt: string },
   ctx: z.RefinementCtx,
@@ -18,9 +25,9 @@ export const createSellerArtworkSchema = z.object({
   title: z.string().trim().min(2).max(120),
   description: z.string().trim().min(10).max(4000),
   imageUrl: z.string().trim().url(),
-  medium: z.string().trim().max(120).optional(),
-  category: z.string().trim().max(120).optional(),
-  provenanceText: z.string().trim().max(4000).optional(),
+  medium: optionalTrimmedString(120),
+  category: optionalTrimmedString(120),
+  provenanceText: optionalTrimmedString(4000),
   priceEth: z.number().finite().nonnegative().optional(),
   sellerWallet: z.string().trim().refine(isValidEvmAddress, {
     message: "Enter a valid wallet address.",
