@@ -143,6 +143,16 @@ describe("sales API write guards", () => {
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
+  it("rejects blank PATCH sale ids without opening the admin client", async () => {
+    const response = await PATCH(makeSalesRequest("PATCH", { id: "   ", title: "Updated sale" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Sale ID is required" });
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("rejects PATCH requests without mutable sale fields before opening the admin client", async () => {
     const response = await PATCH(makeSalesRequest("PATCH", { id: "sale-id" }));
     const body = await response.json();
@@ -154,7 +164,7 @@ describe("sales API write guards", () => {
   });
 
   it("updates a sale when write guards allow the request", async () => {
-    const response = await PATCH(makeSalesRequest("PATCH", { id: "sale-id", title: "Updated sale" }));
+    const response = await PATCH(makeSalesRequest("PATCH", { id: " sale-id ", title: "Updated sale" }));
     const body = await response.json();
 
     expect(response.status).toBe(200);
