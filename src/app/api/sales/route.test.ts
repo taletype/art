@@ -134,6 +134,25 @@ describe("sales API write guards", () => {
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
+  it("rejects non-object POST payloads without opening the admin client", async () => {
+    const nullResponse = await POST(makeRawSalesRequest("POST", "null"));
+    const nullBody = await nullResponse.json();
+
+    expect(nullResponse.status).toBe(400);
+    expect(nullBody).toEqual({ error: "Invalid sale payload" });
+    expect(nullResponse.headers.get("X-RateLimit-Limit")).toBe("30");
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+
+    const arrayResponse = await POST(makeRawSalesRequest("POST", "[]"));
+    const arrayBody = await arrayResponse.json();
+
+    expect(arrayResponse.status).toBe(400);
+    expect(arrayBody).toEqual({ error: "Invalid sale payload" });
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
   it("rejects non-object PATCH payloads without opening the admin client", async () => {
     const response = await PATCH(makeRawSalesRequest("PATCH", "null"));
     const body = await response.json();
