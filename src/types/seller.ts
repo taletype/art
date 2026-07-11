@@ -8,6 +8,13 @@ function optionalTrimmedString(maxLength: number) {
   );
 }
 
+function optionalEvmAddress(message = "Enter a valid wallet address.") {
+  return z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().refine(isValidEvmAddress, { message }).optional(),
+  );
+}
+
 function requireAuctionEndsAfterStart(
   value: { startsAt: string; endsAt: string },
   ctx: z.RefinementCtx,
@@ -29,16 +36,12 @@ export const createSellerArtworkSchema = z.object({
   category: optionalTrimmedString(120),
   provenanceText: optionalTrimmedString(4000),
   priceEth: z.number().finite().nonnegative().optional(),
-  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
-    message: "Enter a valid wallet address.",
-  }).optional(),
+  sellerWallet: optionalEvmAddress(),
 });
 
 export const prepareArtworkSchema = z.object({
   artworkId: z.string().uuid(),
-  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
-    message: "Enter a valid wallet address.",
-  }).optional(),
+  sellerWallet: optionalEvmAddress(),
 });
 
 const sellerAuctionFields = z.object({
@@ -47,9 +50,7 @@ const sellerAuctionFields = z.object({
   endsAt: z.string().datetime(),
   startPriceEth: z.number().finite().positive(),
   minBidEth: z.number().finite().positive(),
-  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
-    message: "Enter a valid wallet address.",
-  }).optional(),
+  sellerWallet: optionalEvmAddress(),
 });
 
 export const createSellerAuctionSchema = sellerAuctionFields.superRefine(requireAuctionEndsAfterStart);
@@ -62,9 +63,7 @@ export const finalizeArtworkMintSchema = z.object({
   }),
   recentBlockhash: z.string().trim().min(20),
   lastValidBlockHeight: z.number().int().positive(),
-  sellerWallet: z.string().trim().refine(isValidEvmAddress, {
-    message: "Enter a valid wallet address.",
-  }).optional(),
+  sellerWallet: optionalEvmAddress(),
 });
 
 export const finalizeSellerAuctionSchema = sellerAuctionFields.extend({
