@@ -36,6 +36,36 @@ const validFinalizeAuctionPayload = {
 };
 
 describe("seller artwork schemas", () => {
+  it("trims artwork titles and descriptions before validating", () => {
+    const result = createSellerArtworkSchema.safeParse({
+      ...validCreateArtworkPayload,
+      title: "  Verified studio work  ",
+      description: "  A handmade work with provenance notes ready for review.  ",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.title).toBe(validCreateArtworkPayload.title);
+      expect(result.data.description).toBe(validCreateArtworkPayload.description);
+    }
+  });
+
+  it("rejects blank-looking artwork titles and descriptions", () => {
+    expect(
+      createSellerArtworkSchema.safeParse({
+        ...validCreateArtworkPayload,
+        title: "  ",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createSellerArtworkSchema.safeParse({
+        ...validCreateArtworkPayload,
+        description: "          ",
+      }).success,
+    ).toBe(false);
+  });
+
   it("rejects non-finite artwork prices", () => {
     expect(
       createSellerArtworkSchema.safeParse({
