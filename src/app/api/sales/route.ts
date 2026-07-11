@@ -12,6 +12,15 @@ function readSalesListLimit(value: string | null) {
   return Math.min(Math.floor(parsed), 100);
 }
 
+function readSaleId(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+  return trimmedValue || null;
+}
+
 function invalidJsonResponse() {
   return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
 }
@@ -91,7 +100,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { id, ...updates } = body as Record<string, unknown>;
-    if (!id) {
+    const saleId = readSaleId(id);
+    if (!saleId) {
       return applyRateLimitHeaders(NextResponse.json({ error: "Sale ID is required" }, { status: 400 }), rateLimit);
     }
     if (Object.keys(updates).length === 0) {
@@ -105,7 +115,7 @@ export async function PATCH(request: NextRequest) {
     const { data, error } = await adminClient
       .from("auction_sales")
       .update(updates)
-      .eq("id", id)
+      .eq("id", saleId)
       .select("*")
       .single();
 
