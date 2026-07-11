@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   createSellerArtworkSchema,
   createSellerAuctionSchema,
+  finalizeArtworkMintSchema,
   finalizeSellerAuctionSchema,
+  prepareArtworkSchema,
 } from "@/types/seller";
 
 const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
@@ -24,6 +26,14 @@ const validCreateAuctionPayload = {
   endsAt: "2026-01-02T10:00:00.000Z",
   startPriceEth: 0.1,
   minBidEth: 0.1,
+};
+
+const validFinalizeMintPayload = {
+  artworkId: validCreateAuctionPayload.artworkId,
+  txSignature: "0x" + "b".repeat(64),
+  mintAddress: "0x0000000000000000000000000000000000000002",
+  recentBlockhash: "base-sepolia-blockhash",
+  lastValidBlockHeight: 1,
 };
 
 const validFinalizeAuctionPayload = {
@@ -71,6 +81,51 @@ describe("seller artwork schemas", () => {
       expect(result.data.medium).toBeUndefined();
       expect(result.data.category).toBeUndefined();
       expect(result.data.provenanceText).toBeUndefined();
+    }
+  });
+
+  it("normalizes blank optional seller wallets across seller workflows", () => {
+    const createArtwork = createSellerArtworkSchema.safeParse({
+      ...validCreateArtworkPayload,
+      sellerWallet: "   ",
+    });
+    const prepareArtwork = prepareArtworkSchema.safeParse({
+      artworkId: validCreateAuctionPayload.artworkId,
+      sellerWallet: "\t",
+    });
+    const createAuction = createSellerAuctionSchema.safeParse({
+      ...validCreateAuctionPayload,
+      sellerWallet: "\n",
+    });
+    const finalizeMint = finalizeArtworkMintSchema.safeParse({
+      ...validFinalizeMintPayload,
+      sellerWallet: "   ",
+    });
+    const finalizeAuction = finalizeSellerAuctionSchema.safeParse({
+      ...validFinalizeAuctionPayload,
+      sellerWallet: "   ",
+    });
+
+    expect(createArtwork.success).toBe(true);
+    expect(prepareArtwork.success).toBe(true);
+    expect(createAuction.success).toBe(true);
+    expect(finalizeMint.success).toBe(true);
+    expect(finalizeAuction.success).toBe(true);
+
+    if (createArtwork.success) {
+      expect(createArtwork.data.sellerWallet).toBeUndefined();
+    }
+    if (prepareArtwork.success) {
+      expect(prepareArtwork.data.sellerWallet).toBeUndefined();
+    }
+    if (createAuction.success) {
+      expect(createAuction.data.sellerWallet).toBeUndefined();
+    }
+    if (finalizeMint.success) {
+      expect(finalizeMint.data.sellerWallet).toBeUndefined();
+    }
+    if (finalizeAuction.success) {
+      expect(finalizeAuction.data.sellerWallet).toBeUndefined();
     }
   });
 
