@@ -56,6 +56,16 @@ describe("sales API GET", () => {
     expect(mockListSales).toHaveBeenLastCalledWith(100);
   });
 
+  it("ignores blank detail ids and returns the sale list", async () => {
+    const response = await GET(new NextRequest("https://example.test/api/sales?id=%20%20%20&limit=2"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual([{ id: "sale-id" }]);
+    expect(mockGetSaleById).not.toHaveBeenCalled();
+    expect(mockListSales).toHaveBeenCalledWith(2);
+  });
+
   it("returns a single sale by id without listing sales", async () => {
     mockGetSaleById.mockResolvedValue({ id: "sale-id", title: "Single sale" });
 
