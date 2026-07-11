@@ -1,5 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { createSellerAuctionSchema, finalizeSellerAuctionSchema } from "@/types/seller";
+import {
+  createSellerArtworkSchema,
+  createSellerAuctionSchema,
+  finalizeSellerAuctionSchema,
+} from "@/types/seller";
+
+const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
+
+const validCreateArtworkPayload = {
+  title: "Verified studio work",
+  description: "A handmade work with provenance notes ready for review.",
+  imageUrl: "https://example.test/artwork.png",
+  medium: "digital painting",
+  category: "visual",
+  provenanceText: "Process notes and source artifact hashes.",
+  priceEth: 0.05,
+  sellerWallet,
+};
 
 const validCreateAuctionPayload = {
   artworkId: "11111111-1111-4111-8111-111111111111",
@@ -17,6 +34,17 @@ const validFinalizeAuctionPayload = {
   recentBlockhash: "base-sepolia-blockhash",
   lastValidBlockHeight: 1,
 };
+
+describe("seller artwork schemas", () => {
+  it("rejects non-finite artwork prices", () => {
+    expect(
+      createSellerArtworkSchema.safeParse({
+        ...validCreateArtworkPayload,
+        priceEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
+  });
+});
 
 describe("seller auction schemas", () => {
   it("accepts auction windows with an end time after the start time", () => {
@@ -46,5 +74,21 @@ describe("seller auction schemas", () => {
     if (!finalizeResult.success) {
       expect(finalizeResult.error.issues.map((issue) => issue.path.join("."))).toContain("endsAt");
     }
+  });
+
+  it("rejects non-finite auction prices", () => {
+    expect(
+      createSellerAuctionSchema.safeParse({
+        ...validCreateAuctionPayload,
+        startPriceEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createSellerAuctionSchema.safeParse({
+        ...validCreateAuctionPayload,
+        minBidEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
   });
 });
