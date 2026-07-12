@@ -35,7 +35,7 @@ export async function listSellerArtworksByWallet(sellerWallet: string) {
   const { data, error } = await supabase
     .from("artworks")
     .select("*")
-    .eq("seller_wallet", sellerWallet)
+    .ilike("seller_wallet", sellerWallet)
     .order("created_at", { ascending: false });
 
   if (error) {
