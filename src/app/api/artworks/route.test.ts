@@ -123,17 +123,19 @@ describe("artworks API GET", () => {
   const select = vi.fn();
   const order = vi.fn();
   const eq = vi.fn();
+  const ilike = vi.fn();
   const limit = vi.fn();
   const single = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    const query = { select, order, eq, limit, single };
+    const query = { select, order, eq, ilike, limit, single };
     from.mockReturnValue(query);
     select.mockReturnValue(query);
     order.mockReturnValue(query);
     eq.mockReturnValue(query);
+    ilike.mockReturnValue(query);
     limit.mockResolvedValue({ data: [{ id: "artwork-id" }], error: null });
     single.mockResolvedValue({ data: { id: "artwork-id" }, error: null });
 
@@ -148,6 +150,7 @@ describe("artworks API GET", () => {
     expect(body).toEqual([{ id: "artwork-id" }]);
     expect(order).toHaveBeenCalledWith("created_at", { ascending: false });
     expect(eq).not.toHaveBeenCalled();
+    expect(ilike).not.toHaveBeenCalled();
     expect(single).not.toHaveBeenCalled();
     expect(limit).toHaveBeenCalledWith(2);
   });
@@ -161,6 +164,7 @@ describe("artworks API GET", () => {
     expect(from).toHaveBeenCalledWith("artworks");
     expect(select).toHaveBeenCalledWith("*");
     expect(eq).toHaveBeenCalledWith("id", "artwork-id");
+    expect(ilike).not.toHaveBeenCalled();
     expect(single).toHaveBeenCalled();
     expect(limit).not.toHaveBeenCalled();
   });
@@ -176,10 +180,11 @@ describe("artworks API GET", () => {
     expect(order).toHaveBeenCalledWith("created_at", { ascending: false });
     expect(eq).toHaveBeenCalledTimes(1);
     expect(eq).toHaveBeenCalledWith("owner_user_id", "user-1");
+    expect(ilike).not.toHaveBeenCalled();
     expect(limit).toHaveBeenCalledWith(100);
   });
 
-  it("normalizes valid seller wallet filters", async () => {
+  it("uses case-insensitive seller wallet filters", async () => {
     const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
     const response = await GET(
       new NextRequest(`https://example.test/api/artworks?sellerWallet=%20${sellerWallet}%20&limit=10`),
@@ -188,8 +193,9 @@ describe("artworks API GET", () => {
 
     expect(response.status).toBe(200);
     expect(body).toEqual([{ id: "artwork-id" }]);
-    expect(eq).toHaveBeenCalledTimes(1);
-    expect(eq).toHaveBeenCalledWith("seller_wallet", sellerWallet);
+    expect(eq).not.toHaveBeenCalled();
+    expect(ilike).toHaveBeenCalledTimes(1);
+    expect(ilike).toHaveBeenCalledWith("seller_wallet", sellerWallet);
     expect(limit).toHaveBeenCalledWith(10);
   });
 });
@@ -280,6 +286,7 @@ describe("artworks API PATCH", () => {
   const from = vi.fn();
   const update = vi.fn();
   const eq = vi.fn();
+  const ilike = vi.fn();
   const or = vi.fn();
   const select = vi.fn();
   const single = vi.fn();
@@ -287,10 +294,11 @@ describe("artworks API PATCH", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    const query = { update, eq, or, select };
+    const query = { update, eq, ilike, or, select };
     from.mockReturnValue(query);
     update.mockReturnValue(query);
     eq.mockReturnValue(query);
+    ilike.mockReturnValue(query);
     or.mockReturnValue(query);
     select.mockReturnValue({ single });
     single.mockResolvedValue({ data: { id: "artwork-id" }, error: null });
@@ -386,8 +394,8 @@ describe("artworks API PATCH", () => {
     expect(response.status).toBe(404);
     expect(body).toEqual({ error: "Artwork not found" });
     expect(update).toHaveBeenCalledWith({ status: "live" });
-    expect(eq).toHaveBeenNthCalledWith(1, "id", "artwork-id");
-    expect(eq).toHaveBeenNthCalledWith(2, "seller_wallet", sellerWallet);
+    expect(eq).toHaveBeenCalledWith("id", "artwork-id");
+    expect(ilike).toHaveBeenCalledWith("seller_wallet", sellerWallet);
   });
 
   it("uses normalized wallet identity fields for authorization without allowing clients to mutate them", async () => {
@@ -411,7 +419,28 @@ describe("artworks API PATCH", () => {
       sync_status: "listing_confirmed",
       thirdweb_listing_id: "auction-7",
     });
-    expect(eq).toHaveBeenNthCalledWith(1, "id", "artwork-id");
-    expect(eq).toHaveBeenNthCalledWith(2, "seller_wallet", sellerWallet);
+    expect(eq).toHaveBeenCalledWith("id", "artwork-id");
+    expect(ilike).toHaveBeenCalledWith("seller_wallet", sellerWallet);
+  });
+
+  it("uses case-insensitive seller wallet authorization with authenticated owner matching", async () => {
+    const sellerWallet = "0x1234567890ABCDEF1234567890aBcDeF12345678";
+    mockGetAuthenticatedAppUser.mockResolvedValueOnce({
+      id: "user-1",
+      email: "artist@example.test",
+      walletAddress: sellerWallet,
+    });
+
+    const response = await PATCH(
+      makePatchRequest({
+        id: "artwork-id",
+        status: "live",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(update).toHaveBeenCalledWith({ status: "live" });
+    expect(eq).toHaveBeenCalledWith("id", "artwork-id");
+    expect(or).toHaveBeenCalledWith(`owner_user_id.eq.user-1,seller_wallet.ilike.${sellerWallet}`);
   });
 });
