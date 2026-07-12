@@ -33,6 +33,15 @@ function readArtworkListLimit(value: string | null) {
   return Math.min(Math.floor(parsed), 100);
 }
 
+function readSearchText(value: string | null) {
+  if (value === null) {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+  return trimmedValue || null;
+}
+
 function invalidJsonResponse() {
   return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
 }
@@ -85,7 +94,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(artwork);
   }
 
-  const owner = searchParams.get("owner");
+  const owner = readSearchText(searchParams.get("owner"));
   const sellerWallet = normalizeEvmAddress(searchParams.get("sellerWallet"));
   let query = adminClient.from("artworks").select("*").order("created_at", { ascending: false });
   if (owner) {
