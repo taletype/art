@@ -140,8 +140,8 @@ describe("artworks API GET", () => {
     mockCreateSupabaseAdminClient.mockReturnValue({ from } as unknown as ReturnType<typeof createSupabaseAdminClient>);
   });
 
-  it("ignores blank detail ids and returns the artwork list", async () => {
-    const response = await GET(new NextRequest("https://example.test/api/artworks?id=%20%20%20&limit=2"));
+  it("ignores blank detail ids and owner filters and returns the artwork list", async () => {
+    const response = await GET(new NextRequest("https://example.test/api/artworks?id=%20%20%20&owner=%20%20%20&limit=2"));
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -165,9 +165,9 @@ describe("artworks API GET", () => {
     expect(limit).not.toHaveBeenCalled();
   });
 
-  it("clamps list limits and ignores invalid seller wallet filters", async () => {
+  it("trims owner filters, clamps list limits, and ignores invalid seller wallet filters", async () => {
     const response = await GET(
-      new NextRequest("https://example.test/api/artworks?owner=user-1&sellerWallet=not-an-address&limit=500"),
+      new NextRequest("https://example.test/api/artworks?owner=%20user-1%20&sellerWallet=not-an-address&limit=500"),
     );
     const body = await response.json();
 
