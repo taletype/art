@@ -46,6 +46,22 @@ describe("getAuthenticatedAppUser", () => {
     expect(mockCreateSupabaseServerClient).not.toHaveBeenCalled();
   });
 
+  it("returns null when Supabase cannot resolve a signed-in user", async () => {
+    mockSupabaseUser({
+      data: { user: null },
+      error: null,
+    });
+
+    await expect(getAuthenticatedAppUser()).resolves.toBeNull();
+
+    mockSupabaseUser({
+      data: { user: null },
+      error: new Error("Session expired"),
+    });
+
+    await expect(getAuthenticatedAppUser()).resolves.toBeNull();
+  });
+
   it("trims a valid wallet address from user metadata", async () => {
     mockSupabaseUser({
       data: {
@@ -107,6 +123,13 @@ describe("resolveSellerWallet", () => {
 });
 
 describe("resolveMatchingSellerWallet", () => {
+  it("uses the profile wallet when no request wallet is provided", () => {
+    expect(resolveMatchingSellerWallet({ profileWalletAddress: mixedCaseWallet })).toEqual({
+      wallet: mixedCaseWallet,
+      mismatch: false,
+    });
+  });
+
   it("matches the same EVM address regardless of casing", () => {
     expect(
       resolveMatchingSellerWallet({
@@ -114,6 +137,15 @@ describe("resolveMatchingSellerWallet", () => {
         requestWalletAddress: mixedCaseWallet.toLowerCase(),
       }),
     ).toEqual({ wallet: mixedCaseWallet, mismatch: false });
+  });
+
+  it("ignores invalid request wallets without reporting a mismatch", () => {
+    expect(
+      resolveMatchingSellerWallet({
+        profileWalletAddress: mixedCaseWallet,
+        requestWalletAddress: "0x1234",
+      }),
+    ).toEqual({ wallet: null, mismatch: false });
   });
 
   it("flags a different valid EVM address as a mismatch", () => {
