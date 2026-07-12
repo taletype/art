@@ -34,6 +34,26 @@ describe("getSellerDashboardData", () => {
     expect(mockListSellerArtworksByWallet).not.toHaveBeenCalled();
   });
 
+  it("loads owner artwork and skips wallet lookups when the user has no wallet", async () => {
+    const ownerArtwork = { id: "owner-artwork", title: "Owner artwork" };
+
+    mockGetAuthenticatedAppUser.mockResolvedValue({
+      id: "user-1",
+      email: "artist@example.test",
+      walletAddress: null,
+    });
+    mockListSellerArtworks.mockResolvedValue([ownerArtwork]);
+
+    await expect(getSellerDashboardData()).resolves.toEqual({
+      email: "artist@example.test",
+      walletAddress: null,
+      artworks: [ownerArtwork],
+    });
+
+    expect(mockListSellerArtworks).toHaveBeenCalledWith("user-1");
+    expect(mockListSellerArtworksByWallet).not.toHaveBeenCalled();
+  });
+
   it("starts owner and wallet artwork lookups before either query resolves", async () => {
     const walletAddress = "0x1234567890abcdef1234567890abcdef12345678";
     const ownerArtwork = { id: "owner-artwork", title: "Owner artwork" };
