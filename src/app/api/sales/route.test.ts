@@ -236,6 +236,19 @@ describe("sales API write guards", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("returns not found when PATCH targets a missing sale", async () => {
+    single.mockResolvedValueOnce({ data: null, error: { code: "PGRST116", message: "No rows found" } });
+
+    const response = await PATCH(makeSalesRequest("PATCH", { id: "missing-sale", title: "Updated sale" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({ error: "Sale not found" });
+    expect(update).toHaveBeenCalledWith({ title: "Updated sale" });
+    expect(eq).toHaveBeenCalledWith("id", "missing-sale");
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
+  });
+
   it("creates a sale when write guards allow the request", async () => {
     const payload = { title: "Summer sale", status: "draft" };
     const response = await POST(makeSalesRequest("POST", payload));
