@@ -140,6 +140,18 @@ describe("artworks API GET", () => {
     mockCreateSupabaseAdminClient.mockReturnValue({ from } as unknown as ReturnType<typeof createSupabaseAdminClient>);
   });
 
+  it("ignores blank detail ids and returns the artwork list", async () => {
+    const response = await GET(new NextRequest("https://example.test/api/artworks?id=%20%20%20&limit=2"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual([{ id: "artwork-id" }]);
+    expect(order).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(eq).not.toHaveBeenCalled();
+    expect(single).not.toHaveBeenCalled();
+    expect(limit).toHaveBeenCalledWith(2);
+  });
+
   it("returns one artwork by id", async () => {
     const response = await GET(new NextRequest("https://example.test/api/artworks?id=artwork-id"));
     const body = await response.json();
