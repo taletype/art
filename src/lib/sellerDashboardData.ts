@@ -3,8 +3,10 @@ import { listSellerArtworks, listSellerArtworksByWallet } from "@/lib/seller";
 
 export async function getSellerDashboardData() {
   const user = await getAuthenticatedAppUser();
-  const ownerArtworks = user ? await listSellerArtworks(user.id) : [];
-  const walletArtworks = user?.walletAddress ? await listSellerArtworksByWallet(user.walletAddress) : [];
+  const [ownerArtworks, walletArtworks] = await Promise.all([
+    user ? listSellerArtworks(user.id) : Promise.resolve([]),
+    user?.walletAddress ? listSellerArtworksByWallet(user.walletAddress) : Promise.resolve([]),
+  ]);
   const artworks = Array.from(
     new Map([...ownerArtworks, ...walletArtworks].map((artwork) => [artwork.id, artwork])).values(),
   );
