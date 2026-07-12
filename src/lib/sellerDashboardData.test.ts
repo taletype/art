@@ -34,6 +34,43 @@ describe("getSellerDashboardData", () => {
     expect(mockListSellerArtworksByWallet).not.toHaveBeenCalled();
   });
 
+  it("starts owner and wallet artwork lookups before either query resolves", async () => {
+    const walletAddress = "0x1234567890abcdef1234567890abcdef12345678";
+    const ownerArtwork = { id: "owner-artwork", title: "Owner artwork" };
+    const walletArtwork = { id: "wallet-artwork", title: "Wallet artwork" };
+    let resolveOwnerArtworks: (value: Array<typeof ownerArtwork>) => void = () => {};
+    let resolveWalletArtworks: (value: Array<typeof walletArtwork>) => void = () => {};
+    const ownerPromise = new Promise<Array<typeof ownerArtwork>>((resolve) => {
+      resolveOwnerArtworks = resolve;
+    });
+    const walletPromise = new Promise<Array<typeof walletArtwork>>((resolve) => {
+      resolveWalletArtworks = resolve;
+    });
+
+    mockGetAuthenticatedAppUser.mockResolvedValue({
+      id: "user-1",
+      email: "artist@example.test",
+      walletAddress,
+    });
+    mockListSellerArtworks.mockReturnValue(ownerPromise);
+    mockListSellerArtworksByWallet.mockReturnValue(walletPromise);
+
+    const dashboardPromise = getSellerDashboardData();
+    await Promise.resolve();
+
+    expect(mockListSellerArtworks).toHaveBeenCalledWith("user-1");
+    expect(mockListSellerArtworksByWallet).toHaveBeenCalledWith(walletAddress);
+
+    resolveOwnerArtworks([ownerArtwork]);
+    resolveWalletArtworks([walletArtwork]);
+
+    await expect(dashboardPromise).resolves.toEqual({
+      email: "artist@example.test",
+      walletAddress,
+      artworks: [ownerArtwork, walletArtwork],
+    });
+  });
+
   it("combines owner and wallet artwork without duplicating shared records", async () => {
     const walletAddress = "0x1234567890abcdef1234567890abcdef12345678";
     const ownerArtwork = { id: "owner-artwork", title: "Owner artwork" };
