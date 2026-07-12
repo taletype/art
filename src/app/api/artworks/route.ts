@@ -16,6 +16,11 @@ const protectedArtworkUpdateFields = [
   "artist_wallet",
 ];
 
+type SellerWalletFilterQuery = {
+  eq(column: string, value: string): SellerWalletFilterQuery;
+  ilike?: (column: string, pattern: string) => SellerWalletFilterQuery;
+};
+
 function removeProtectedArtworkUpdateFields(updates: Record<string, unknown>) {
   for (const field of protectedArtworkUpdateFields) {
     delete updates[field];
@@ -64,6 +69,15 @@ function normalizeEvmAddress(value: unknown) {
   return isValidEvmAddress(trimmedValue) ? trimmedValue : null;
 }
 
+function filterBySellerWallet<TQuery extends SellerWalletFilterQuery>(query: TQuery, sellerWallet: string) {
+  // Wallet casing can vary between checksum addresses, wallet SDKs, and stored rows.
+  if (typeof query.ilike === "function") {
+    return query.ilike("seller_wallet", sellerWallet) as TQuery;
+  }
+
+  return query.eq("seller_wallet", sellerWallet) as TQuery;
+}
+
 function readRequestedSellerWallet(body: Record<string, unknown>) {
   return normalizeEvmAddress(body.seller_wallet) ?? normalizeEvmAddress(body.sellerWallet);
 }
@@ -101,7 +115,7 @@ export async function GET(request: NextRequest) {
     query = query.eq("owner_user_id", owner);
   }
   if (sellerWallet) {
-    query = query.eq("seller_wallet", sellerWallet);
+    query = filterBySellerWallet(query, sellerWallet);
   }
   const { data: artworks, error } = await query.limit(readArtworkListLimit(searchParams.get("limit")));
   if (error) {
@@ -238,11 +252,11 @@ export async function PATCH(request: NextRequest) {
       .eq("id", artworkId);
 
     if (user && actorWallet) {
-      query = query.or(`owner_user_id.eq.${user.id},seller_wallet.eq.${actorWallet}`);
+      query = query.or(`owner_user_id.eq.${user.id},seller_wallet.ilike.${actorWallet}`);
     } else if (user) {
       query = query.eq("owner_user_id", user.id);
     } else {
-      query = query.eq("seller_wallet", actorWallet);
+      query = filterBySellerWallet(query, actorWallet);
     }
 
     const { data, error } = await query.select("*").single();
