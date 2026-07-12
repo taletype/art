@@ -70,7 +70,7 @@ function readArtworkId(value: unknown) {
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const id = searchParams.get("id");
+  const id = readArtworkId(searchParams.get("id"));
   const adminClient = createSupabaseAdminClient();
 
   if (id) {
