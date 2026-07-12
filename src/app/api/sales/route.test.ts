@@ -236,6 +236,20 @@ describe("sales API write guards", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
+  it("creates a sale when write guards allow the request", async () => {
+    const payload = { title: "Summer sale", status: "draft" };
+    const response = await POST(makeSalesRequest("POST", payload));
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body).toEqual({ id: "sale-id" });
+    expect(from).toHaveBeenCalledWith("auction_sales");
+    expect(insert).toHaveBeenCalledWith(payload);
+    expect(select).toHaveBeenCalledWith("*");
+    expect(single).toHaveBeenCalled();
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
+  });
+
   it("updates a sale when write guards allow the request", async () => {
     const response = await PATCH(makeSalesRequest("PATCH", { id: " sale-id ", title: "Updated sale" }));
     const body = await response.json();
