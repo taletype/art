@@ -29,6 +29,15 @@ function invalidSalePayloadResponse() {
   return NextResponse.json({ error: "Invalid sale payload" }, { status: 400 });
 }
 
+function isMissingSaleError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "PGRST116"
+  );
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const saleId = readSaleId(searchParams.get("id"));
@@ -128,6 +137,10 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
+      if (isMissingSaleError(error)) {
+        return applyRateLimitHeaders(NextResponse.json({ error: "Sale not found" }, { status: 404 }), rateLimit);
+      }
+
       throw error;
     }
 
