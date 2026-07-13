@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAuthenticatedAppUser, resolveMatchingSellerWallet, resolveSellerWallet } from "@/lib/auth";
+import {
+  getAuthenticatedAppUser,
+  requireAuthenticatedAppUserResponse,
+  requireLinkedWalletResponse,
+  resolveMatchingSellerWallet,
+  resolveSellerWallet,
+} from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -97,6 +103,28 @@ describe("getAuthenticatedAppUser", () => {
       id: "user-2",
       email: null,
       walletAddress: null,
+    });
+  });
+});
+
+describe("auth response helpers", () => {
+  it("returns the shared sign-in required response", async () => {
+    const response = requireAuthenticatedAppUserResponse();
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      message: "Sign in to continue.",
+    });
+  });
+
+  it("returns the linked-wallet required response", async () => {
+    const response = requireLinkedWalletResponse();
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      message: "Add a valid Base Sepolia wallet address to your profile before selling.",
     });
   });
 });
