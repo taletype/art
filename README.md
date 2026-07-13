@@ -51,9 +51,10 @@ Legacy purchase-state persistence has been retired with `/api/purchase`; live pu
 - `NEXT_PUBLIC_THIRDWEB_MARKETPLACE_CONTRACT`
 - `NEXT_PUBLIC_THIRDWEB_NFT_COLLECTION_CONTRACT`
 
-### Legacy Thirdweb webhooks (currently inactive)
-The existing `/api/webhooks/thirdweb` route returns `501` and does not process webhook payloads. These values are only needed if webhook handling is restored or replaced.
+### Legacy Thirdweb server/webhook integration (currently inactive)
+The existing `/api/webhooks/thirdweb` route returns `501` and does not process webhook payloads. These values are only needed if webhook handling or server-side Thirdweb operations are restored or replaced.
 
+- `THIRDWEB_SECRET_KEY`
 - `THIRDWEB_WEBHOOK_SECRET`
 - `THIRDWEB_WEBHOOK_TOLERANCE_SECONDS`
 
