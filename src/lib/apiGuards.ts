@@ -13,8 +13,8 @@ if (!globalThis.__realArtWorksRateLimitBuckets) {
   globalThis.__realArtWorksRateLimitBuckets = buckets;
 }
 
-function readPositiveInt(value: string | undefined, fallback: number) {
-  const parsed = Number(value);
+function readPositiveInt(value: number | string | undefined, fallback: number) {
+  const parsed = typeof value === "number" ? value : Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
 
@@ -104,8 +104,10 @@ export function enforceRouteRateLimit(
   scope: string,
   options?: { max?: number; windowMs?: number },
 ) {
-  const max = options?.max ?? readPositiveInt(process.env.API_RATE_LIMIT_MAX, 30);
-  const windowMs = options?.windowMs ?? readPositiveInt(process.env.API_RATE_LIMIT_WINDOW_MS, 60_000);
+  const envMax = readPositiveInt(process.env.API_RATE_LIMIT_MAX, 30);
+  const envWindowMs = readPositiveInt(process.env.API_RATE_LIMIT_WINDOW_MS, 60_000);
+  const max = readPositiveInt(options?.max, envMax);
+  const windowMs = readPositiveInt(options?.windowMs, envWindowMs);
   const ip = getRequestIp(request);
   const bucketKey = `${scope}:${ip}`;
   const now = Date.now();
