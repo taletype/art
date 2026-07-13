@@ -5,10 +5,13 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-function readFirstConfiguredEnv(names) {
+const supabaseUrlPlaceholderValues = new Set(['https://your-project-ref.supabase.co']);
+const supabaseServiceRoleKeyPlaceholderValues = new Set(['your_service_role_key']);
+
+function readFirstConfiguredEnv(names, placeholderValues = new Set()) {
   for (const name of names) {
     const value = process.env[name]?.trim();
-    if (value) {
+    if (value && !placeholderValues.has(value.toLowerCase())) {
       return value;
     }
   }
@@ -16,8 +19,8 @@ function readFirstConfiguredEnv(names) {
   return '';
 }
 
-function requireEnv(names) {
-  const value = readFirstConfiguredEnv(names);
+function requireEnv(names, placeholderValues) {
+  const value = readFirstConfiguredEnv(names, placeholderValues);
   if (!value) {
     console.error(`Missing required environment variable: ${names.join(' or ')}`);
     process.exit(1);
@@ -205,8 +208,8 @@ function splitSqlStatements(sql) {
 }
 
 const supabase = createClient(
-  requireEnv(['SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL']),
-  requireEnv(['SUPABASE_SERVICE_ROLE_KEY']),
+  requireEnv(['SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL'], supabaseUrlPlaceholderValues),
+  requireEnv(['SUPABASE_SERVICE_ROLE_KEY'], supabaseServiceRoleKeyPlaceholderValues),
 );
 
 async function runMigration() {
