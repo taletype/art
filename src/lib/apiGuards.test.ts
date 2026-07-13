@@ -151,6 +151,19 @@ describe("apiGuards route rate limiting", () => {
     }
   });
 
+  it("falls back to environment defaults for invalid explicit rate limit options", () => {
+    vi.stubEnv("API_RATE_LIMIT_MAX", "4");
+    vi.stubEnv("API_RATE_LIMIT_WINDOW_MS", "2000");
+
+    expect(
+      enforceRouteRateLimit(
+        makeRequest({ "x-forwarded-for": "203.0.113.72" }),
+        `invalid-option-scope-${Math.random()}`,
+        { max: 0, windowMs: -1 },
+      ),
+    ).toMatchObject({ ok: true, limit: 4, remaining: 3 });
+  });
+
   it("falls back to safe defaults for invalid environment rate limit values", () => {
     vi.stubEnv("API_RATE_LIMIT_MAX", "0");
     vi.stubEnv("API_RATE_LIMIT_WINDOW_MS", "-1");
