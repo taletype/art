@@ -281,6 +281,47 @@ describe("artworks API POST", () => {
     expect(single).toHaveBeenCalledTimes(1);
   });
 
+  it("creates authenticated drafts from the profile wallet without a request wallet", async () => {
+    const profileWallet = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd";
+    const from = vi.fn();
+    const insert = vi.fn();
+    const select = vi.fn();
+    const single = vi.fn();
+    const createdArtwork = { id: "artwork-id", seller_wallet: profileWallet };
+    const query = { insert, select, single };
+
+    from.mockReturnValue(query);
+    insert.mockReturnValue(query);
+    select.mockReturnValue(query);
+    single.mockResolvedValue({ data: createdArtwork, error: null });
+    mockCreateSupabaseAdminClient.mockReturnValue({ from } as unknown as ReturnType<typeof createSupabaseAdminClient>);
+    mockGetAuthenticatedAppUser.mockResolvedValueOnce({
+      id: "user-1",
+      email: "artist@example.test",
+      walletAddress: profileWallet,
+    });
+
+    const response = await POST(
+      makePostRequest({
+        title: "Verified studio work",
+        description: "A handmade work with provenance notes ready for review.",
+        imageUrl: "https://example.test/artwork.png",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body).toEqual(createdArtwork);
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner_user_id: "user-1",
+        seller_wallet: profileWallet,
+        artist_wallet: profileWallet,
+        artist_name: "artist@example.test",
+      }),
+    );
+  });
+
   it("creates authenticated drafts with the profile owner and wallet", async () => {
     const profileWallet = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd";
     const requestWallet = "0x1234567890abcdef1234567890abcdef12345678";
