@@ -17,6 +17,7 @@
     "test": "vitest run",
     "check": "npm run typecheck && npm test && npm run build",
     "readiness:v2:run": "node scripts/readiness-v2-run.mjs",
+    "migrate:supabase": "node scripts/run-migration.mjs",
     "seed:base-sepolia-auctions": "node scripts/seed-base-sepolia-auctions.mjs"
   },
   "dependencies": {
