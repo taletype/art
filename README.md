@@ -103,6 +103,7 @@ Notes:
 - `npm run build` verifies the same production build step enforced by CI.
 - `npm run lint` currently runs the same TypeScript/Next route type check as `npm run typecheck`; add ESLint before treating it as style linting.
 - `npm run readiness:v2:run` writes readiness artifacts to `artifacts/readiness-v2` by default.
+- `npm run migrate:supabase` applies the SQL files in `supabase/migrations/` in sorted order when `.env.local` points at a Supabase project with `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the expected `exec_sql` RPC.
 - `npm run seed:base-sepolia-auctions` mints sample NFTs on Base Sepolia, uploads images to Supabase Storage, records artwork rows, and creates marketplace auctions. It requires a funded `PRIVATE_KEY` plus the Thirdweb and Supabase env vars in `.env.local`.
 - Apply the SQL files in `supabase/migrations/` in order before relying on Supabase-backed auction artists, sales, lots, collectors, bids, watchlists, or Seller Hub artwork drafts in shared environments.
 - Legacy off-chain auction migrations can remain in the database for historical data, but the live marketplace flow no longer depends on `/api/auctions*` as the bidding source of truth.
