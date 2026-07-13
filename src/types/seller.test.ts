@@ -220,5 +220,33 @@ describe("seller auction schemas", () => {
         minBidEth: -0.01,
       }).success,
     ).toBe(false);
+
+    expect(
+      finalizeSellerAuctionSchema.safeParse({
+        ...validFinalizeAuctionPayload,
+        startPriceEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      finalizeSellerAuctionSchema.safeParse({
+        ...validFinalizeAuctionPayload,
+        minBidEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      finalizeSellerAuctionSchema.safeParse({
+        ...validFinalizeAuctionPayload,
+        startPriceEth: -0.01,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      finalizeSellerAuctionSchema.safeParse({
+        ...validFinalizeAuctionPayload,
+        minBidEth: -0.01,
+      }).success,
+    ).toBe(false);
   });
 });
