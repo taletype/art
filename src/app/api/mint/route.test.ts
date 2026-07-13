@@ -150,4 +150,32 @@ describe("mint API POST", () => {
       }),
     );
   });
+
+  it("creates authenticated drafts with the profile owner and wallet", async () => {
+    const profileWallet = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd";
+    mockGetAuthenticatedAppUser.mockResolvedValueOnce({
+      id: "user-1",
+      email: "artist@example.test",
+      walletAddress: profileWallet,
+    });
+
+    const response = await POST(
+      makeMintRequest({
+        title: "Verified studio work",
+        description: "A handmade work with provenance notes ready for review.",
+        imageUrl: "https://example.test/artwork.png",
+        sellerWallet,
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body).toEqual({ ok: true, artwork: { id: "artwork-id" } });
+    expect(mockCreateSellerArtwork).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ownerUserId: "user-1",
+        sellerWallet: profileWallet,
+      }),
+    );
+  });
 });
