@@ -192,7 +192,7 @@ describe("seller auction schemas", () => {
     }
   });
 
-  it("rejects non-finite auction prices", () => {
+  it("rejects invalid auction prices", () => {
     expect(
       createSellerAuctionSchema.safeParse({
         ...validCreateAuctionPayload,
@@ -204,6 +204,20 @@ describe("seller auction schemas", () => {
       createSellerAuctionSchema.safeParse({
         ...validCreateAuctionPayload,
         minBidEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createSellerAuctionSchema.safeParse({
+        ...validCreateAuctionPayload,
+        startPriceEth: -0.01,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createSellerAuctionSchema.safeParse({
+        ...validCreateAuctionPayload,
+        minBidEth: -0.01,
       }).success,
     ).toBe(false);
   });
