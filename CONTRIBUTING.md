@@ -35,6 +35,8 @@ Run the checks that match your change:
 
 The app uses Supabase for artwork drafts and curated auction-house data. Apply the migrations documented in `README.md` before relying on those tables in a shared environment.
 
+`npm run migrate:supabase` applies SQL files from `supabase/migrations/` in sorted filename order. Keep committed migration filenames stable after they may have been applied, and give new migrations the next unique sortable prefix, for example `003_...`, so execution order stays obvious.
+
 The legacy `/api/purchase` route is retired and returns `410 Gone`; live purchases use the Thirdweb SDK and marketplace contract directly. Do not reintroduce purchase-state persistence, local purchase-state files, or webhook-driven purchase recovery unless a task explicitly restores that retired flow.
 
 The legacy `/api/mint-list` route is also retired and returns `410 Gone`; minting and listing should stay wallet-signed through Seller Hub and the configured marketplace contracts unless a task explicitly restores that retired server-side flow.
