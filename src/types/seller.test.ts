@@ -145,11 +145,18 @@ describe("seller artwork schemas", () => {
     ).toBe(false);
   });
 
-  it("rejects non-finite artwork prices", () => {
+  it("rejects invalid artwork prices", () => {
     expect(
       createSellerArtworkSchema.safeParse({
         ...validCreateArtworkPayload,
         priceEth: Number.POSITIVE_INFINITY,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      createSellerArtworkSchema.safeParse({
+        ...validCreateArtworkPayload,
+        priceEth: -0.01,
       }).success,
     ).toBe(false);
   });
