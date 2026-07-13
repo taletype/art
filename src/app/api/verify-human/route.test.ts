@@ -26,10 +26,10 @@ function makePostRequest(headers?: HeadersInit) {
   });
 }
 
-function makeRawPostRequest(body: string) {
+function makeRawPostRequest(body: string, headers?: HeadersInit) {
   return new Request("https://example.test/api/verify-human", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...headers },
     body,
   });
 }
@@ -39,6 +39,36 @@ describe("verify-human API route guards", () => {
     globalThis.__realArtWorksRateLimitBuckets?.clear();
     vi.unstubAllEnvs();
     vi.useRealTimers();
+  });
+
+  it("requires the configured write bearer token before parsing POST bodies", async () => {
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", "secret-token");
+
+    const response = await POST(makeRawPostRequest("{"));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      ok: false,
+      message: "Missing bearer token for protected route (API_WRITE_BEARER_TOKEN)",
+    });
+    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer realm="realartworks"');
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
+  });
+
+  it("rejects invalid configured write bearer tokens before parsing POST bodies", async () => {
+    vi.stubEnv("API_WRITE_BEARER_TOKEN", "secret-token");
+
+    const response = await POST(makeRawPostRequest("{", { authorization: "Bearer wrong-token" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({
+      ok: false,
+      message: "Invalid bearer token for protected route (API_WRITE_BEARER_TOKEN)",
+    });
+    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer error="invalid_token"');
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
   });
 
   it("returns bad request for malformed JSON", async () => {
