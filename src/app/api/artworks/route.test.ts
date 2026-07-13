@@ -227,6 +227,24 @@ describe("artworks API POST", () => {
     expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
   });
 
+  it("requires a request wallet or authenticated profile wallet before creating drafts", async () => {
+    const response = await POST(
+      makePostRequest({
+        title: "Verified studio work",
+        description: "A handmade work with provenance notes ready for review.",
+        imageUrl: "https://example.test/artwork.png",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      error: "Connect a Thirdweb wallet or sign in with a profile wallet before creating a draft.",
+    });
+    expect(mockGetAuthenticatedAppUser).toHaveBeenCalledTimes(1);
+    expect(mockCreateSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
   it("creates a draft artwork for a valid wallet-backed request", async () => {
     const sellerWallet = "0x1234567890abcdef1234567890abcdef12345678";
     const from = vi.fn();
