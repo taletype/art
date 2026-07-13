@@ -126,6 +126,26 @@ describe("mint API POST", () => {
     expect(mockCreateSellerArtwork).not.toHaveBeenCalled();
   });
 
+  it("requires a wallet before creating draft artwork", async () => {
+    const response = await POST(
+      makeMintRequest({
+        title: "Verified studio work",
+        description: "A handmade work with provenance notes ready for review.",
+        imageUrl: "https://example.test/artwork.png",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      ok: false,
+      message: "Connect a Thirdweb wallet or sign in with a profile wallet before minting.",
+    });
+    expect(response.headers.get("X-RateLimit-Limit")).toBe("30");
+    expect(mockGetAuthenticatedAppUser).toHaveBeenCalledTimes(1);
+    expect(mockCreateSellerArtwork).not.toHaveBeenCalled();
+  });
+
   it("creates a draft artwork for a valid wallet-backed request", async () => {
     const response = await POST(
       makeMintRequest({
