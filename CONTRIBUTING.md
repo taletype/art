@@ -37,6 +37,8 @@ The app uses Supabase for artwork drafts and curated auction-house data. Apply t
 
 The legacy `/api/purchase` route is retired and returns `410 Gone`; live purchases use the Thirdweb SDK and marketplace contract directly. Do not reintroduce purchase-state persistence, local purchase-state files, or webhook-driven purchase recovery unless a task explicitly restores that retired flow.
 
+The legacy `/api/mint-list` route is also retired and returns `410 Gone`; minting and listing should stay wallet-signed through Seller Hub and the configured marketplace contracts unless a task explicitly restores that retired server-side flow.
+
 When changing database-backed flows:
 
 - Keep browser usage on publishable or anon keys.
