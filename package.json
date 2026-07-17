@@ -41,10 +41,10 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.0",
+    "@types/node": "^22.20.1",
     "@types/react": "^19.2.17",
-    "autoprefixer": "^10.5.2",
-    "postcss": "^8.5.16",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.19",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.0",
     "vitest": "^2.1.8"
